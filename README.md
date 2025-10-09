@@ -26,7 +26,7 @@
 *Unlock, Distill, and Amplify Your Data*
 
 [![npm version](https://img.shields.io/npm/v/mujarrad-cli.svg)](https://www.npmjs.com/package/mujarrad-cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 
 </div>
@@ -580,7 +580,7 @@ See [tasks.md](./specs/007-obsidian-mapper-i/tasks.md) for detailed implementati
 
 ## License
 
-MIT License - see [LICENSE](./LICENSE) file for details.
+Apache License 2.0 - see [LICENSE](./LICENSE) file for details.
 
 **Freedom** to **build**, **adapt**, and **innovate**.
 
