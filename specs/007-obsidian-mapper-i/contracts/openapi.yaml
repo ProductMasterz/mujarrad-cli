@@ -1,0 +1,1636 @@
+openapi: 3.0.3
+info:
+  title: Mujarrad Obsidian Mapper API
+  description: |
+    REST API for bidirectional synchronization between Obsidian vaults and Mujarrad workspaces.
+
+    This API extends the existing Mujarrad backend with endpoints for:
+    - Uploading Obsidian vaults to Mujarrad workspaces
+    - Cloning workspaces back to Obsidian format
+    - Bidirectional sync with conflict resolution
+    - Workspace template creation and instantiation
+    - Git-based version history tracking
+
+    **Authentication**: All endpoints require JWT Bearer token (obtain via `/api/auth/login`).
+
+    **Base URL**: https://api.example.com
+  version: 1.0.0
+  contact:
+    name: Mujarrad API Support
+    url: https://api.example.com/docs
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: Workspaces
+    description: Workspace CRUD operations
+  - name: Templates
+    description: Workspace template management
+  - name: Upload
+    description: Batch upload Obsidian vaults to workspaces
+  - name: Clone
+    description: Export workspaces to Obsidian format
+  - name: Sync
+    description: Bidirectional synchronization
+  - name: Version History
+    description: Git commit history and rollback
+  - name: Sharing
+    description: Workspace sharing and permissions
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ============================================================================
+  # AUTHENTICATION APIs (Existing - documented for completeness)
+  # ============================================================================
+
+  /api/auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register new user
+      description: Create a new user account with email and password.
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, username]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: SecurePassword123!
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                  example: john_doe
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  userId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  email: "user@example.com"
+                  username: "john_doe"
+                timestamp: "2025-10-09T10:15:30Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      description: Authenticate user and receive JWT token for subsequent requests.
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: SecurePassword123!
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  expiresIn: 86400
+                  userId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                timestamp: "2025-10-09T10:15:30Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get current user
+      description: Retrieve authenticated user's profile information.
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                data:
+                  userId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  email: "user@example.com"
+                  username: "john_doe"
+                  createdAt: "2025-01-15T08:30:00Z"
+                timestamp: "2025-10-09T10:15:30Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================================================
+  # WORKSPACE APIs (Existing + Extensions)
+  # ============================================================================
+
+  /api/workspaces:
+    get:
+      tags: [Workspaces]
+      summary: List all workspaces
+      description: Retrieve all workspaces owned by authenticated user (excludes soft-deleted).
+      operationId: listWorkspaces
+      parameters:
+        - name: page
+          in: query
+          description: Page number (0-indexed)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Page size
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: sort
+          in: query
+          description: Sort field and direction
+          schema:
+            type: string
+            enum: [createdAt,asc, createdAt,desc, updatedAt,asc, updatedAt,desc, title,asc, title,desc]
+            default: createdAt,desc
+      responses:
+        '200':
+          description: Workspaces retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          workspaces:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/WorkspaceResponse'
+                          totalElements:
+                            type: integer
+                          totalPages:
+                            type: integer
+                          currentPage:
+                            type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Workspaces]
+      summary: Create new workspace
+      description: Create empty workspace or from template.
+      operationId: createWorkspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceCreateRequest'
+      responses:
+        '201':
+          description: Workspace created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorkspaceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/workspaces/{workspaceId}:
+    get:
+      tags: [Workspaces]
+      summary: Get workspace by ID
+      description: Retrieve workspace details including node count and Git status.
+      operationId: getWorkspace
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200':
+          description: Workspace retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorkspaceResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Workspaces]
+      summary: Update workspace
+      description: Update workspace title, description, or Git configuration.
+      operationId: updateWorkspace
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceUpdateRequest'
+      responses:
+        '200':
+          description: Workspace updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorkspaceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Workspaces]
+      summary: Delete workspace
+      description: Soft delete workspace and all contained nodes, attributes, mappings.
+      operationId: deleteWorkspace
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '204':
+          description: Workspace deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # TEMPLATE APIs (New)
+  # ============================================================================
+
+  /api/templates:
+    get:
+      tags: [Templates]
+      summary: List workspace templates
+      description: Retrieve public templates and user's private templates.
+      operationId: listTemplates
+      parameters:
+        - name: scope
+          in: query
+          description: Filter by visibility
+          schema:
+            type: string
+            enum: [all, public, private]
+            default: all
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          schema:
+            type: string
+            example: "productivity,planning"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Templates retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          templates:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/WorkspaceTemplateResponse'
+                          totalElements:
+                            type: integer
+                          totalPages:
+                            type: integer
+                          currentPage:
+                            type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Templates]
+      summary: Create template from workspace
+      description: Convert existing workspace into reusable template with placeholders.
+      operationId: createTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateCreateRequest'
+      responses:
+        '201':
+          description: Template created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorkspaceTemplateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/templates/{templateId}:
+    get:
+      tags: [Templates]
+      summary: Get template details
+      description: Retrieve template structure including context templates.
+      operationId: getTemplate
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Template retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WorkspaceTemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Templates]
+      summary: Delete template
+      description: Delete workspace template (does not affect workspaces created from it).
+      operationId: deleteTemplate
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Template deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/workspaces/{workspaceId}/instantiate:
+    post:
+      tags: [Templates, Workspaces]
+      summary: Instantiate workspace from template
+      description: Clone template into existing workspace, replacing placeholders with values.
+      operationId: instantiateTemplate
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateInstantiateRequest'
+      responses:
+        '200':
+          description: Template instantiated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          nodesCreated:
+                            type: integer
+                          attributesCreated:
+                            type: integer
+                          workspaceId:
+                            type: string
+                            format: uuid
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # UPLOAD APIs (New)
+  # ============================================================================
+
+  /api/workspaces/{workspaceId}/upload/batch:
+    post:
+      tags: [Upload]
+      summary: Batch upload files to workspace
+      description: |
+        Upload multiple Obsidian files (notes, canvases) to workspace in batches.
+
+        **Process**:
+        1. Client sends batch of files (max 100 files per request)
+        2. Backend creates UploadSession to track progress
+        3. Backend processes files, creates Nodes/Attributes/Mappings
+        4. Backend commits batch to Git (one commit per batch)
+        5. Client polls `/upload/status` for progress
+        6. On failure, client resumes from last successful batch using log
+
+        **Performance Target**: 1000 files in <5 minutes (NFR-001)
+      operationId: uploadBatch
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  minItems: 1
+                  maxItems: 100
+                  description: Array of Obsidian files (.md, .canvas)
+                batchNumber:
+                  type: integer
+                  description: Batch sequence number (for resume capability)
+                  example: 1
+                sessionId:
+                  type: string
+                  format: uuid
+                  description: Upload session ID (for continuing previous upload)
+                commitMessage:
+                  type: string
+                  description: Git commit message for this batch
+                  example: "Upload batch 1: notes 1-100"
+            encoding:
+              files:
+                contentType: text/markdown, application/json
+      responses:
+        '202':
+          description: Batch upload accepted and processing
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UploadSessionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          description: Payload too large (>100 files)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/workspaces/{workspaceId}/upload/status:
+    get:
+      tags: [Upload]
+      summary: Check upload progress
+      description: Retrieve status of ongoing or completed upload session.
+      operationId: getUploadStatus
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - name: sessionId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Upload session ID
+      responses:
+        '200':
+          description: Upload status retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UploadSessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/workspaces/{workspaceId}/upload/log:
+    get:
+      tags: [Upload]
+      summary: Download upload log
+      description: Retrieve detailed log file for upload session (JSON Lines format).
+      operationId: getUploadLog
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - name: sessionId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Log file retrieved
+          content:
+            application/x-ndjson:
+              schema:
+                type: string
+                format: binary
+                description: JSON Lines format log file
+              example: |
+                {"timestamp":"2025-10-09T10:15:30Z","file":"note1.md","status":"success","nodeId":"uuid"}
+                {"timestamp":"2025-10-09T10:15:31Z","file":"note2.md","status":"failed","error":"Invalid wikilink"}
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # CLONE APIs (New)
+  # ============================================================================
+
+  /api/workspaces/{workspaceId}/export:
+    post:
+      tags: [Clone]
+      summary: Export workspace to Obsidian format
+      description: |
+        Clone Mujarrad workspace to Obsidian vault format.
+
+        **Process**:
+        1. Client requests export
+        2. Backend creates export job
+        3. Backend generates .md files, .canvas files, folder structure
+        4. Backend creates `.mujarrad/mappings.json` centralized mapping file
+        5. Client polls `/export/status` for progress
+        6. Client downloads exported files in batches
+
+        **Performance Target**: 1000 nodes in <3 minutes (NFR-002)
+      operationId: exportWorkspace
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                format:
+                  type: string
+                  enum: [obsidian]
+                  default: obsidian
+                  description: Export format (currently only Obsidian supported)
+                includeVersionHistory:
+                  type: boolean
+                  default: false
+                  description: Include Git history in export
+                includeCanvases:
+                  type: boolean
+                  default: true
+                  description: Include canvas files
+      responses:
+        '202':
+          description: Export job created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          exportJobId:
+                            type: string
+                            format: uuid
+                          status:
+                            type: string
+                            enum: [PENDING, IN_PROGRESS, COMPLETED, FAILED]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/workspaces/{workspaceId}/export/status:
+    get:
+      tags: [Clone]
+      summary: Check export progress
+      description: Retrieve status of ongoing export job.
+      operationId: getExportStatus
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - name: exportJobId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Export status retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          exportJobId:
+                            type: string
+                            format: uuid
+                          status:
+                            type: string
+                            enum: [PENDING, IN_PROGRESS, COMPLETED, FAILED]
+                          totalNodes:
+                            type: integer
+                          processedNodes:
+                            type: integer
+                          downloadUrl:
+                            type: string
+                            format: uri
+                            description: URL to download exported files (available when status=COMPLETED)
+                          errorMessage:
+                            type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/workspaces/{workspaceId}/export/download:
+    get:
+      tags: [Clone]
+      summary: Download exported files
+      description: Download workspace exported as ZIP archive.
+      operationId: downloadExport
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - name: exportJobId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: ZIP file downloaded
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Export not yet completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================================================
+  # SYNC APIs (New)
+  # ============================================================================
+
+  /api/workspaces/{workspaceId}/sync/detect:
+    post:
+      tags: [Sync]
+      summary: Detect sync changes
+      description: |
+        Compare local vault state with remote workspace to detect changes.
+
+        **Process**:
+        1. Client sends local file hashes and timestamps
+        2. Backend compares with NodeVersion history
+        3. Backend returns list of changes (create, update, delete) in each direction
+        4. Client reviews conflicts and confirms sync
+      operationId: detectSyncChanges
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [localFiles]
+              properties:
+                localFiles:
+                  type: array
+                  items:
+                    type: object
+                    required: [filePath, lastModified, hash]
+                    properties:
+                      filePath:
+                        type: string
+                        example: "Projects/Mujarrad/spec.md"
+                      lastModified:
+                        type: string
+                        format: date-time
+                      hash:
+                        type: string
+                        description: SHA-256 hash of file content
+                        example: "a1b2c3d4e5f6..."
+                lastSyncTimestamp:
+                  type: string
+                  format: date-time
+                  description: Timestamp of last successful sync
+      responses:
+        '200':
+          description: Changes detected
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SyncChangesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/workspaces/{workspaceId}/sync/apply:
+    post:
+      tags: [Sync]
+      summary: Apply sync changes
+      description: |
+        Apply detected changes with conflict resolution.
+
+        **Conflict Resolution Strategy**: Last-write-wins using timestamp.
+
+        **Process**:
+        1. Backend applies changes in order: delete → update → create
+        2. Conflicts resolved automatically using most recent timestamp
+        3. Backend commits changes to Git per batch
+        4. Backend returns list of applied changes and resolved conflicts
+      operationId: applySyncChanges
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [changes]
+              properties:
+                changes:
+                  type: array
+                  items:
+                    type: object
+                    required: [filePath, action]
+                    properties:
+                      filePath:
+                        type: string
+                      action:
+                        type: string
+                        enum: [create, update, delete]
+                      content:
+                        type: string
+                        description: File content (for create/update actions)
+                      nodeId:
+                        type: string
+                        format: uuid
+                        description: Node ID (for update/delete actions)
+                commitMessage:
+                  type: string
+                  description: Git commit message for sync
+                  example: "Sync from Obsidian: 15 changes"
+      responses:
+        '200':
+          description: Changes applied successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SyncSessionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Unresolvable conflicts detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================================================
+  # VERSION HISTORY APIs (New)
+  # ============================================================================
+
+  /api/nodes/{nodeId}/versions:
+    get:
+      tags: [Version History]
+      summary: List node version history
+      description: Retrieve Git commit history for a specific node.
+      operationId: listNodeVersions
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Version history retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          versions:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/NodeVersionResponse'
+                          totalElements:
+                            type: integer
+                          currentPage:
+                            type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/nodes/{nodeId}/versions/{versionId}:
+    get:
+      tags: [Version History]
+      summary: Get specific version
+      description: Retrieve content snapshot of node at specific version.
+      operationId: getNodeVersion
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: versionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Version retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/NodeVersionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/nodes/{nodeId}/rollback:
+    post:
+      tags: [Version History]
+      summary: Rollback to previous version
+      description: Restore node content to specific version and create new version record.
+      operationId: rollbackNode
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [versionId]
+              properties:
+                versionId:
+                  type: string
+                  format: uuid
+                  description: Version ID to rollback to
+                commitMessage:
+                  type: string
+                  description: Git commit message for rollback
+                  example: "Rollback to version a1b2c3d4"
+      responses:
+        '200':
+          description: Rollback successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          nodeId:
+                            type: string
+                            format: uuid
+                          newVersionNumber:
+                            type: integer
+                          restoredFromVersion:
+                            type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # SHARING APIs (Future - placeholder)
+  # ============================================================================
+
+  /api/workspaces/{workspaceId}/share:
+    post:
+      tags: [Sharing]
+      summary: Share workspace (Future)
+      description: Share workspace with another user (not implemented in first release).
+      operationId: shareWorkspace
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                permission:
+                  type: string
+                  enum: [read, write, admin]
+      responses:
+        '501':
+          description: Not implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  code: "NOT_IMPLEMENTED"
+                  message: "Workspace sharing not implemented in v1.0"
+                  timestamp: "2025-10-09T10:15:30Z"
+
+# ==============================================================================
+# COMPONENTS
+# ==============================================================================
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from `/api/auth/login`
+
+  parameters:
+    WorkspaceId:
+      name: workspaceId
+      in: path
+      required: true
+      description: Workspace UUID
+      schema:
+        type: string
+        format: uuid
+      example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+  schemas:
+    # ==========================================================================
+    # Response Wrappers
+    # ==========================================================================
+
+    SuccessResponse:
+      type: object
+      required: [success, data, timestamp]
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: object
+          description: Response payload (varies by endpoint)
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-10-09T10:15:30Z"
+
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: object
+          required: [code, message, timestamp]
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              description: Human-readable error message
+              example: "Workspace not found"
+            details:
+              type: object
+              description: Additional error context (optional)
+              additionalProperties: true
+            timestamp:
+              type: string
+              format: date-time
+
+    # ==========================================================================
+    # Domain Models
+    # ==========================================================================
+
+    WorkspaceResponse:
+      type: object
+      required: [id, ownerId, title, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: string
+        gitRepositoryUrl:
+          type: string
+          format: uri
+        gitBranch:
+          type: string
+          default: "main"
+        nodeCount:
+          type: integer
+          description: Total number of nodes in workspace
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    WorkspaceCreateRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: "My Knowledge Workspace"
+        description:
+          type: string
+          example: "Personal notes and research"
+        gitRepositoryUrl:
+          type: string
+          format: uri
+          example: "https://github.com/user/vault.git"
+        gitBranch:
+          type: string
+          default: "main"
+
+    WorkspaceUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: string
+        gitRepositoryUrl:
+          type: string
+          format: uri
+        gitBranch:
+          type: string
+
+    WorkspaceTemplateResponse:
+      type: object
+      required: [id, creatorId, name, isPublic, usageCount, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        creatorId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Weekly Review Framework"
+        description:
+          type: string
+          example: "Template for structured weekly planning"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["productivity", "planning"]
+        isPublic:
+          type: boolean
+        usageCount:
+          type: integer
+          description: Number of times template has been instantiated
+        contextTemplatesCount:
+          type: integer
+          description: Number of nodes in template
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    TemplateCreateRequest:
+      type: object
+      required: [workspaceId, name]
+      properties:
+        workspaceId:
+          type: string
+          format: uuid
+          description: Workspace to create template from
+        name:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: "Weekly Review Framework"
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["productivity", "planning"]
+        isPublic:
+          type: boolean
+          default: false
+
+    TemplateInstantiateRequest:
+      type: object
+      required: [templateId]
+      properties:
+        templateId:
+          type: string
+          format: uuid
+        placeholderValues:
+          type: object
+          additionalProperties:
+            type: string
+          description: Values to replace placeholders
+          example:
+            week_of: "2025-10-09"
+            year: "2025"
+
+    UploadSessionResponse:
+      type: object
+      required: [id, workspaceId, status, totalFiles, processedFiles, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [PENDING, IN_PROGRESS, COMPLETED, FAILED, CANCELLED]
+        totalFiles:
+          type: integer
+        processedFiles:
+          type: integer
+        failedFiles:
+          type: integer
+        logFileUrl:
+          type: string
+          format: uri
+          description: URL to download log file
+        errorMessage:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+
+    SyncChangesResponse:
+      type: object
+      required: [localChanges, remoteChanges, conflicts]
+      properties:
+        localChanges:
+          type: array
+          description: Changes detected in local vault
+          items:
+            type: object
+            required: [filePath, action]
+            properties:
+              filePath:
+                type: string
+              action:
+                type: string
+                enum: [create, update, delete]
+              timestamp:
+                type: string
+                format: date-time
+        remoteChanges:
+          type: array
+          description: Changes detected in remote workspace
+          items:
+            type: object
+            required: [filePath, action, nodeId]
+            properties:
+              filePath:
+                type: string
+              nodeId:
+                type: string
+                format: uuid
+              action:
+                type: string
+                enum: [create, update, delete]
+              timestamp:
+                type: string
+                format: date-time
+        conflicts:
+          type: array
+          description: Files with conflicting changes
+          items:
+            type: object
+            required: [filePath, localTimestamp, remoteTimestamp]
+            properties:
+              filePath:
+                type: string
+              nodeId:
+                type: string
+                format: uuid
+              localTimestamp:
+                type: string
+                format: date-time
+              remoteTimestamp:
+                type: string
+                format: date-time
+              suggestedResolution:
+                type: string
+                enum: [local_wins, remote_wins]
+
+    SyncSessionResponse:
+      type: object
+      required: [id, workspaceId, status, changesDetected, changesApplied]
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [PENDING, IN_PROGRESS, COMPLETED, FAILED, CANCELLED]
+        syncDirection:
+          type: string
+          enum: [LOCAL_TO_REMOTE, REMOTE_TO_LOCAL, BIDIRECTIONAL]
+        changesDetected:
+          type: integer
+        changesApplied:
+          type: integer
+        conflictsResolved:
+          type: integer
+        conflictDetails:
+          type: array
+          items:
+            type: object
+            properties:
+              filePath:
+                type: string
+              nodeId:
+                type: string
+                format: uuid
+              resolution:
+                type: string
+                enum: [local_wins, remote_wins]
+              localTimestamp:
+                type: string
+                format: date-time
+              remoteTimestamp:
+                type: string
+                format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+
+    NodeVersionResponse:
+      type: object
+      required: [id, nodeId, versionNumber, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        versionNumber:
+          type: integer
+          description: Sequential version number (starts at 1)
+        contentSnapshot:
+          type: string
+          description: Full content at this version
+        gitMetadata:
+          type: object
+          properties:
+            commitHash:
+              type: string
+              example: "a1b2c3d4e5f6"
+            authorName:
+              type: string
+              example: "John Doe"
+            authorEmail:
+              type: string
+              format: email
+            timestamp:
+              type: string
+              format: date-time
+            message:
+              type: string
+              example: "Update project spec"
+            branch:
+              type: string
+              default: "main"
+            tags:
+              type: array
+              items:
+                type: string
+        createdAt:
+          type: string
+          format: date-time
+
+  # ============================================================================
+  # Reusable Responses
+  # ============================================================================
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters or payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "VALIDATION_ERROR"
+              message: "Title must be between 1 and 500 characters"
+              details:
+                field: "title"
+                rejectedValue: ""
+              timestamp: "2025-10-09T10:15:30Z"
+
+    Unauthorized:
+      description: Authentication required or token invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "UNAUTHORIZED"
+              message: "JWT token expired or invalid"
+              timestamp: "2025-10-09T10:15:30Z"
+
+    Forbidden:
+      description: User does not have permission to access resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "FORBIDDEN"
+              message: "User does not have access to this workspace"
+              timestamp: "2025-10-09T10:15:30Z"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "NOT_FOUND"
+              message: "Workspace not found"
+              timestamp: "2025-10-09T10:15:30Z"
+
+    Conflict:
+      description: Resource already exists or conflict detected
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "CONFLICT"
+              message: "User with this email already exists"
+              timestamp: "2025-10-09T10:15:30Z"
