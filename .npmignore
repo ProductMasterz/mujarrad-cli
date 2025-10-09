@@ -1,0 +1,38 @@
+# Source files
+src/
+tests/
+*.test.ts
+
+# Config files
+tsconfig.json
+.eslintrc.json
+.prettierrc
+jest.config.js
+
+# Documentation (except README)
+docs/
+specs/
+.specify/
+.claude/
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Test artifacts
+coverage/
+test-vaults/
+tmp/
+
+# Logs
+logs/
+*.log

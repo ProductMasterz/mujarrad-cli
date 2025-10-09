@@ -1,0 +1,57 @@
+{
+  "name": "mujarrad-cli",
+  "version": "1.0.0",
+  "description": "Obsidian Knowledge Graph Integration CLI - Sync your Obsidian vaults with Mujarrad workspaces",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "mujarrad": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "obsidian",
+    "knowledge-graph",
+    "cli",
+    "mujarrad",
+    "note-taking",
+    "vault",
+    "sync",
+    "markdown",
+    "canvas"
+  ],
+  "author": "Mujarrad Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mujarrad/mujarrad-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mujarrad/mujarrad-cli/issues"
+  },
+  "homepage": "https://github.com/mujarrad/mujarrad-cli#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/"
+  ],
+  "dependencies": {
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "tsx": "^4.7.0"
+  }
+}

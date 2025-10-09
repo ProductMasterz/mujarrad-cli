@@ -15,7 +15,9 @@
       "Bash(git commit:*)",
       "Bash(git init:*)",
       "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []
