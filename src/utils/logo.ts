@@ -35,7 +35,7 @@ ${chalk.hex('#3A6D92').bold('   ██║ ╚═╝ ██║')}${chalk.hex('#4A
 ${chalk.hex('#4A7DA2').bold('   ╚═╝     ╚═╝')}${chalk.hex('#5A8DB2').bold(' ╚═════╝')}${chalk.hex('#6A9DC2').bold('  ╚════╝')}${chalk.hex('#7AADD2').bold(' ╚═╝  ╚═╝')}${chalk.hex('#8ABDE2').bold('╚═╝  ╚═╝')}${chalk.hex('#9ACDF2').bold('╚═╝  ╚═╝')}${chalk.hex('#AADDF2').bold('╚═╝  ╚═╝')}${chalk.hex(COLOR_SILVER_GRAY).bold('╚═════╝')}
 
 ${chalk.hex('#5A8DB2')('   ╔═══════════════════════════════════════════════════════════════════╗')}
-${chalk.hex('#6A9DC2')('   ║')}${chalk.hex('#7AADD2')('                      The Data Super Power                          ')}${chalk.hex('#8ABDE2')('║')}
+${chalk.hex('#6A9DC2')('   ║')}${chalk.hex('#7AADD2')('                          DATA UNLOCKD                               ')}${chalk.hex('#8ABDE2')('║')}
 ${chalk.hex(COLOR_SILVER_GRAY)('   ╚═══════════════════════════════════════════════════════════════════╝')}
 `;
 
