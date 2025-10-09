@@ -602,7 +602,7 @@ MIT License - see [LICENSE](./LICENSE) file for details.
 
 *Mujarrad: Where Data Complexity Becomes Elegant Simplicity*
 
-[Website](https://mujarrad.com) • [Documentation](https://docs.mujarrad.com) • [Community](https://community.mujarrad.com)
+[Website](https://www.mujarrad.com) • [Documentation](https://docs.mujarrad.com) • [Community](https://community.mujarrad.com)
 
 ---
 

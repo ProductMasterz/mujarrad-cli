@@ -39,7 +39,7 @@
   "bugs": {
     "url": "https://github.com/mujarrad/mujarrad-cli/issues"
   },
-  "homepage": "https://github.com/mujarrad/mujarrad-cli#readme",
+  "homepage": "https://www.mujarrad.com",
   "engines": {
     "node": ">=18.0.0"
   },
