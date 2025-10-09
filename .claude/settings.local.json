@@ -13,7 +13,9 @@
       "Read(//Users/mac/Developer/Software-Projects/Wider Projects/Wider-Mujarrad/**)",
       "Bash(git commit -m \"$(cat <<''EOF''\ndocs: amend constitution to v1.1.0 (add sample data principle)\n\nAdded Principle VI: Sample Data & Live Reference\n\nThis principle clarifies that all domain-specific content referenced in specifications (Business Model Canvas, Value Proposition Canvas, entrepreneurship frameworks) is SAMPLE DATA ONLY from a live Obsidian vault.\n\nKey Requirements:\n- Sample vault location: /Users/mac/Developer/Software-Projects/Wider Projects/Wider-Mujarrad\n- Sample data MUST NOT be included in production builds\n- Integration tests MAY use sample vault for realistic scenarios\n- Specifications using domain examples MUST include disclaimer\n- Production deployments MUST NOT seed sample business content\n\nRationale:\n- Ensures clear separation between demonstration examples and production data\n- Provides realistic test data source for integration testing\n- Enables performance testing with actual business modeling content structure\n- Grounds specifications in real-world use cases\n\nSample vault contains:\n- Business Model Canvas (.canvas files and structured notes)\n- Value Proposition Canvas\n- Entrepreneurship and project management frameworks\n- Nested folder structures (realistic depth/breadth)\n- Wikilink relationships (demonstrating graph complexity)\n\nTesting Usage:\nIntegration tests can reference sample vault for:\n- Uploading 1000-file vaults (NFR-001 performance testing)\n- Complex wikilink resolution scenarios\n- Canvas visual property extraction\n- Realistic batch operation testing\n\nVersion Bump: 1.0.0 → 1.1.0 (MINOR)\n- New principle added (not breaking existing governance)\n- Materially expands testing guidance\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
