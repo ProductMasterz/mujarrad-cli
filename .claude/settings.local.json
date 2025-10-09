@@ -26,7 +26,15 @@
       "Bash(tree:*)",
       "Bash(npx openapi-generator-cli generate:*)",
       "Bash(npm test:*)",
-      "Bash(.specify/scripts/bash/create-new-feature.sh:*)"
+      "Bash(.specify/scripts/bash/create-new-feature.sh:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:blog.logrocket.com)",
+      "WebFetch(domain:betterstack.com)",
+      "WebFetch(domain:circleci.com)",
+      "WebFetch(domain:jsoncanvas.org)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(.specify/scripts/bash/update-agent-context.sh:*)"
     ],
     "deny": [],
     "ask": []
