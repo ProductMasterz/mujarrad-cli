@@ -50,7 +50,7 @@
 - Q: What are the baseline assumptions for performance requirement "1000 files in 5 minutes"? (NFR-001) → A: Assumes (1) 50KB average file size, (2) ≥10 Mbps network upload speed, (3) backend API response <500ms per batch, (4) client machine with 4GB RAM and modern CPU. Performance degrades with slower networks or larger files.
 - Q: How should broken wikilinks be reported during upload? (FR-053) → A: Log to `~/.mujarrad/logs/upload-{session-id}.log` with source file path, line number, broken target, timestamp. Display summary at end with total count and log location. Create Attribute anyway but mark with "broken" flag in properties JSONB.
 - Q: What structural deviations from templates are allowed? (FR-066) → A: Users may freely add/remove nodes, modify content, add/remove relationships, reorganize layouts after cloning. Template reference persists for AI contextual mapping but does NOT enforce constraints. Templates are starting points, not rigid schemas.
-- Q: How should upload resume work after interruptions? (FR-051) → A: Session-based checkpointing. UploadSession entity tracks uploaded files in backend. On resume, CLI queries session state and continues from last completed batch. Backend persists UploadSession for 24 hours. Enables reliable resume across network failures or system crashes.
+- Q: How should upload resume work after interruptions? (FR-051) → A: Hash comparison approach (Option C). On resume, CLI computes SHA-256 file hashes for all vault files and queries backend API to check which nodes already exist (by hash). CLI skips files already uploaded and continues with remaining files. Slower resume than session-based approach but requires no backend session persistence or state management. Stateless, simpler implementation suitable for MVP.
 - Q: Should the .obsidian configuration folder be synced to Mujarrad? → A: Yes, sync as special workspace metadata. Upload `.obsidian` folder contents to Workspace.properties JSONB field under "obsidianConfig" key. Clone operation recreates `.obsidian` folder from metadata. Enables consistent Obsidian setup (plugins, themes, workspace layout) across devices.
 - Q: How should users be notified when templates are updated after workspace creation? → A: No version notifications in MVP (Option C - templates immutable after cloning). Users wanting latest template version must create new workspace and manually migrate content. Future roadmap includes passive sync notifications (Option A) and explicit check commands (Option B), requiring conflict resolution, mapping logic, and data consistency management.
 - Q: How should generated files be named during canvas-to-file conversion? (FR-074) → A: Use canvas node text content as filename. Extract first line of canvas node text, sanitize for filesystem compatibility, add .md extension (e.g., node text "Key Partners" → "Key Partners.md"). If canvas node text is empty, fallback to canvas node ID with prefix (e.g., "canvas-node-a3f2e1b4.md"). Natural, user-friendly naming that reflects content.
@@ -318,7 +318,7 @@ As a user with unorganized notes, I want the system to suggest folder structures
   - System performs soft delete in Mujarrad: marks node as deleted/archived while preserving in database. This allows for recovery and maintains referential integrity.
 
 - How does the system handle very large vaults (10,000+ files)?
-  - System uses session-based batch uploading with backend-determined batch sizes (typically 50-100 files per batch as returned by /upload/init endpoint). Progress indicators show current batch and total batches. Resumable uploads via UploadSession persistence enable recovery from interruptions without restarting.
+  - System uses batch uploading with backend-determined batch sizes (typically 50-100 files per batch as returned by /upload/init endpoint). Progress indicators show current batch and total batches. Resumable uploads via hash comparison enable recovery from interruptions - CLI computes file hashes and queries backend for existing nodes, then uploads only remaining files.
 
 - What happens when canvas references a file that doesn't exist in the vault?
   - System should create placeholder node or warn about broken references
@@ -698,6 +698,26 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
+**POST /api/workspaces/{workspaceId}/nodes/exists-by-hash**
+- **Purpose**: Check which files already exist by hash (for upload resume)
+- **Request Body**:
+  ```json
+  {
+    "fileHashes": [
+      {"filePath": "note1.md", "hash": "sha256:abc123..."},
+      {"filePath": "note2.md", "hash": "sha256:def456..."}
+    ]
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "existingHashes": ["sha256:abc123..."],
+    "missingHashes": ["sha256:def456..."]
+  }
+  ```
+- **Note**: Enables stateless upload resume via hash comparison
+
 #### 5. Clone APIs
 
 **GET /api/workspaces/{workspaceId}/export**
@@ -1045,7 +1065,7 @@ All APIs MUST follow these standards:
 
 - **FR-049**: System MUST provide clear error messages when metadata is missing or corrupted
 - **FR-050**: System MUST rollback partial uploads if any note file fails during batch upload
-- **FR-051**: System MUST provide resume capability for interrupted uploads using session-based checkpointing. The UploadSession entity MUST track successfully uploaded files in the backend database. When resuming, CLI MUST query the UploadSession state via API and continue uploading from the last completed batch. Backend MUST persist UploadSession entities for at least 24 hours to support resume across network failures, user cancellations, or system crashes. CLI MUST display progress showing "Resuming upload from batch X of Y" when continuing an interrupted session.
+- **FR-051**: System MUST provide resume capability for interrupted uploads using hash-based comparison. When resuming an interrupted upload, CLI MUST compute SHA-256 file hashes for all files in the vault and query the backend API (via new endpoint `/api/workspaces/{workspaceId}/nodes/exists-by-hash`) to determine which files have already been uploaded. Backend MUST return list of existing file hashes. CLI MUST skip files that already exist (matching hash) and upload only remaining files. This stateless approach requires no backend session persistence but involves hash computation overhead on resume. CLI MUST display progress showing "Checking {X} files against existing nodes..." followed by "Resuming upload: {Y} files remaining".
 - **FR-052**: System MUST handle Git initialization failures by cleaning up partial clone and reporting error
 - **FR-053**: System MUST detect and report broken wikilinks during upload without failing entire operation. Broken wikilinks (links to non-existent files) MUST be logged to `~/.mujarrad/logs/upload-{session-id}.log` with the following information: (1) source file path, (2) line number, (3) broken link target, (4) timestamp. At upload completion, CLI MUST display a summary showing total broken links found and log file location. The system MUST create the Attribute relationship anyway (preserving the user's intent), but mark it with a "broken" flag in Attribute.properties JSONB for potential future resolution.
 
