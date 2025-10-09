@@ -181,12 +181,12 @@ describe('ConfigManager', () => {
 ```
 
 **Acceptance Criteria**:
-- [ ] cosmiconfig 8+ installed
-- [ ] Loads config from ~/.mujarrad/config.json or .mujarradrc
-- [ ] Creates default config if none exists
-- [ ] Validates configuration schema
-- [ ] Supports environment variable overrides
-- [ ] Tests pass for config loading and validation
+- [X] cosmiconfig 8+ installed
+- [X] Loads config from ~/.mujarrad/config.json or .mujarradrc
+- [X] Creates default config if none exists
+- [X] Validates configuration schema
+- [X] Supports environment variable overrides
+- [X] Tests pass for config loading and validation
 
 **Implementation Notes**:
 Config schema:
