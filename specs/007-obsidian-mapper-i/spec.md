@@ -44,6 +44,13 @@
 - Q: When a user deletes a file locally and runs sync, what should happen? → A: Soft delete in Mujarrad - mark node as deleted/archived, preserve in database.
 - Q: Where should Git commit metadata (hash, author, timestamp, message) be stored in the NodeVersion entity? → A: Store all Git metadata in properties JSONB field.
 
+### Session 2025-10-10
+
+- Q: What file encodings should the system support beyond UTF-8? (FR-048) → A: UTF-8 ONLY. System must reject all other encodings (UTF-16, ISO-8859-1, Windows-1252, etc.) with clear error messages instructing users to convert files to UTF-8 before upload.
+- Q: What are the baseline assumptions for performance requirement "1000 files in 5 minutes"? (NFR-001) → A: Assumes (1) 50KB average file size, (2) ≥10 Mbps network upload speed, (3) backend API response <500ms per batch, (4) client machine with 4GB RAM and modern CPU. Performance degrades with slower networks or larger files.
+- Q: How should broken wikilinks be reported during upload? (FR-053) → A: Log to `~/.mujarrad/logs/upload-{session-id}.log` with source file path, line number, broken target, timestamp. Display summary at end with total count and log location. Create Attribute anyway but mark with "broken" flag in properties JSONB.
+- Q: What structural deviations from templates are allowed? (FR-066) → A: Users may freely add/remove nodes, modify content, add/remove relationships, reorganize layouts after cloning. Template reference persists for AI contextual mapping but does NOT enforce constraints. Templates are starting points, not rigid schemas.
+
 ---
 
 ## Terminology Clarification
@@ -1026,7 +1033,7 @@ All APIs MUST follow these standards:
 - **FR-045**: System MUST validate all file references in canvas nodes (via "file" attribute) exist in vault before upload
 - **FR-046**: System MUST validate workspace slug uniqueness before clone operation creates local directory
 - **FR-047**: System MUST prevent sync if metadata UUID does not match existing workspace Mujarrad Nodes
-- **FR-048**: System MUST validate note file encoding and reject unsupported formats [NEEDS CLARIFICATION: Supported encodings - UTF-8 only? Others?]
+- **FR-048**: System MUST validate note file encoding and reject unsupported formats. UTF-8 encoding is REQUIRED for all markdown files. System MUST reject files with other encodings (e.g., UTF-16, ISO-8859-1, Windows-1252) with a clear error message indicating the file path and detected encoding, instructing users to convert to UTF-8 before upload.
 
 #### Error Handling & Recovery
 
@@ -1034,7 +1041,7 @@ All APIs MUST follow these standards:
 - **FR-050**: System MUST rollback partial uploads if any note file fails during batch upload
 - **FR-051**: System MUST provide resume capability for interrupted uploads [NEEDS CLARIFICATION: Resume mechanism design?]
 - **FR-052**: System MUST handle Git initialization failures by cleaning up partial clone and reporting error
-- **FR-053**: System MUST detect and report broken wikilinks during upload without failing entire operation
+- **FR-053**: System MUST detect and report broken wikilinks during upload without failing entire operation. Broken wikilinks (links to non-existent files) MUST be logged to `~/.mujarrad/logs/upload-{session-id}.log` with the following information: (1) source file path, (2) line number, (3) broken link target, (4) timestamp. At upload completion, CLI MUST display a summary showing total broken links found and log file location. The system MUST create the Attribute relationship anyway (preserving the user's intent), but mark it with a "broken" flag in Attribute.properties JSONB for potential future resolution.
 
 #### Template System Requirements
 
@@ -1050,7 +1057,7 @@ All APIs MUST follow these standards:
 - **FR-063**: System MUST include template configuration file during workspace clone to Obsidian vault
 - **FR-064**: System MUST provide API/interface for AI models to retrieve template structure as contextual map
 - **FR-065**: System MUST maintain template reference when user syncs changes from template-based workspace
-- **FR-066**: System MUST allow structural deviations from template while preserving template reference metadata
+- **FR-066**: System MUST allow structural deviations from template while preserving template reference metadata. Users MAY freely add new nodes, remove placeholder nodes, modify node content, add/remove relationships, and reorganize canvas layouts after cloning from a template. The template reference (Workspace.templateId) MUST persist regardless of modifications, enabling AI models to use the original template structure as a contextual map while understanding that the workspace content has evolved. The system MUST NOT enforce template constraints after initial clone - templates serve as starting points, not rigid schemas.
 - **FR-067**: WorkspaceTemplate MUST contain one or more ContextTemplate entities representing frameworks/patterns
 - **FR-068**: ContextTemplate MUST define canvas layout structure, node types, and semantic relationship types
 - **FR-069**: Template configuration file MUST be in structured format (JSON or YAML) containing template metadata and structure definition
@@ -1102,7 +1109,7 @@ All APIs MUST follow these standards:
 
 #### Performance Requirements
 
-- **NFR-001**: Upload operation MUST handle 1000-file vaults within 5 minutes (average file size 50KB)
+- **NFR-001**: Upload operation MUST handle 1000-file vaults within 5 minutes under these baseline conditions: (1) average file size 50KB, (2) network upload speed ≥10 Mbps, (3) backend API response time <500ms per batch request, (4) client machine with 4GB RAM and modern CPU. Performance may degrade with slower networks, larger files (>200KB average), or resource-constrained environments.
 - **NFR-002**: Clone operation MUST complete within 3 minutes for workspaces containing 1000 nodes
 - **NFR-003**: Sync operation MUST detect and process file changes within 10 seconds of Git commit
 - **NFR-004**: API response time MUST be under 500ms for 95% of requests (excluding large file transfers)
@@ -1236,27 +1243,32 @@ All APIs MUST follow these standards:
 - [x] No implementation details leak into specification
 - [x] Non-functional requirements defined (performance, scalability, security, usability, compatibility)
 
-### Identified Clarifications Needed (14 Total - Consolidated from 26)
+### Identified Clarifications Needed (10 Remaining - 4 Resolved on 2025-10-10)
 
-**Critical (Blocks MVP)**:
+**✅ RESOLVED** (Session 2025-10-10):
+- ~~**Supported File Encodings** (FR-048)~~ → UTF-8 only (clarified)
+- ~~**Performance Baseline Assumptions** (NFR-001)~~ → 50KB avg, 10Mbps, <500ms API (clarified)
+- ~~**Broken Wikilink Reporting** (FR-053)~~ → Log format specified (clarified)
+- ~~**Template Structural Deviations** (FR-066)~~ → Free deviation allowed (clarified)
+
+**Critical (Blocks MVP)** - 3 remaining:
 1. **Metadata Format Strategy** (FR-016) - HTML comments, YAML frontmatter, or combination approach; frontmatter preservation
 2. **Conflict Resolution Policy** - Unified strategy for name conflicts, concurrent edits, file/canvas name collisions, generation conflicts, merge conflicts
 3. **CLI Authentication Method** (FR-040) - API token, username/password, or OAuth
 
-**High Priority (Affects P1/P2 Stories)**:
+**High Priority (Affects P1/P2 Stories)** - 3 remaining:
 4. **File Deletion Sync Behavior** - Soft delete/archive, explicit command, or prevent deletion
 5. **Large Vault Handling** - Batch limits, progress indicators, resumable uploads
 6. **Git Commit Metadata Storage** (FR-027, FR-029) - Commit hash storage location and metadata mapping in NodeVersion
 7. **Upload Resume Mechanism** (FR-051) - Design for interrupted upload recovery
-8. **Supported File Encodings** (FR-048) - UTF-8 only or additional encodings
 
-**Medium Priority (Affects P3/P4 Stories)**:
-9. **Template Versioning & Lifecycle** - Config modifications, update notifications, structural deviations, versioning metadata strategy
-10. **Canvas Node File Naming** (FR-074) - Canvas ID, AI-generated titles, sequential numbers, or user pattern
-11. **Generated File Placeholder Format** (FR-078) - Empty, template headers, or AI-generated outline
-12. **File Clustering Algorithm** - AI categorization, filename patterns, manual tagging, or unsupervised clustering
-13. **Auto-Context Default Setting** (FR-088) - Enabled or disabled by default
-14. **Auto-Context Interactive Mode** (FR-089) - Require user review before upload finalization
+**Medium Priority (Affects P3/P4 Stories)** - 4 remaining:
+8. **Template Versioning & Lifecycle** - Config modifications, update notifications, versioning metadata strategy
+9. **Canvas Node File Naming** (FR-074) - Canvas ID, AI-generated titles, sequential numbers, or user pattern
+10. **Generated File Placeholder Format** (FR-078) - Empty, template headers, or AI-generated outline
+11. **File Clustering Algorithm** - AI categorization, filename patterns, manual tagging, or unsupervised clustering
+12. **Auto-Context Default Setting** (FR-088) - Enabled or disabled by default
+13. **Auto-Context Interactive Mode** (FR-089) - Require user review before upload finalization
 
 ---
 
