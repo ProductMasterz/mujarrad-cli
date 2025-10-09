@@ -23,7 +23,9 @@
       "Bash(npm install:*)",
       "Bash(npm test)",
       "Bash(test:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npx openapi-generator-cli generate:*)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []
