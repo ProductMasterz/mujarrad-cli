@@ -50,6 +50,11 @@
 - Q: What are the baseline assumptions for performance requirement "1000 files in 5 minutes"? (NFR-001) → A: Assumes (1) 50KB average file size, (2) ≥10 Mbps network upload speed, (3) backend API response <500ms per batch, (4) client machine with 4GB RAM and modern CPU. Performance degrades with slower networks or larger files.
 - Q: How should broken wikilinks be reported during upload? (FR-053) → A: Log to `~/.mujarrad/logs/upload-{session-id}.log` with source file path, line number, broken target, timestamp. Display summary at end with total count and log location. Create Attribute anyway but mark with "broken" flag in properties JSONB.
 - Q: What structural deviations from templates are allowed? (FR-066) → A: Users may freely add/remove nodes, modify content, add/remove relationships, reorganize layouts after cloning. Template reference persists for AI contextual mapping but does NOT enforce constraints. Templates are starting points, not rigid schemas.
+- Q: How should upload resume work after interruptions? (FR-051) → A: Session-based checkpointing. UploadSession entity tracks uploaded files in backend. On resume, CLI queries session state and continues from last completed batch. Backend persists UploadSession for 24 hours. Enables reliable resume across network failures or system crashes.
+- Q: Should the .obsidian configuration folder be synced to Mujarrad? → A: Yes, sync as special workspace metadata. Upload `.obsidian` folder contents to Workspace.properties JSONB field under "obsidianConfig" key. Clone operation recreates `.obsidian` folder from metadata. Enables consistent Obsidian setup (plugins, themes, workspace layout) across devices.
+- Q: How should users be notified when templates are updated after workspace creation? → A: No version notifications in MVP (Option C - templates immutable after cloning). Users wanting latest template version must create new workspace and manually migrate content. Future roadmap includes passive sync notifications (Option A) and explicit check commands (Option B), requiring conflict resolution, mapping logic, and data consistency management.
+- Q: How should generated files be named during canvas-to-file conversion? (FR-074) → A: Use canvas node text content as filename. Extract first line of canvas node text, sanitize for filesystem compatibility, add .md extension (e.g., node text "Key Partners" → "Key Partners.md"). If canvas node text is empty, fallback to canvas node ID with prefix (e.g., "canvas-node-a3f2e1b4.md"). Natural, user-friendly naming that reflects content.
+- Q: What content should be placed in generated markdown files? (FR-078) → A: Combine hidden metadata with canvas node text content (Options A + C). Generated files contain: (1) hidden Mujarrad metadata as HTML comment at top, (2) canvas node's full text content as file body, preserving all text from the canvas node. Ensures no information loss while maintaining metadata tracking. If canvas node has no text, file contains only metadata (empty body).
 
 ---
 
@@ -282,7 +287,7 @@ As a visual thinker, I want to create canvas nodes without files and have the sy
 
 1. **Given** a user has an Obsidian canvas where some canvas nodes don't have associated files yet, **When** they upload the canvas via CLI with canvas-to-file conversion enabled, **Then** the system creates markdown files for each canvas node that lacks an associated file, embeds Mujarrad node UUIDs in the generated files
 2. **Given** a canvas with 10 canvas nodes where 6 have existing files and 4 don't, **When** upload with conversion occurs, **Then** the system creates 4 new markdown files, preserves references to existing 6 files, and maintains all visual layout information
-3. **Given** generated files lack descriptive names, **When** system generates files, **Then** files are named using intelligent strategy (naming conflicts resolved per Conflict Resolution clarification) [NEEDS CLARIFICATION: Canvas node file naming strategy - use canvas node ID, AI-generated titles from node content, sequential numbers, or user-provided pattern?]
+3. **Given** generated files lack descriptive names, **When** system generates files, **Then** files are named using first line of canvas node text content (sanitized for filesystem compatibility), or fallback to `canvas-node-{id}.md` if text empty, with naming conflicts resolved by appending UUID suffix per Conflict Resolution strategy
 
 ---
 
@@ -313,7 +318,7 @@ As a user with unorganized notes, I want the system to suggest folder structures
   - System performs soft delete in Mujarrad: marks node as deleted/archived while preserving in database. This allows for recovery and maintains referential integrity.
 
 - How does the system handle very large vaults (10,000+ files)?
-  - [NEEDS CLARIFICATION: Batch upload limits? Progress indicators? Resumable uploads?]
+  - System uses session-based batch uploading with backend-determined batch sizes (typically 50-100 files per batch as returned by /upload/init endpoint). Progress indicators show current batch and total batches. Resumable uploads via UploadSession persistence enable recovery from interruptions without restarting.
 
 - What happens when canvas references a file that doesn't exist in the vault?
   - System should create placeholder node or warn about broken references
@@ -325,7 +330,7 @@ As a user with unorganized notes, I want the system to suggest folder structures
   - System should allow cycles as per FR-007 cyclic graph support, except for Context→Node CONTAINS relationships
 
 - **Template Versioning and Lifecycle** - How does the system handle template-related operations?
-  - [NEEDS CLARIFICATION: Unified template policy covering: (A) Manual template config modifications (sync to Mujarrad vs lock), (B) Template updates after cloning (notify users, auto-migrate, manual upgrade, or keep original), (C) Structural deviations from template (allow with warning, block, or maintain reference), (D) Template versioning metadata strategy (semantic versioning, migration paths). Also define behavior when user tries to clone deleted/archived template.]
+  - MVP approach: Templates are immutable after workspace creation. No version update notifications or automatic migration. Users wanting latest template must create new workspace and manually migrate content. Template versions use semantic versioning (1.0.0). Future versions will add passive notifications during sync and explicit `mujarrad template:check-updates` command. Structural deviations allowed (see FR-066). Manual template config modifications sync to Mujarrad as workspace changes, not template updates.
 
 - What happens when a user tries to clone a template that has been deleted or archived?
   - System should return clear error message and suggest available templates
@@ -983,6 +988,7 @@ All APIs MUST follow these standards:
 
 - **FR-012**: System MUST embed Mujarrad Node UUID in each Obsidian note file as hidden metadata
 - **FR-013**: System MUST embed Mujarrad Workspace UUID in vault configuration as hidden metadata
+- **FR-013a**: System MUST upload `.obsidian` folder contents (plugins, themes, settings, workspace layout) to Workspace.properties JSONB field under "obsidianConfig" key during vault upload. System MUST recreate `.obsidian` folder structure from Workspace.properties during clone operation to maintain consistent Obsidian configuration across devices
 - **FR-014**: System MUST decompose Canvas JSON structure into normalized database entities: Node (canvas container), Mapping (canvas config), NodeMappings (visual layout per node), Attributes (edges with visual properties)
 - **FR-015**: System MUST store all canvas node visual properties in `NodeMapping.metadata` as JSONB: {canvasNodeId, x, y, width, height, color, fileReference}
 - **FR-016**: Hidden metadata MUST use HTML comments format (`<!-- mujarrad-node-id: uuid -->`) that does not render visibly in Obsidian reading mode, with a centralized mapping file acting as database in user-readable format. System MUST use serialization/hidden code approach to prevent user mistakes and MUST preserve existing Obsidian frontmatter when present.
@@ -1039,7 +1045,7 @@ All APIs MUST follow these standards:
 
 - **FR-049**: System MUST provide clear error messages when metadata is missing or corrupted
 - **FR-050**: System MUST rollback partial uploads if any note file fails during batch upload
-- **FR-051**: System MUST provide resume capability for interrupted uploads [NEEDS CLARIFICATION: Resume mechanism design?]
+- **FR-051**: System MUST provide resume capability for interrupted uploads using session-based checkpointing. The UploadSession entity MUST track successfully uploaded files in the backend database. When resuming, CLI MUST query the UploadSession state via API and continue uploading from the last completed batch. Backend MUST persist UploadSession entities for at least 24 hours to support resume across network failures, user cancellations, or system crashes. CLI MUST display progress showing "Resuming upload from batch X of Y" when continuing an interrupted session.
 - **FR-052**: System MUST handle Git initialization failures by cleaning up partial clone and reporting error
 - **FR-053**: System MUST detect and report broken wikilinks during upload without failing entire operation. Broken wikilinks (links to non-existent files) MUST be logged to `~/.mujarrad/logs/upload-{session-id}.log` with the following information: (1) source file path, (2) line number, (3) broken link target, (4) timestamp. At upload completion, CLI MUST display a summary showing total broken links found and log file location. The system MUST create the Attribute relationship anyway (preserving the user's intent), but mark it with a "broken" flag in Attribute.properties JSONB for potential future resolution.
 
@@ -1062,17 +1068,17 @@ All APIs MUST follow these standards:
 - **FR-068**: ContextTemplate MUST define canvas layout structure, node types, and semantic relationship types
 - **FR-069**: Template configuration file MUST be in structured format (JSON or YAML) containing template metadata and structure definition
 - **FR-070**: System MUST validate template structure before allowing clone operation
-- **FR-071**: System MUST support template metadata including name, description, category, version, and framework type (versioning strategy determined by Template Versioning clarification)
+- **FR-071**: System MUST support template metadata including name, description, category, version, and framework type. Template versions follow semantic versioning (e.g., 1.0.0, 1.1.0, 2.0.0). MVP does NOT support version update notifications or automatic migration - templates are immutable after workspace creation. Users wanting latest template version must create new workspace from updated template and manually migrate content. Future versions will support passive sync notifications and explicit update check commands with conflict resolution logic.
 
 #### Canvas-to-File Conversion
 
 - **FR-072**: System MUST detect canvas nodes that lack associated file references during upload
 - **FR-073**: System MUST generate markdown files for canvas nodes without file references
-- **FR-074**: Generated files MUST be created with title derived from canvas node properties or intelligent naming strategy [NEEDS CLARIFICATION: Naming strategy - use canvas node ID, sequential numbers, prompt user, or use AI-generated titles?]
+- **FR-074**: Generated files MUST be created with title derived from canvas node text content. System MUST extract the first line of canvas node text, sanitize it for filesystem compatibility (remove/replace invalid characters: `/\:*?"<>|`), and append `.md` extension. If canvas node text is empty or contains only whitespace, system MUST fallback to canvas node ID with prefix (format: `canvas-node-{id}.md`). Examples: node text "Key Partners" → "Key Partners.md", empty node → "canvas-node-a3f2e1b4.md". If filename collision occurs, append UUID suffix per conflict resolution strategy.
 - **FR-075**: Generated files MUST contain embedded Mujarrad node UUID metadata in hidden format
 - **FR-076**: System MUST create REGULAR-type Mujarrad Nodes for each generated file
 - **FR-077**: System MUST create NodeMapping entries linking canvas CONTEXT node to generated file nodes with visual properties preserved in metadata
-- **FR-078**: Generated files MUST include placeholder content or template structure [NEEDS CLARIFICATION: Placeholder format - empty, template headers, AI-generated outline?]
+- **FR-078**: Generated files MUST include hidden Mujarrad metadata as HTML comment at the top, followed by the canvas node's full text content as the file body. Format: `<!-- mujarrad-node-id: {uuid} -->\n<!-- mujarrad-workspace-id: {uuid} -->\n<!-- mujarrad-generated-from: canvas-node-{canvasNodeId} -->\n\n{canvas node text content}`. If canvas node contains no text, file body remains empty (contains only metadata comments). This approach preserves all canvas node information while maintaining metadata tracking.
 - **FR-079**: System MUST update canvas JSON to include file references for newly generated files
 - **FR-080**: System MUST preserve all visual properties (x, y, width, height, color) for canvas nodes in NodeMapping.metadata JSONB
 - **FR-081**: System MUST maintain canvas-to-node mappings bidirectionally (canvas node ID ↔ generated file UUID)
@@ -1309,7 +1315,7 @@ Based on analysis of `/Users/mac/Developer/Software-Projects/Wider Projects/Wide
 
 **Special Files:**
 - `Canvases Config.md`: Contains JSON configuration schemas documenting canvas aesthetics
-- `.obsidian` folder: Obsidian configuration (plugins, settings) - [NEEDS CLARIFICATION: Should this be synced to Mujarrad?]
+- `.obsidian` folder: Obsidian configuration (plugins, settings, workspace layout) - synced as workspace metadata in Workspace.properties JSONB field to enable consistent setup across devices
 
 **File Naming:**
 - Spaces in filenames common: `Business Model Canvas - Overview.md`
