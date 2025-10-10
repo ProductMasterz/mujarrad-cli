@@ -1,0 +1,12 @@
+New MCP Feature:
+
+
+ to write requirements of the Mujarrad MCP server that is used to integrate data to        │
+ │   Mujarrad as well as automate the the integration with Mujarrad basically instead of understanding how Mujarrad     │
+ │   APIs work, you use the MCP to describe how your product work and describe the behavior you want including any      │
+ │   webhook needed to be developed, then Mujarrad-CLI will use MCP to prepare the integration code for developers from │
+ │    inside there projects this will make it automatically done as well as for free so that the infrastructure cost of │
+ │    creating apps using the infrastructure, community, marketplace, and the whole eccosystem of mujarrad -> aka       │
+ │   Mujarrad Network. Once you are in Mujarrad Network your app is ready to grow features super fast leverging the     │
+ │   Abstraction Technology Core, Content Generation Engine, and The Coding Machine, as well as the power of the        │
+ │   integration with Wider Network  
