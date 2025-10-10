@@ -4,6 +4,7 @@ import { MarkdownParser } from '../../../src/filesystem/MarkdownParser.js';
 import { CanvasParser } from '../../../src/filesystem/CanvasParser.js';
 import { MetadataManager } from '../../../src/filesystem/MetadataManager.js';
 import { CacheManager } from '../../../src/utils/CacheManager.js';
+import * as fs from 'fs/promises';
 
 // Mock all dependencies
 jest.mock('../../../src/api/generated/api.js');
@@ -12,6 +13,7 @@ jest.mock('../../../src/filesystem/MarkdownParser.js');
 jest.mock('../../../src/filesystem/CanvasParser.js');
 jest.mock('../../../src/filesystem/MetadataManager.js');
 jest.mock('../../../src/utils/CacheManager.js');
+jest.mock('fs/promises');
 
 describe('UploadService', () => {
   let uploadService: UploadService;
@@ -21,69 +23,14 @@ describe('UploadService', () => {
     // Reset mocks
     jest.clearAllMocks();
 
-    // Create mock API with proper Jest mock functions
+    // Create mock API with actual generated methods
     mockUploadApi = {
-      initUploadSession: jest.fn(),
-      uploadNodes: jest.fn(),
-      completeUploadSession: jest.fn(),
+      uploadBatch: jest.fn(),
+      getUploadStatus: jest.fn(),
+      getUploadLog: jest.fn(),
     };
 
     uploadService = new UploadService(mockUploadApi);
-  });
-
-  describe('initSession', () => {
-    it('should initialize upload session', async () => {
-      const mockResponse = {
-        data: {
-          uploadSessionId: 'session-123',
-          batchSize: 50,
-          workspaceId: 'workspace-123'
-        }
-      };
-      mockUploadApi.initUploadSession.mockResolvedValue(mockResponse as any);
-
-      const session = await uploadService.initSession('workspace-123', { totalFiles: 150 });
-
-      expect(session.uploadSessionId).toBe('session-123');
-      expect(session.batchSize).toBe(50);
-      expect(mockUploadApi.initUploadSession).toHaveBeenCalledWith(
-        'workspace-123',
-        expect.objectContaining({ totalFiles: 150 })
-      );
-    });
-
-    it('should handle API errors during session init', async () => {
-      mockUploadApi.initUploadSession.mockRejectedValue(new Error('API Error'));
-
-      await expect(
-        uploadService.initSession('workspace-123', { totalFiles: 10 })
-      ).rejects.toThrow('API Error');
-    });
-
-    it('should include vault metadata in session init', async () => {
-      const mockResponse = {
-        data: {
-          uploadSessionId: 'session-456',
-          batchSize: 100
-        }
-      };
-      mockUploadApi.initUploadSession.mockResolvedValue(mockResponse as any);
-
-      await uploadService.initSession('workspace-123', {
-        totalFiles: 500,
-        vaultName: 'My Vault',
-        vaultPath: '/path/to/vault'
-      });
-
-      expect(mockUploadApi.initUploadSession).toHaveBeenCalledWith(
-        'workspace-123',
-        expect.objectContaining({
-          totalFiles: 500,
-          vaultName: 'My Vault',
-          vaultPath: '/path/to/vault'
-        })
-      );
-    });
   });
 
   describe('createBatches', () => {
@@ -105,7 +52,7 @@ describe('UploadService', () => {
       expect(batches[0]).toHaveLength(50);
       expect(batches[1]).toHaveLength(50);
       expect(batches[2]).toHaveLength(50);
-      expect(batches[3]).toHaveLength(5); // Remaining files
+      expect(batches[3]).toHaveLength(5);
     });
 
     it('should handle empty file list', () => {
@@ -122,112 +69,151 @@ describe('UploadService', () => {
       expect(batches).toHaveLength(1);
       expect(batches[0]).toHaveLength(30);
     });
+
+    it('should use default batch size if not specified', () => {
+      const files = Array(100).fill(null).map((_, i) => ({ path: `note${i}.md` }));
+      const batches = uploadService.createBatches(files);
+
+      expect(batches).toHaveLength(2);
+      expect(batches[0]).toHaveLength(50);
+      expect(batches[1]).toHaveLength(50);
+    });
   });
 
   describe('uploadBatch', () => {
-    it('should upload batch of nodes', async () => {
-      const batch: any = [
-        { nodeType: 'REGULAR', title: 'Note 1', slug: 'note-1', content: '# Note 1', filePath: 'note1.md' }
+    it('should upload batch of files', async () => {
+      const mockFiles = [
+        { name: 'note1.md', content: '# Note 1', size: 8 }
       ];
       const mockResponse = {
         data: {
-          created: [{ nodeId: 'uuid-1', slug: 'note-1' }],
+          sessionId: 'session-123',
+          created: [{ nodeId: 'uuid-1', slug: 'note-1', filePath: 'note1.md' }],
           errors: []
         }
       };
-      mockUploadApi.uploadNodes.mockResolvedValue(mockResponse as any);
+      mockUploadApi.uploadBatch.mockResolvedValue(mockResponse);
 
-      const result = await uploadService.uploadBatch('session-123', 'workspace-123', batch);
+      const result = await uploadService.uploadBatch('workspace-123', mockFiles, 1);
 
+      expect(result.sessionId).toBe('session-123');
       expect(result.created).toHaveLength(1);
-      expect(result.created[0].nodeId).toBe('uuid-1');
       expect(result.errors).toHaveLength(0);
-      expect(mockUploadApi.uploadNodes).toHaveBeenCalledWith(
-        'session-123',
+      expect(result.batchNumber).toBe(1);
+      expect(mockUploadApi.uploadBatch).toHaveBeenCalledWith(
         'workspace-123',
-        expect.objectContaining({ nodes: batch })
+        mockFiles,
+        1,
+        undefined,
+        undefined
       );
     });
 
-    it('should handle upload errors gracefully', async () => {
-      const batch: any = [{ nodeType: 'REGULAR', title: 'Note', content: '# Note', filePath: 'note.md' }];
-      mockUploadApi.uploadNodes.mockRejectedValue(new Error('Network error'));
+    it('should include sessionId for subsequent batches', async () => {
+      const mockFiles = [{ name: 'note2.md', content: '# Note 2', size: 8 }];
+      const mockResponse = {
+        data: {
+          sessionId: 'session-123',
+          created: [{ nodeId: 'uuid-2' }],
+          errors: []
+        }
+      };
+      mockUploadApi.uploadBatch.mockResolvedValue(mockResponse);
+
+      const result = await uploadService.uploadBatch(
+        'workspace-123',
+        mockFiles,
+        2,
+        'session-123',
+        'Batch 2 commit'
+      );
+
+      expect(result.sessionId).toBe('session-123');
+      expect(mockUploadApi.uploadBatch).toHaveBeenCalledWith(
+        'workspace-123',
+        mockFiles,
+        2,
+        'session-123',
+        'Batch 2 commit'
+      );
+    });
+
+    it('should handle upload errors', async () => {
+      const mockFiles = [{ name: 'note.md', content: '# Note', size: 6 }];
+      mockUploadApi.uploadBatch.mockRejectedValue(new Error('Network error'));
 
       await expect(
-        uploadService.uploadBatch('session-123', 'workspace-123', batch)
+        uploadService.uploadBatch('workspace-123', mockFiles, 1)
       ).rejects.toThrow('Network error');
     });
 
-    it('should handle partial upload errors', async () => {
-      const batch: any = [
-        { nodeType: 'REGULAR', title: 'Note 1', content: '# Note 1', filePath: 'note1.md' },
-        { nodeType: 'REGULAR', title: 'Note 2', content: '# Note 2', filePath: 'note2.md' }
+    it('should handle partial errors from API', async () => {
+      const mockFiles = [
+        { name: 'note1.md', content: '# Note 1', size: 8 },
+        { name: 'note2.md', content: '# Note 2', size: 8 }
       ];
       const mockResponse = {
         data: {
+          sessionId: 'session-123',
           created: [{ nodeId: 'uuid-1' }],
-          errors: [{ filePath: 'note2.md', error: 'Validation error' }]
+          errors: [{ filePath: 'note2.md', error: 'Validation failed' }]
         }
       };
-      mockUploadApi.uploadNodes.mockResolvedValue(mockResponse as any);
+      mockUploadApi.uploadBatch.mockResolvedValue(mockResponse);
 
-      const result = await uploadService.uploadBatch('session-123', 'workspace-123', batch);
+      const result = await uploadService.uploadBatch('workspace-123', mockFiles, 1);
 
       expect(result.created).toHaveLength(1);
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0].filePath).toBe('note2.md');
     });
+  });
 
-    it('should upload empty batch without errors', async () => {
-      const batch: any[] = [];
-      const mockResponse = {
-        data: {
-          created: [],
-          errors: []
-        }
+  describe('getUploadStatus', () => {
+    it('should retrieve upload status', async () => {
+      const mockStatus = {
+        sessionId: 'session-123',
+        status: 'in_progress',
+        totalBatches: 3,
+        completedBatches: 1,
+        totalFiles: 150,
+        processedFiles: 50
       };
-      mockUploadApi.uploadNodes.mockResolvedValue(mockResponse as any);
+      mockUploadApi.getUploadStatus.mockResolvedValue({ data: mockStatus });
 
-      const result = await uploadService.uploadBatch('session-123', 'workspace-123', batch);
+      const status = await uploadService.getUploadStatus('workspace-123', 'session-123');
 
-      expect(result.created).toHaveLength(0);
-      expect(result.errors).toHaveLength(0);
+      expect(status).toEqual(mockStatus);
+      expect(mockUploadApi.getUploadStatus).toHaveBeenCalledWith('workspace-123', 'session-123');
+    });
+
+    it('should handle status retrieval errors', async () => {
+      mockUploadApi.getUploadStatus.mockRejectedValue(new Error('Session not found'));
+
+      await expect(
+        uploadService.getUploadStatus('workspace-123', 'invalid-session')
+      ).rejects.toThrow('Session not found');
     });
   });
 
-  describe('finalizeSession', () => {
-    it('should finalize upload session', async () => {
-      const mockResponse = {
-        data: {
-          success: true,
-          totalNodesCreated: 150,
-          uploadSessionId: 'session-123'
-        }
-      };
-      mockUploadApi.completeUploadSession.mockResolvedValue(mockResponse as any);
+  describe('getUploadLog', () => {
+    it('should retrieve upload log', async () => {
+      const mockLog = [
+        { timestamp: '2025-10-11T10:00:00Z', level: 'info', message: 'Batch 1 started' },
+        { timestamp: '2025-10-11T10:00:05Z', level: 'info', message: 'Batch 1 completed' }
+      ];
+      mockUploadApi.getUploadLog.mockResolvedValue({ data: mockLog });
 
-      const result = await uploadService.finalizeSession('session-123', 'workspace-123');
+      const log = await uploadService.getUploadLog('workspace-123', 'session-123');
 
-      expect(result.success).toBe(true);
-      expect(result.totalNodesCreated).toBe(150);
-      expect(mockUploadApi.completeUploadSession).toHaveBeenCalledWith(
-        'session-123',
-        'workspace-123'
-      );
-    });
-
-    it('should handle finalization errors', async () => {
-      mockUploadApi.completeUploadSession.mockRejectedValue(new Error('Finalization failed'));
-
-      await expect(
-        uploadService.finalizeSession('session-123', 'workspace-123')
-      ).rejects.toThrow('Finalization failed');
+      expect(log).toEqual(mockLog);
+      expect(mockUploadApi.getUploadLog).toHaveBeenCalledWith('workspace-123', 'session-123');
     });
   });
 
   describe('prepareNodeData', () => {
     it('should prepare markdown node data', async () => {
-      const fileInfo = {
+      const fileInfo: any = {
         absolutePath: '/vault/note.md',
         relativePath: 'note.md',
         hash: 'abc123',
@@ -237,10 +223,8 @@ describe('UploadService', () => {
       };
       const content = '# Test Note\nSome content\n[[Another Note]]';
 
-      // Mock fs.readFile
-      jest.spyOn(require('fs/promises'), 'readFile').mockResolvedValue(content);
+      (fs.readFile as jest.Mock).mockResolvedValue(content);
 
-      // Mock MarkdownParser
       const mockParser = {
         extractWikilinks: jest.fn().mockReturnValue([
           { target: 'Another Note', alias: null }
@@ -248,8 +232,6 @@ describe('UploadService', () => {
         parseFrontmatter: jest.fn().mockReturnValue({ title: 'Test Note' })
       };
       (MarkdownParser as jest.Mock).mockImplementation(() => mockParser);
-
-      // Mock MetadataManager
       (MetadataManager.extractUUID as jest.Mock).mockReturnValue(null);
 
       const nodeData = await uploadService.prepareNodeData(fileInfo, '/vault');
@@ -258,10 +240,13 @@ describe('UploadService', () => {
       expect(nodeData.title).toBe('Test Note');
       expect(nodeData.content).toBe(content);
       expect(nodeData.filePath).toBe('note.md');
+      expect(nodeData.hash).toBe('abc123');
+      expect(nodeData.slug).toBe('note');
+      expect(nodeData.wikilinks).toHaveLength(1);
     });
 
     it('should prepare canvas node data', async () => {
-      const fileInfo = {
+      const fileInfo: any = {
         absolutePath: '/vault/canvas.canvas',
         relativePath: 'canvas.canvas',
         hash: 'def456',
@@ -274,7 +259,7 @@ describe('UploadService', () => {
         edges: []
       });
 
-      jest.spyOn(require('fs/promises'), 'readFile').mockResolvedValue(canvasJSON);
+      (fs.readFile as jest.Mock).mockResolvedValue(canvasJSON);
 
       const mockCanvasParser = {
         parse: jest.fn().mockReturnValue({
@@ -289,45 +274,83 @@ describe('UploadService', () => {
 
       expect(nodeData.nodeType).toBe('CANVAS');
       expect(nodeData.filePath).toBe('canvas.canvas');
+      expect(nodeData.slug).toBe('canvas');
+      expect(nodeData.visualProperties).toBeDefined();
+    });
+
+    it('should extract existing UUID from markdown', async () => {
+      const fileInfo: any = {
+        absolutePath: '/vault/note.md',
+        relativePath: 'note.md',
+        extension: '.md',
+        hash: 'abc123'
+      };
+      const content = '<!-- mujarrad-node-id: existing-uuid -->\n# Note';
+
+      (fs.readFile as jest.Mock).mockResolvedValue(content);
+      (MetadataManager.extractUUID as jest.Mock).mockReturnValue('existing-uuid');
+      (MarkdownParser as jest.Mock).mockImplementation(() => ({
+        extractWikilinks: jest.fn().mockReturnValue([]),
+        parseFrontmatter: jest.fn().mockReturnValue({})
+      }));
+
+      const nodeData = await uploadService.prepareNodeData(fileInfo, '/vault');
+
+      expect(nodeData.existingUUID).toBe('existing-uuid');
+    });
+
+    it('should use frontmatter title if available', async () => {
+      const fileInfo: any = {
+        absolutePath: '/vault/note.md',
+        relativePath: 'note.md',
+        extension: '.md',
+        hash: 'abc123'
+      };
+      const content = '---\ntitle: Custom Title\n---\n# Note';
+
+      (fs.readFile as jest.Mock).mockResolvedValue(content);
+      (MetadataManager.extractUUID as jest.Mock).mockReturnValue(null);
+      (MarkdownParser as jest.Mock).mockImplementation(() => ({
+        extractWikilinks: jest.fn().mockReturnValue([]),
+        parseFrontmatter: jest.fn().mockReturnValue({ title: 'Custom Title' })
+      }));
+
+      const nodeData = await uploadService.prepareNodeData(fileInfo, '/vault');
+
+      expect(nodeData.title).toBe('Custom Title');
     });
   });
 
   describe('uploadVault', () => {
     it('should orchestrate full vault upload', async () => {
-      // Mock VaultScanner
       const mockFiles = [
-        { relativePath: 'note1.md', absolutePath: '/vault/note1.md', extension: '.md' },
-        { relativePath: 'note2.md', absolutePath: '/vault/note2.md', extension: '.md' }
+        { relativePath: 'note1.md', absolutePath: '/vault/note1.md', extension: '.md', hash: 'hash1' },
+        { relativePath: 'note2.md', absolutePath: '/vault/note2.md', extension: '.md', hash: 'hash2' }
       ];
+
       const mockScanner = {
         scan: jest.fn().mockResolvedValue(mockFiles)
       };
       (VaultScanner as jest.Mock).mockImplementation(() => mockScanner);
 
-      // Mock session init
-      mockUploadApi.initUploadSession.mockResolvedValue({
-        data: { uploadSessionId: 'session-123', batchSize: 50 }
-      } as any);
-
-      // Mock batch upload
-      mockUploadApi.uploadNodes.mockResolvedValue({
-        data: { created: [{ nodeId: 'uuid-1' }, { nodeId: 'uuid-2' }], errors: [] }
-      } as any);
-
-      // Mock finalization
-      mockUploadApi.completeUploadSession.mockResolvedValue({
-        data: { success: true, totalNodesCreated: 2 }
-      } as any);
-
-      // Mock file reading and parsing
-      jest.spyOn(require('fs/promises'), 'readFile').mockResolvedValue('# Test');
+      (fs.readFile as jest.Mock).mockResolvedValue('# Test');
       (MarkdownParser as jest.Mock).mockImplementation(() => ({
         extractWikilinks: jest.fn().mockReturnValue([]),
         parseFrontmatter: jest.fn().mockReturnValue({})
       }));
       (MetadataManager.extractUUID as jest.Mock).mockReturnValue(null);
 
-      // Mock cache
+      mockUploadApi.uploadBatch.mockResolvedValue({
+        data: {
+          sessionId: 'session-123',
+          created: [
+            { nodeId: 'uuid-1', filePath: 'note1.md' },
+            { nodeId: 'uuid-2', filePath: 'note2.md' }
+          ],
+          errors: []
+        }
+      });
+
       (CacheManager.cacheNodeMapping as jest.Mock).mockResolvedValue(undefined);
       (CacheManager.setLastSyncTime as jest.Mock).mockResolvedValue(undefined);
 
@@ -335,13 +358,133 @@ describe('UploadService', () => {
 
       expect(summary.success).toBe(true);
       expect(summary.totalNodesCreated).toBe(2);
+      expect(summary.totalErrors).toBe(0);
+      expect(summary.sessionId).toBe('session-123');
+      expect(summary.duration).toBeGreaterThan(0);
       expect(mockScanner.scan).toHaveBeenCalled();
-      expect(mockUploadApi.initUploadSession).toHaveBeenCalled();
-      expect(mockUploadApi.uploadNodes).toHaveBeenCalled();
-      expect(mockUploadApi.completeUploadSession).toHaveBeenCalled();
+      expect(mockUploadApi.uploadBatch).toHaveBeenCalled();
+      expect(CacheManager.cacheNodeMapping).toHaveBeenCalledTimes(2);
+      expect(CacheManager.setLastSyncTime).toHaveBeenCalled();
     });
 
-    it('should handle errors during vault upload', async () => {
+    it('should handle empty vault', async () => {
+      const mockScanner = {
+        scan: jest.fn().mockResolvedValue([])
+      };
+      (VaultScanner as jest.Mock).mockImplementation(() => mockScanner);
+
+      const summary = await uploadService.uploadVault('workspace-123', '/vault');
+
+      expect(summary.success).toBe(true);
+      expect(summary.totalNodesCreated).toBe(0);
+      expect(summary.totalErrors).toBe(0);
+      expect(mockUploadApi.uploadBatch).not.toHaveBeenCalled();
+    });
+
+    it('should handle multiple batches', async () => {
+      const mockFiles = Array(150).fill(null).map((_, i) => ({
+        relativePath: `note${i}.md`,
+        absolutePath: `/vault/note${i}.md`,
+        extension: '.md',
+        hash: `hash${i}`
+      }));
+
+      const mockScanner = {
+        scan: jest.fn().mockResolvedValue(mockFiles)
+      };
+      (VaultScanner as jest.Mock).mockImplementation(() => mockScanner);
+
+      (fs.readFile as jest.Mock).mockResolvedValue('# Test');
+      (MarkdownParser as jest.Mock).mockImplementation(() => ({
+        extractWikilinks: jest.fn().mockReturnValue([]),
+        parseFrontmatter: jest.fn().mockReturnValue({})
+      }));
+      (MetadataManager.extractUUID as jest.Mock).mockReturnValue(null);
+
+      // First batch creates session
+      mockUploadApi.uploadBatch.mockResolvedValueOnce({
+        data: {
+          sessionId: 'session-123',
+          created: Array(50).fill(null).map((_, i) => ({ nodeId: `uuid-${i}` })),
+          errors: []
+        }
+      });
+
+      // Subsequent batches use session
+      mockUploadApi.uploadBatch.mockResolvedValue({
+        data: {
+          sessionId: 'session-123',
+          created: Array(50).fill(null).map((_, i) => ({ nodeId: `uuid-${50 + i}` })),
+          errors: []
+        }
+      });
+
+      (CacheManager.cacheNodeMapping as jest.Mock).mockResolvedValue(undefined);
+      (CacheManager.setLastSyncTime as jest.Mock).mockResolvedValue(undefined);
+
+      const summary = await uploadService.uploadVault('workspace-123', '/vault', 50);
+
+      expect(summary.totalNodesCreated).toBe(150);
+      expect(mockUploadApi.uploadBatch).toHaveBeenCalledTimes(3);
+
+      // Verify first call has no sessionId
+      expect(mockUploadApi.uploadBatch).toHaveBeenNthCalledWith(
+        1,
+        'workspace-123',
+        expect.any(Array),
+        1,
+        undefined,
+        'Batch 1/3: 50 files'
+      );
+
+      // Verify subsequent calls have sessionId
+      expect(mockUploadApi.uploadBatch).toHaveBeenNthCalledWith(
+        2,
+        'workspace-123',
+        expect.any(Array),
+        2,
+        'session-123',
+        'Batch 2/3: 50 files'
+      );
+    });
+
+    it('should track errors during upload', async () => {
+      const mockFiles = [
+        { relativePath: 'note1.md', absolutePath: '/vault/note1.md', extension: '.md', hash: 'hash1' },
+        { relativePath: 'note2.md', absolutePath: '/vault/note2.md', extension: '.md', hash: 'hash2' }
+      ];
+
+      const mockScanner = {
+        scan: jest.fn().mockResolvedValue(mockFiles)
+      };
+      (VaultScanner as jest.Mock).mockImplementation(() => mockScanner);
+
+      (fs.readFile as jest.Mock).mockResolvedValue('# Test');
+      (MarkdownParser as jest.Mock).mockImplementation(() => ({
+        extractWikilinks: jest.fn().mockReturnValue([]),
+        parseFrontmatter: jest.fn().mockReturnValue({})
+      }));
+      (MetadataManager.extractUUID as jest.Mock).mockReturnValue(null);
+
+      mockUploadApi.uploadBatch.mockResolvedValue({
+        data: {
+          sessionId: 'session-123',
+          created: [{ nodeId: 'uuid-1' }],
+          errors: [{ filePath: 'note2.md', error: 'Validation failed' }]
+        }
+      });
+
+      (CacheManager.cacheNodeMapping as jest.Mock).mockResolvedValue(undefined);
+      (CacheManager.setLastSyncTime as jest.Mock).mockResolvedValue(undefined);
+
+      const summary = await uploadService.uploadVault('workspace-123', '/vault');
+
+      expect(summary.success).toBe(false);
+      expect(summary.totalNodesCreated).toBe(1);
+      expect(summary.totalErrors).toBe(1);
+    });
+
+    it('should handle scan errors', async () => {
       const mockScanner = {
         scan: jest.fn().mockRejectedValue(new Error('Scan failed'))
       };
