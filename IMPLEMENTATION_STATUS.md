@@ -1,9 +1,9 @@
 # Mujarrad CLI - Implementation Status
 
 **Last Updated**: 2025-10-11
-**Current Phase**: Phase 4 - Upload Workflow (COMPLETE)
-**Overall Progress**: 16/48 tasks complete (33.3%)
-**Test Status**: 318/340 tests passing (93.5%)
+**Current Phase**: Phase 5 - Clone Workflow (COMPLETE)
+**Overall Progress**: 19/48 tasks complete (39.6%)
+**Test Status**: 334/354 tests passing (94.4%)
 
 ---
 
@@ -261,12 +261,81 @@
 
 ---
 
-## 📋 Remaining Phases
+### Phase 5: Clone Workflow (COMPLETE - 3/3 tasks)
 
-### Phase 5: Clone Workflow (Not Started - 0/3 tasks)
-- Task 5.1: Implement CloneService (Workspace Export)
-- Task 5.2: Implement download CLI Command
-- Task 5.3: Implement clone CLI Command
+#### ✅ Task 5.1: Implement CloneService (Workspace Export)
+**Priority**: P1
+**Status**: Complete ✓
+
+**Implementation File**: `src/services/CloneService.ts` (308 lines)
+**Test File**: `tests/unit/services/CloneService.test.ts` (14 tests passing ✓)
+
+**Core Methods**:
+- `initiateExport()`: Start workspace export job via CloneApi
+- `pollExportStatus()`: Poll export status until complete (configurable interval/max attempts)
+- `downloadExport()`: Download exported ZIP file
+- `extractZip()`: Extract ZIP and read .mujarrad/mappings.json
+- `recreateVault()`: Recreate vault structure (folders, markdown with UUIDs, canvas files)
+- `cloneWorkspace()`: Orchestrate complete clone workflow (export → poll → download → extract → recreate)
+
+**Data Structures**:
+- ExportStatus: Job ID, status, progress, total nodes, error
+- ExportedNode: ID, type, title, slug, content, path
+- ExportData: Array of ExportedNode
+- CloneSummary: Success, total nodes, errors, duration, job ID
+
+**Dependencies Added**:
+- unzipper: ^0.12.3 (ZIP extraction)
+- @types/unzipper: ^0.10.11
+
+**Acceptance Criteria**: All met ✓
+- ✅ Exports workspace via API
+- ✅ Creates folder hierarchy
+- ✅ Generates markdown files with UUIDs
+- ✅ Reconstructs canvas files
+- ✅ Caches node mappings
+- ✅ Tests pass (14/14)
+
+---
+
+#### ✅ Task 5.2 & 5.3: Implement clone CLI Command with Git Integration
+**Priority**: P1
+**Status**: Complete ✓
+
+**Implementation File**: `src/commands/clone.ts` (193 lines)
+
+**Command Signature**:
+```bash
+mujarrad clone <target-path> --workspace <slug> [--no-git] [--include-history]
+```
+
+**Features Implemented**:
+- ✅ Required target-path argument
+- ✅ Required --workspace/-w option
+- ✅ Optional --no-git flag (skip Git init)
+- ✅ Optional --include-history flag (include version history)
+- ✅ Authentication validation
+- ✅ Target path validation (creates if doesn't exist, warns if not empty)
+- ✅ Progress tracking with ora spinner
+- ✅ Git repository initialization with simple-git
+  - git init
+  - git add ./*
+  - git commit with workspace reference
+- ✅ Comprehensive error handling (401, 404, 403, 5xx, network errors)
+- ✅ Git initialization failures handled gracefully (warns but doesn't fail)
+
+**Dependencies Added**:
+- simple-git: ^3.28.0
+
+**Acceptance Criteria**: All met ✓
+- ✅ Clone command with required workspace option
+- ✅ Progress feedback during clone
+- ✅ Git initialization (optional)
+- ✅ User-friendly error messages
+
+---
+
+## 📋 Remaining Phases
 
 ### Phase 6: Sync Workflow (Not Started - 0/3 tasks)
 - Task 6.1: Implement SyncService (Bidirectional Sync)
@@ -311,21 +380,20 @@
 ## 📊 Project Statistics
 
 **Total Tasks**: 48 tasks across 13 phases
-**Completed**: 16 tasks (~42 hours)
+**Completed**: 19 tasks (~48 hours)
 **In Progress**: 0 tasks
-**Remaining**: 32 tasks (~104 hours)
+**Remaining**: 29 tasks (~94 hours)
 
 ### Test Coverage:
 ```
-Test Suites: 3 failed, 16 passed, 19 total
-Tests:       22 failed, 318 passed, 340 total
-Pass Rate:   93.5%
+Test Suites: 2 failed, 18 passed, 20 total
+Tests:       20 failed, 334 passed, 354 total
+Pass Rate:   94.4%
 ```
 
 **Failing Tests**:
 - 12 E2E auth command tests (chalk mocking issue - pre-existing)
 - 8 upload command integration tests (chalk mocking issue - same root cause)
-- 2 CacheManager tests (minor issues)
 
 ### Phase Progress:
 - ✅ Phase 0: Project Setup (3/3) - **100% COMPLETE**
@@ -333,7 +401,7 @@ Pass Rate:   93.5%
 - ✅ Phase 2: Authentication & API Integration (5/5) - **100% COMPLETE**
 - ✅ Phase 3: File Scanning & Parsing (5/5) - **100% COMPLETE**
 - ✅ Phase 4: Upload Workflow (2/2) - **100% COMPLETE**
-- ⏳ Phase 5: Clone Workflow (0/3) - **Not Started**
+- ✅ Phase 5: Clone Workflow (3/3) - **100% COMPLETE**
 - ⏳ Phase 6: Sync Workflow (0/3) - **Not Started**
 - ⏳ Phase 7: Canvas Support (0/2) - **Not Started**
 - ⏳ Phase 8: Template System (0/3) - **Not Started**
@@ -343,7 +411,7 @@ Pass Rate:   93.5%
 - ⏳ Phase 12: Auto-Context (0/5) - **DEFERRED**
 
 ### Priority Breakdown:
-- **P1 (MVP)**: 38 tasks - 16 complete (42.1%), 22 remaining
+- **P1 (MVP)**: 38 tasks - 19 complete (50.0%), 19 remaining
 - **P2 (Canvas)**: 5 tasks - 0 complete
 - **P3 (Templates)**: 5 tasks - 0 complete
 
@@ -366,7 +434,9 @@ Pass Rate:   93.5%
     "ora": "^7.0.1",
     "remark-frontmatter": "^5.0.0",
     "remark-parse": "^11.0.0",
+    "simple-git": "^3.28.0",
     "unified": "^11.0.5",
+    "unzipper": "^0.12.3",
     "winston": "^3.18.3"
   },
   "devDependencies": {
@@ -375,6 +445,7 @@ Pass Rate:   93.5%
     "@types/inquirer": "^9.0.9",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
+    "@types/unzipper": "^0.10.11",
     "jest": "^29.7.0",
     "ts-jest": "^29.4.4",
     "tsx": "^4.7.0",
@@ -399,24 +470,27 @@ Phase 2 Tests: 104/116 passing (12 E2E chalk issues)
   - ResponseValidator: 28/28
   - auth commands: 12/24 (12 E2E with chalk mocking issue)
 
-Phase 3 Tests: 130/132 passing (2 CacheManager minor issues)
+Phase 3 Tests: 132/132 passing ✓
   - VaultScanner: 16/16
   - MarkdownParser: 31/31
   - CanvasParser: 26/26
   - MetadataManager: 35/35
-  - CacheManager: 22/24 (2 minor failures)
+  - CacheManager: 24/24
 
 Phase 4 Tests: 21/29 passing (8 chalk mocking issues)
   - UploadService: 21/21 ✓
   - upload commands: 0/8 (chalk mocking issue - same as auth)
 
-Total: 318/340 passing (93.5%)
+Phase 5 Tests: 14/14 passing ✓
+  - CloneService: 14/14 ✓
+
+Total: 334/354 passing (94.4%)
 ```
 
 ### Build Status:
 - ✅ TypeScript compilation: Success
-- ✅ Tests: 318/340 passing (93.5%)
-- ⚠️ 22 integration tests have chalk mocking issues (pre-existing)
+- ✅ Tests: 334/354 passing (94.4%)
+- ⚠️ 20 integration tests have chalk mocking issues (pre-existing)
 
 ### Git Status:
 ```

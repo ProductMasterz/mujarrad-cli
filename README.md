@@ -497,44 +497,72 @@ npm run format            # Format code (Prettier)
 
 ## Roadmap
 
-### Phase 0: Foundation ✅
-- [x] Project setup
+### Phase 0: Project Setup ✅
+- [x] TypeScript 5.3 with ES modules
+- [x] Jest testing framework
+- [x] Project directory structure
 - [x] Brand identity
-- [x] Architecture design
 
-### Phase 1: Core Intelligence 🚧
-- [ ] API client generation
-- [ ] Configuration management
-- [ ] Credential security
-- [ ] Logging infrastructure
+### Phase 1: Foundational Components ✅
+- [x] API client generation (OpenAPI → TypeScript)
+- [x] Configuration management (cosmiconfig)
+- [x] Credential security (OS keychain + AES-256)
+- [x] Logging infrastructure (winston)
+- [x] Progress UI (ora + cli-progress)
+- [x] Frontmatter parsing
 
-### Phase 2: File Operations 📋
-- [ ] Vault scanning
-- [ ] Markdown parsing
-- [ ] Canvas processing
-- [ ] Metadata management
+### Phase 2: Authentication & API Integration ✅
+- [x] AuthService (JWT with refresh)
+- [x] RetryHandler (exponential backoff)
+- [x] ErrorHandler (user-friendly messages)
+- [x] ResponseValidator (type-safe validation)
+- [x] auth CLI commands
 
-### Phase 3: Data Flow 📋
-- [ ] Upload workflows
-- [ ] Clone operations
-- [ ] Sync engine
-- [ ] Conflict resolution
+### Phase 3: File Scanning & Parsing ✅
+- [x] Vault scanning (recursive .md/.canvas)
+- [x] Markdown parsing (wikilinks, frontmatter)
+- [x] Canvas processing (JSON Canvas spec)
+- [x] Metadata management (UUID embedding)
+- [x] Local caching (workspace structure)
 
-### Phase 4: Visual Preservation 📋
-- [ ] Canvas upload
-- [ ] Visual reconstruction
-- [ ] Pixel-perfect accuracy
+### Phase 4: Upload Workflow ✅
+- [x] UploadService (batch upload)
+- [x] upload CLI command
+- [x] Session management
+- [x] Progress tracking
 
-### Phase 5: Template System 📋
+### Phase 5: Clone Workflow ✅
+- [x] CloneService (workspace export)
+- [x] clone CLI command
+- [x] Git initialization (simple-git)
+- [x] ZIP extraction (unzipper)
+- [x] Vault recreation
+
+### Phase 6: Sync Workflow 🚧
+- [ ] SyncService (bidirectional sync)
+- [ ] ConflictResolver (merge strategies)
+- [ ] sync CLI command
+- [ ] Watch mode for continuous sync
+
+### Phase 7: Canvas Support 📋
+- [ ] Canvas visual property mapping
+- [ ] Canvas relationship extraction
+
+### Phase 8: Template System 📋
 - [ ] Template library
 - [ ] Framework cloning
 - [ ] Configuration management
 
-### Phase 6: Distribution 📋
+### Phase 9: Additional Features 📋
+- [ ] Workspace management commands
+- [ ] Version history commands
+- [ ] Sharing commands
+- [ ] Status command
+
+### Phase 10: Distribution 📋
 - [ ] NPM package
-- [ ] Python package (pip)
-- [ ] Standalone binaries
-- [ ] Platform executables
+- [ ] User documentation
+- [ ] Developer documentation
 
 See [tasks.md](./specs/007-obsidian-mapper-i/tasks.md) for detailed implementation plan.
 
