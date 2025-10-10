@@ -64,14 +64,14 @@
 
 1. **Obsidian Note**: A markdown file (.md) stored in the vault's file system. Notes are the primary content units in Obsidian and appear as files in the local directory structure.
 
-2. **Canvas Node**: An element within an Obsidian Canvas (.canvas file). In the Obsidian-Mujarrad integration, **every canvas node MUST have an associated note file**. Canvas nodes are graphical elements that ALWAYS reference a note file through a file attribute in the canvas JSON structure.
+2. **Canvas Node**: An element within an Obsidian Canvas (.canvas file). Canvas nodes are graphical elements that MAY reference a note file through a file attribute in the canvas JSON structure. Canvas nodes without file attributes are supported and can have markdown files generated for them via the Canvas-to-File conversion feature (FR-072 to FR-081).
 
 Throughout this specification:
 - "Note" or "Obsidian note" refers to .md files
-- "Canvas node" refers to elements within a canvas that reference note files
+- "Canvas node" refers to elements within a canvas (may or may not reference note files)
 - "Mujarrad Node" refers to the Node entity in the Mujarrad database
 
-**Key Relationship**: Every canvas node has a file attribute pointing to its associated Obsidian note (.md file). The canvas JSON contains this file reference, and the note file exists both in the vault's folder hierarchy and on the local drive. The visual representation (position, size, color) is stored in the canvas, while the content is stored in the referenced note file.
+**Key Relationship**: Canvas nodes MAY have a file attribute pointing to an associated Obsidian note (.md file). When present, the canvas JSON contains this file reference, and the note file exists both in the vault's folder hierarchy and on the local drive. The visual representation (position, size, color) is stored in the canvas, while the content is stored in the referenced note file (or in the canvas node text itself if no file is referenced).
 
 ### Template System Terminology
 

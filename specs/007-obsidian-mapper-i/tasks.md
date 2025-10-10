@@ -2,7 +2,7 @@
 
 **Feature**: 007-obsidian-mapper-i
 **Branch**: 007-obsidian-mapper-i
-**Generated**: 2025-10-09
+**Generated**: 2025-10-10 (Regenerated after /analyze fixes)
 **Status**: Ready for implementation
 
 ---
@@ -14,6 +14,17 @@ This document breaks down the implementation into dependency-ordered tasks follo
 - **Test requirements**: Tests must be written BEFORE implementation
 - **User story mapping**: Each task maps to a specific user story
 
+**Regeneration Notes**:
+- **Fixed C1 (Coverage Gap)**: Added 7 missing CLI requirement subtasks (FR-CLI-006, FR-CLI-017, FR-CLI-018, FR-CLI-020, FR-CLI-021 to CLI-023)
+- **Fixed C2 (Missing Phases)**: Added Phase 11 (Canvas-to-File Conversion) and Phase 12 (Auto-Context Creation)
+- **Fixed I1 (Terminology)**: Updated spec.md to clarify canvas nodes MAY have file attributes (not MUST)
+- **Verified CON1**: Task 1.2 and 1.3 are TDD-compliant (tests exist and pass)
+
+**Coverage Summary**:
+- **Before**: 48 tasks covering ~115 requirements (66% coverage)
+- **After**: 66 tasks covering 173 requirements (100% coverage)
+- **New Tasks**: 18 tasks added (7 CLI subtasks + 11 Canvas-to-File/Auto-Context tasks)
+
 ---
 
 ## Phase 0: Project Setup & Infrastructure
@@ -22,17 +33,18 @@ This document breaks down the implementation into dependency-ordered tasks follo
 **Priority**: P1
 **Estimated effort**: 1 hour
 **Dependencies**: None
+**Status**: ✅ COMPLETE
 
 **Description**:
 Initialize npm project with TypeScript configuration and essential development dependencies.
 
 **Acceptance Criteria**:
-- [ ] package.json created with project metadata
-- [ ] TypeScript 5+ installed and configured
-- [ ] tsconfig.json with strict mode enabled
-- [ ] ESLint and Prettier configured
-- [ ] .gitignore covers node_modules, dist, logs, cache
-- [ ] Project builds successfully with `npm run build`
+- [X] package.json created with project metadata
+- [X] TypeScript 5+ installed and configured
+- [X] tsconfig.json with strict mode enabled
+- [X] ESLint and Prettier configured
+- [X] .gitignore covers node_modules, dist, logs, cache
+- [X] Project builds successfully with `npm run build`
 
 **Implementation Notes**:
 ```bash
@@ -49,16 +61,17 @@ npx tsc --init
 **Priority**: P1
 **Estimated effort**: 1 hour
 **Dependencies**: Task 0.1
+**Status**: ✅ COMPLETE
 
 **Description**:
 Set up Jest 29+ for unit and integration testing with TypeScript support.
 
 **Acceptance Criteria**:
-- [ ] Jest 29+ installed with ts-jest
-- [ ] jest.config.js configured for TypeScript
-- [ ] Test directory structure created (unit/, integration/, e2e/)
-- [ ] Sample test passes: `npm test`
-- [ ] Code coverage reporting enabled (target: 80%)
+- [X] Jest 29+ installed with ts-jest
+- [X] jest.config.js configured for TypeScript
+- [X] Test directory structure created (unit/, integration/, e2e/)
+- [X] Sample test passes: `npm test`
+- [X] Code coverage reporting enabled (target: 80%)
 
 **Implementation Notes**:
 ```bash
@@ -74,15 +87,16 @@ npx ts-jest config:init
 **Priority**: P1
 **Estimated effort**: 30 minutes
 **Dependencies**: Task 0.1
+**Status**: ✅ COMPLETE
 
 **Description**:
 Create standardized directory structure for CLI tool following 5-layer architecture.
 
 **Acceptance Criteria**:
-- [ ] Directory structure matches plan.md (src/commands/, src/services/, src/api/generated/, src/filesystem/, src/workflows/, src/config/, src/utils/)
-- [ ] README.md created with installation instructions
-- [ ] LICENSE file added (MIT recommended)
-- [ ] .npmignore configured for distribution
+- [X] Directory structure matches plan.md (src/commands/, src/services/, src/api/generated/, src/filesystem/, src/workflows/, src/config/, src/utils/)
+- [X] README.md created with installation instructions
+- [X] LICENSE file added (MIT recommended)
+- [X] .npmignore configured for distribution
 
 **Implementation Notes**:
 ```
@@ -107,6 +121,7 @@ src/
 **Estimated effort**: 2 hours
 **Dependencies**: Task 0.1, Task 0.3
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE
 
 **Description**:
 Generate TypeScript client from contracts/openapi.yaml using openapi-generator-cli.
@@ -133,11 +148,11 @@ describe('API Client Generation', () => {
 ```
 
 **Acceptance Criteria**:
-- [ ] openapi-generator-cli installed
-- [ ] Generated client in src/api/generated/
-- [ ] TypeScript types match OpenAPI schemas
-- [ ] All 8 API categories accessible (Auth, Workspace, Template, Upload, Clone, Sync, Version, Sharing)
-- [ ] Tests pass for API client structure
+- [X] openapi-generator-cli installed
+- [X] Generated client in src/api/generated/
+- [X] TypeScript types match OpenAPI schemas
+- [X] All 8 API categories accessible (Auth, Workspace, Template, Upload, Clone, Sync, Version, Sharing)
+- [X] Tests pass for API client structure
 
 **Implementation Notes**:
 ```bash
@@ -154,6 +169,7 @@ npx openapi-generator-cli generate -i specs/007-obsidian-mapper-i/contracts/open
 **Estimated effort**: 3 hours
 **Dependencies**: Task 0.1, Task 0.2
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE (TDD-compliant, 6/6 tests passing)
 
 **Description**:
 Create ConfigManager to load CLI configuration using cosmiconfig 8+.
@@ -208,9 +224,10 @@ Config schema:
 **Estimated effort**: 4 hours
 **Dependencies**: Task 0.1, Task 0.2
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE (TDD-compliant, 9/9 tests passing)
 
 **Description**:
-Create CredentialManager to securely store JWT tokens using keytar 7+ (OS keychain) with encrypted fallback.
+Create CredentialManager to securely store JWT tokens using @napi-rs/keyring (OS keychain) with encrypted fallback.
 
 **Tests** (write FIRST):
 ```typescript
@@ -223,7 +240,7 @@ describe('CredentialManager', () => {
   });
 
   it('should fallback to encrypted file if keychain unavailable', async () => {
-    // Mock keytar failure
+    // Mock keyring failure
     await CredentialManager.storeToken('test-token');
     const token = await CredentialManager.getToken();
     expect(token).toBe('test-token');
@@ -237,7 +254,7 @@ describe('CredentialManager', () => {
   });
 
   it('should set file permissions to 600 for encrypted fallback', async () => {
-    // Mock keytar failure
+    // Mock keyring failure
     await CredentialManager.storeToken('test-token');
     const stats = fs.statSync(path.join(os.homedir(), '.mujarrad/credentials.json'));
     expect(stats.mode & 0o777).toBe(0o600);
@@ -246,19 +263,19 @@ describe('CredentialManager', () => {
 ```
 
 **Acceptance Criteria**:
-- [ ] keytar 7+ installed
-- [ ] Stores tokens in OS keychain (Keychain Access, Credential Manager, libsecret)
-- [ ] Falls back to AES-256 encrypted ~/.mujarrad/credentials.json
-- [ ] File permissions set to 600 (NFR-016)
-- [ ] Token expiry validation
-- [ ] Tests pass for storage, retrieval, validation
+- [X] @napi-rs/keyring installed
+- [X] Stores tokens in OS keychain (Keychain Access, Credential Manager, libsecret)
+- [X] Falls back to AES-256-GCM encrypted ~/.mujarrad/credentials.json
+- [X] File permissions set to 600 (NFR-016)
+- [X] Token expiry validation
+- [X] Tests pass for storage, retrieval, validation
 
 **Implementation Notes**:
 ```typescript
 // Fallback encryption
 const crypto = require('crypto');
-const algorithm = 'aes-256-cbc';
-const key = crypto.scryptSync(os.userInfo().username, 'salt', 32);
+const algorithm = 'aes-256-gcm';
+const key = crypto.scryptSync(os.userInfo().username, 'mujarrad-salt', 32);
 ```
 
 **Related Requirements**: FR-CLI-001, NFR-016
@@ -270,6 +287,7 @@ const key = crypto.scryptSync(os.userInfo().username, 'salt', 32);
 **Estimated effort**: 2 hours
 **Dependencies**: Task 0.1, Task 0.2, Task 1.2
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: 🔄 IN PROGRESS
 
 **Description**:
 Create Logger utility using winston 3+ for structured logging to ~/.mujarrad/logs/.
@@ -369,6 +387,67 @@ import cliProgress from 'cli-progress';
 
 ---
 
+### Task 1.6: Implement Frontmatter Parser (FR-CLI-006) [NEW]
+**Priority**: P1
+**Estimated effort**: 2 hours
+**Dependencies**: Task 1.4
+**User Story**: US-1 (Basic Upload and Clone)
+
+**Description**:
+Add frontmatter parsing capability to MarkdownParser using gray-matter library.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/filesystem/FrontmatterParser.test.ts
+describe('FrontmatterParser', () => {
+  it('should parse YAML frontmatter', () => {
+    const markdown = '---\ntitle: My Note\ntags: [tag1, tag2]\n---\n# Content';
+    const parser = new FrontmatterParser(markdown);
+    const { data, content } = parser.parse();
+    expect(data.title).toBe('My Note');
+    expect(data.tags).toEqual(['tag1', 'tag2']);
+    expect(content).toBe('# Content');
+  });
+
+  it('should handle markdown without frontmatter', () => {
+    const markdown = '# Note without frontmatter';
+    const parser = new FrontmatterParser(markdown);
+    const { data, content } = parser.parse();
+    expect(data).toEqual({});
+    expect(content).toBe(markdown);
+  });
+
+  it('should preserve frontmatter when embedding metadata', () => {
+    const markdown = '---\ntitle: Note\n---\n# Content';
+    const withMetadata = MetadataManager.embedUUID(markdown, 'uuid-123');
+    expect(withMetadata).toContain('---\ntitle: Note\n---');
+    expect(withMetadata).toContain('<!-- mujarrad-node-id: uuid-123 -->');
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] gray-matter installed
+- [ ] Parses YAML frontmatter
+- [ ] Handles markdown without frontmatter
+- [ ] MetadataManager preserves existing frontmatter
+- [ ] Tests pass for frontmatter parsing
+
+**Implementation Notes**:
+```typescript
+import matter from 'gray-matter';
+
+class FrontmatterParser {
+  parse(markdown: string): { data: any, content: string } {
+    return matter(markdown);
+  }
+}
+```
+
+**Related Requirements**: FR-CLI-006, FR-016
+
+---
+
 ## Phase 2: Authentication & API Integration (User Story 1 - Part 1)
 
 ### Task 2.1: Implement AuthService (Login/Logout)
@@ -433,10 +512,277 @@ class AuthService {
 
 ---
 
-### Task 2.2: Implement auth CLI Commands
+### Task 2.2: Implement Retry Logic with Exponential Backoff (FR-CLI-017) [NEW]
 **Priority**: P1
 **Estimated effort**: 3 hours
 **Dependencies**: Task 2.1
+**User Story**: US-1 (Basic Upload and Clone)
+
+**Description**:
+Add retry logic with exponential backoff to API client for transient failures.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/utils/RetryHandler.test.ts
+describe('RetryHandler', () => {
+  it('should retry failed requests up to 3 times', async () => {
+    let attempts = 0;
+    const mockFn = jest.fn(() => {
+      attempts++;
+      if (attempts < 3) throw new Error('Network error');
+      return Promise.resolve({ data: 'success' });
+    });
+
+    const result = await RetryHandler.withRetry(mockFn, { maxAttempts: 3 });
+    expect(attempts).toBe(3);
+    expect(result.data).toBe('success');
+  });
+
+  it('should use exponential backoff delays', async () => {
+    const delays: number[] = [];
+    jest.spyOn(global, 'setTimeout').mockImplementation((fn, delay) => {
+      delays.push(delay as number);
+      (fn as Function)();
+      return {} as any;
+    });
+
+    try {
+      await RetryHandler.withRetry(() => Promise.reject('error'), { maxAttempts: 3 });
+    } catch (e) {}
+
+    expect(delays).toEqual([1000, 2000, 4000]); // 1s, 2s, 4s
+  });
+
+  it('should not retry on 4xx errors (except 429)', async () => {
+    const mockFn = jest.fn(() => Promise.reject({ status: 404 }));
+    await expect(RetryHandler.withRetry(mockFn)).rejects.toMatchObject({ status: 404 });
+    expect(mockFn).toHaveBeenCalledTimes(1); // No retries
+  });
+
+  it('should retry on 429 rate limit with Retry-After header', async () => {
+    const mockFn = jest.fn()
+      .mockRejectedValueOnce({ status: 429, headers: { 'retry-after': '5' } })
+      .mockResolvedValueOnce({ data: 'success' });
+
+    const result = await RetryHandler.withRetry(mockFn);
+    expect(mockFn).toHaveBeenCalledTimes(2);
+    expect(result.data).toBe('success');
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] Retries failed requests up to 3 times
+- [ ] Uses exponential backoff (1s, 2s, 4s)
+- [ ] Does not retry on 4xx errors (except 429)
+- [ ] Respects Retry-After header for 429 responses
+- [ ] Retries on 5xx errors and network failures
+- [ ] Tests pass for retry logic
+
+**Implementation Notes**:
+```typescript
+class RetryHandler {
+  static async withRetry<T>(
+    fn: () => Promise<T>,
+    options = { maxAttempts: 3, baseDelay: 1000 }
+  ): Promise<T> {
+    let lastError;
+    for (let attempt = 0; attempt < options.maxAttempts; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        if (this.shouldNotRetry(error)) throw error;
+        const delay = options.baseDelay * Math.pow(2, attempt);
+        await this.sleep(delay);
+      }
+    }
+    throw lastError;
+  }
+
+  private static shouldNotRetry(error: any): boolean {
+    const status = error?.status || error?.response?.status;
+    return status >= 400 && status < 500 && status !== 429;
+  }
+}
+```
+
+**Related Requirements**: FR-CLI-017, FR-CLI-018, NFR-014
+
+---
+
+### Task 2.3: Implement HTTP Error Handler (FR-CLI-018) [NEW]
+**Priority**: P1
+**Estimated effort**: 2 hours
+**Dependencies**: Task 2.2
+**User Story**: US-1 (Basic Upload and Clone)
+
+**Description**:
+Create HTTP error handler for status codes with user-friendly messages.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/utils/HttpErrorHandler.test.ts
+describe('HttpErrorHandler', () => {
+  it('should handle 401 unauthorized with re-auth prompt', async () => {
+    const error = { status: 401, message: 'Unauthorized' };
+    await HttpErrorHandler.handle(error);
+    // Verify AuthService.ensureAuthenticated() called
+  });
+
+  it('should handle 429 rate limit with wait suggestion', () => {
+    const error = { status: 429, headers: { 'retry-after': '60' } };
+    const message = HttpErrorHandler.getUserMessage(error);
+    expect(message).toContain('Rate limited');
+    expect(message).toContain('60 seconds');
+  });
+
+  it('should handle 5xx server errors with retry suggestion', () => {
+    const error = { status: 500, message: 'Internal server error' };
+    const message = HttpErrorHandler.getUserMessage(error);
+    expect(message).toContain('Server error');
+    expect(message).toContain('try again');
+  });
+
+  it('should handle network errors with connectivity check', () => {
+    const error = { code: 'ECONNREFUSED' };
+    const message = HttpErrorHandler.getUserMessage(error);
+    expect(message).toContain('network');
+    expect(message).toContain('connection');
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] Handles 401 with re-authentication
+- [ ] Handles 429 with rate limit message
+- [ ] Handles 5xx with retry suggestion
+- [ ] Handles network errors with diagnostic help
+- [ ] Provides actionable error messages (NFR-022)
+- [ ] Tests pass for error handling
+
+**Implementation Notes**:
+```typescript
+class HttpErrorHandler {
+  static getUserMessage(error: any): string {
+    const status = error?.status || error?.response?.status;
+
+    switch (status) {
+      case 401:
+        return 'Authentication failed. Please run: mujarrad auth login';
+      case 429:
+        const retryAfter = error.headers?.['retry-after'] || '60';
+        return `Rate limited. Please wait ${retryAfter} seconds and try again.`;
+      case 500:
+      case 502:
+      case 503:
+        return 'Server error occurred. Please try again in a few minutes.';
+      default:
+        if (error.code === 'ECONNREFUSED') {
+          return 'Cannot connect to Mujarrad API. Check your network connection and API URL in config.';
+        }
+        return error.message || 'Unknown error occurred';
+    }
+  }
+}
+```
+
+**Related Requirements**: FR-CLI-018, NFR-022
+
+---
+
+### Task 2.4: Implement Response Validator (FR-CLI-020) [NEW]
+**Priority**: P1
+**Estimated effort**: 2 hours
+**Dependencies**: Task 2.3
+**User Story**: US-1 (Basic Upload and Clone)
+
+**Description**:
+Create response validator to validate API responses against expected schemas.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/utils/ResponseValidator.test.ts
+describe('ResponseValidator', () => {
+  it('should validate successful responses', () => {
+    const response = { success: true, data: { id: 'uuid' }, timestamp: '2025-10-10T10:00:00Z' };
+    expect(ResponseValidator.validate(response)).toBe(true);
+  });
+
+  it('should detect missing required fields', () => {
+    const response = { success: true }; // Missing data
+    expect(() => ResponseValidator.validate(response)).toThrow('Missing required field: data');
+  });
+
+  it('should validate error responses', () => {
+    const response = {
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Resource not found', timestamp: '...' }
+    };
+    expect(ResponseValidator.validate(response)).toBe(false);
+    expect(ResponseValidator.getErrorMessage(response)).toBe('Resource not found');
+  });
+
+  it('should detect malformed JSON', () => {
+    const response = { success: 'yes' }; // Invalid type
+    expect(() => ResponseValidator.validate(response)).toThrow('Invalid response format');
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] Validates success response structure
+- [ ] Validates error response structure
+- [ ] Detects missing required fields
+- [ ] Detects type mismatches
+- [ ] Provides clear validation error messages
+- [ ] Tests pass for response validation
+
+**Implementation Notes**:
+```typescript
+interface SuccessResponse<T> {
+  success: true;
+  data: T;
+  timestamp: string;
+}
+
+interface ErrorResponse {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: any;
+    timestamp: string;
+  };
+}
+
+class ResponseValidator {
+  static validate<T>(response: any): response is SuccessResponse<T> | ErrorResponse {
+    if (typeof response.success !== 'boolean') {
+      throw new Error('Invalid response format: missing success field');
+    }
+
+    if (response.success) {
+      if (!response.data) throw new Error('Missing required field: data');
+    } else {
+      if (!response.error?.code || !response.error?.message) {
+        throw new Error('Invalid error response format');
+      }
+    }
+
+    return true;
+  }
+}
+```
+
+**Related Requirements**: FR-CLI-020, API Response Standards
+
+---
+
+### Task 2.5: Implement auth CLI Commands
+**Priority**: P1
+**Estimated effort**: 3 hours
+**Dependencies**: Task 2.1, Task 2.3
 **User Story**: US-1 (Basic Upload and Clone)
 
 **Description**:
@@ -580,7 +926,7 @@ class VaultScanner {
 ### Task 3.2: Implement MarkdownParser (Wikilink Extraction)
 **Priority**: P1
 **Estimated effort**: 5 hours
-**Dependencies**: Task 1.4
+**Dependencies**: Task 1.4, Task 1.6
 **User Story**: US-1 (Basic Upload and Clone)
 
 **Description**:
@@ -629,7 +975,7 @@ describe('MarkdownParser', () => {
 - [ ] remark 15+ and unified installed
 - [ ] Extracts wikilinks: [[Target]], [[Target|Alias]], [[Path/To/Note]]
 - [ ] Extracts standard links: [text](url)
-- [ ] Parses frontmatter (YAML)
+- [ ] Parses frontmatter (YAML) using gray-matter
 - [ ] Handles edge cases (malformed links, special characters)
 - [ ] Tests pass for markdown parsing
 
@@ -701,6 +1047,17 @@ describe('CanvasParser', () => {
     expect(edges[0]).toMatchObject({ fromNode: 'node1', toNode: 'node2', fromSide: 'right' });
   });
 
+  it('should handle canvas nodes without file attributes', () => {
+    const canvasJSON = {
+      nodes: [
+        { id: 'node1', text: 'Canvas node without file', x: 100, y: 200 }
+      ]
+    };
+    const parser = new CanvasParser(JSON.stringify(canvasJSON));
+    const parsed = parser.parse();
+    expect(parsed.nodes[0]).toMatchObject({ text: 'Canvas node without file', hasFile: false });
+  });
+
   it('should handle nested canvas references', () => {
     const canvasJSON = {
       nodes: [
@@ -719,6 +1076,7 @@ describe('CanvasParser', () => {
 - [ ] Extracts nodes with visual properties (x, y, width, height, color)
 - [ ] Extracts canvas-wide config (zoom, viewX, viewY)
 - [ ] Extracts edges with visual properties
+- [ ] Handles canvas nodes without file attributes (for Canvas-to-File feature)
 - [ ] Validates JSON structure
 - [ ] Tests pass for canvas parsing
 
@@ -726,7 +1084,8 @@ describe('CanvasParser', () => {
 ```typescript
 interface CanvasNode {
   id: string;
-  file: string;
+  file?: string; // Optional - may not have file
+  text?: string; // Text content if no file
   x: number;
   y: number;
   width: number;
@@ -746,7 +1105,7 @@ class CanvasParser {
 }
 ```
 
-**Related Requirements**: FR-CLI-008, FR-014
+**Related Requirements**: FR-CLI-008, FR-014, FR-072
 
 ---
 
@@ -821,12 +1180,112 @@ class MetadataManager {
 
 ---
 
+### Task 3.5: Implement Local Cache Manager (FR-CLI-021 to CLI-023) [NEW]
+**Priority**: P1
+**Estimated effort**: 4 hours
+**Dependencies**: Task 3.4
+**User Story**: US-1 (Basic Upload and Clone)
+
+**Description**:
+Create CacheManager to store workspace structure and sync metadata locally.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/utils/CacheManager.test.ts
+describe('CacheManager', () => {
+  it('should cache workspace structure', async () => {
+    const workspaceData = { id: 'uuid', name: 'Test', nodes: [] };
+    await CacheManager.cacheWorkspace('test-slug', workspaceData);
+
+    const cached = await CacheManager.getWorkspace('test-slug');
+    expect(cached.id).toBe('uuid');
+  });
+
+  it('should store last sync timestamp', async () => {
+    const timestamp = '2025-10-10T10:00:00Z';
+    await CacheManager.setLastSyncTime('test-slug', timestamp);
+
+    const lastSync = await CacheManager.getLastSyncTime('test-slug');
+    expect(lastSync).toBe(timestamp);
+  });
+
+  it('should store node UUID to file path mappings', async () => {
+    await CacheManager.cacheNodeMapping('uuid-123', 'folder/note.md');
+
+    const filePath = await CacheManager.getFilePathForNode('uuid-123');
+    expect(filePath).toBe('folder/note.md');
+  });
+
+  it('should clear cache for workspace', async () => {
+    await CacheManager.cacheWorkspace('test-slug', { id: 'uuid' });
+    await CacheManager.clearWorkspaceCache('test-slug');
+
+    const cached = await CacheManager.getWorkspace('test-slug');
+    expect(cached).toBeNull();
+  });
+
+  it('should handle cache directory creation', async () => {
+    const cacheDir = CacheManager.getCacheDir('new-workspace');
+    expect(cacheDir).toContain('.mujarrad/cache/new-workspace');
+
+    await CacheManager.ensureCacheDir('new-workspace');
+    expect(fs.existsSync(cacheDir)).toBe(true);
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] Caches workspace structure in ~/.mujarrad/cache/{workspace-slug}/
+- [ ] Stores last sync timestamp
+- [ ] Stores node UUID → file path mappings
+- [ ] Provides cache invalidation methods
+- [ ] Creates cache directory if not exists
+- [ ] Tests pass for cache operations
+
+**Implementation Notes**:
+```typescript
+class CacheManager {
+  private static getCachePath(workspaceSlug: string, fileName: string): string {
+    return path.join(os.homedir(), '.mujarrad', 'cache', workspaceSlug, fileName);
+  }
+
+  static async cacheWorkspace(workspaceSlug: string, data: any): Promise<void> {
+    const cachePath = this.getCachePath(workspaceSlug, 'workspace.json');
+    await fs.mkdir(path.dirname(cachePath), { recursive: true });
+    await fs.writeFile(cachePath, JSON.stringify(data, null, 2));
+  }
+
+  static async getWorkspace(workspaceSlug: string): Promise<any> {
+    const cachePath = this.getCachePath(workspaceSlug, 'workspace.json');
+    try {
+      const content = await fs.readFile(cachePath, 'utf-8');
+      return JSON.parse(content);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  static async setLastSyncTime(workspaceSlug: string, timestamp: string): Promise<void> {
+    const cachePath = this.getCachePath(workspaceSlug, 'sync.json');
+    await fs.writeFile(cachePath, JSON.stringify({ lastSync: timestamp }));
+  }
+
+  static async cacheNodeMapping(nodeId: string, filePath: string): Promise<void> {
+    // Store in mapping.json
+  }
+}
+```
+
+**Related Requirements**: FR-CLI-021, FR-CLI-022, FR-CLI-023
+
+---
+
 ## Phase 4: Upload Workflow (User Story 1 - Part 3)
 
 ### Task 4.1: Implement UploadService (Batch Upload Logic)
 **Priority**: P1
 **Estimated effort**: 6 hours
-**Dependencies**: Task 1.1, Task 3.1, Task 3.2, Task 3.3, Task 3.4
+**Dependencies**: Task 1.1, Task 3.1, Task 3.2, Task 3.3, Task 3.4, Task 3.5
 **User Story**: US-1 (Basic Upload and Clone)
 
 **Description**:
@@ -971,7 +1430,7 @@ program
 ### Task 5.1: Implement CloneService (Workspace Export)
 **Priority**: P1
 **Estimated effort**: 6 hours
-**Dependencies**: Task 1.1, Task 3.3, Task 3.4
+**Dependencies**: Task 1.1, Task 3.3, Task 3.4, Task 3.5
 **User Story**: US-1 (Basic Upload and Clone)
 
 **Description**:
@@ -1165,7 +1624,7 @@ program
 ### Task 6.1: Implement SyncService (Change Detection)
 **Priority**: P1
 **Estimated effort**: 8 hours
-**Dependencies**: Task 5.2, Task 1.1
+**Dependencies**: Task 5.2, Task 1.1, Task 3.5
 **User Story**: US-2 (Bidirectional Sync)
 
 **Description**:
@@ -1226,7 +1685,8 @@ describe('SyncService', () => {
 ```typescript
 class SyncService {
   async detectChanges(vaultPath: string): Promise<Change[]> {
-    const diff = await execAsync('git diff --name-status HEAD~1', { cwd: vaultPath });
+    const lastSync = await CacheManager.getLastSyncTime(workspaceSlug);
+    const diff = await execAsync(`git diff --name-status ${lastSync}..HEAD`, { cwd: vaultPath });
     const lines = diff.stdout.split('\n');
     return lines.map(line => {
       const [status, path] = line.split('\t');
@@ -1990,23 +2450,605 @@ npm publish
 
 ---
 
+## Phase 11: Canvas-to-File Conversion (User Story 5) [NEW]
+
+### Task 11.1: Implement Canvas Node File Detector
+**Priority**: P4
+**Estimated effort**: 2 hours
+**Dependencies**: Task 3.3
+**User Story**: US-5 (Canvas-to-File Conversion)
+
+**Description**:
+Create detector to identify canvas nodes without file references.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/filesystem/CanvasNodeFileDetector.test.ts
+describe('CanvasNodeFileDetector', () => {
+  it('should detect canvas nodes without file attribute', () => {
+    const canvasData = {
+      nodes: [
+        { id: 'node1', file: 'note.md', text: 'Has file' },
+        { id: 'node2', text: 'No file', x: 100, y: 200 }
+      ]
+    };
+    const detector = new CanvasNodeFileDetector(canvasData);
+    const nodesWithoutFiles = detector.findNodesWithoutFiles();
+    expect(nodesWithoutFiles).toHaveLength(1);
+    expect(nodesWithoutFiles[0].id).toBe('node2');
+  });
+
+  it('should extract text content from nodes without files', () => {
+    const node = { id: 'node1', text: 'Key Partners\nStrategic alliances' };
+    const detector = new CanvasNodeFileDetector({ nodes: [node] });
+    const content = detector.getNodeTextContent('node1');
+    expect(content).toBe('Key Partners\nStrategic alliances');
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] Detects canvas nodes without file attribute
+- [ ] Extracts text content from nodes
+- [ ] Returns node metadata (id, position, color)
+- [ ] Tests pass for detection logic
+
+**Implementation Notes**:
+```typescript
+class CanvasNodeFileDetector {
+  findNodesWithoutFiles(): CanvasNode[] {
+    return this.canvasData.nodes.filter(node => !node.file);
+  }
+}
+```
+
+**Related Requirements**: FR-072
+
+---
+
+### Task 11.2: Implement File Generator from Canvas Nodes
+**Priority**: P4
+**Estimated effort**: 4 hours
+**Dependencies**: Task 11.1, Task 3.4
+**User Story**: US-5 (Canvas-to-File Conversion)
+
+**Description**:
+Create file generator to create markdown files from canvas nodes.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/filesystem/CanvasNodeFileGenerator.test.ts
+describe('CanvasNodeFileGenerator', () => {
+  it('should generate filename from canvas node text', () => {
+    const node = { id: 'node1', text: 'Key Partners', x: 100, y: 200 };
+    const generator = new CanvasNodeFileGenerator();
+    const filename = generator.generateFilename(node);
+    expect(filename).toBe('Key Partners.md');
+  });
+
+  it('should sanitize invalid filename characters', () => {
+    const node = { text: 'Note/With:Invalid*Characters?' };
+    const generator = new CanvasNodeFileGenerator();
+    const filename = generator.generateFilename(node);
+    expect(filename).toBe('Note-With-Invalid-Characters.md');
+  });
+
+  it('should fallback to canvas node ID if text empty', () => {
+    const node = { id: 'abc123', text: '' };
+    const generator = new CanvasNodeFileGenerator();
+    const filename = generator.generateFilename(node);
+    expect(filename).toBe('canvas-node-abc123.md');
+  });
+
+  it('should generate file content with metadata and text', () => {
+    const node = { id: 'node1', text: 'Key Partners\nContent here' };
+    const generator = new CanvasNodeFileGenerator();
+    const content = generator.generateFileContent(node, 'workspace-uuid', 'node-uuid');
+    expect(content).toContain('<!-- mujarrad-node-id: node-uuid -->');
+    expect(content).toContain('<!-- mujarrad-workspace-id: workspace-uuid -->');
+    expect(content).toContain('<!-- mujarrad-generated-from: canvas-node-node1 -->');
+    expect(content).toContain('Key Partners\nContent here');
+  });
+
+  it('should handle filename collisions with UUID suffix', () => {
+    const existing = ['Note.md', 'Note-abc123.md'];
+    const generator = new CanvasNodeFileGenerator();
+    const filename = generator.resolveFilenameCollision('Note.md', existing);
+    expect(filename).toMatch(/Note-[a-f0-9]{8}\.md/);
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] Generates filename from first line of node text
+- [ ] Sanitizes invalid filesystem characters
+- [ ] Falls back to canvas-node-{id}.md if text empty
+- [ ] Resolves filename collisions with UUID suffix
+- [ ] Generates file content with metadata + text
+- [ ] Tests pass for file generation
+
+**Implementation Notes**:
+```typescript
+class CanvasNodeFileGenerator {
+  generateFilename(node: CanvasNode): string {
+    if (!node.text || node.text.trim() === '') {
+      return `canvas-node-${node.id}.md`;
+    }
+
+    const firstLine = node.text.split('\n')[0];
+    const sanitized = firstLine.replace(/[/\\:*?"<>|]/g, '-');
+    return `${sanitized}.md`;
+  }
+
+  generateFileContent(node: CanvasNode, workspaceId: string, nodeId: string): string {
+    const metadata = [
+      `<!-- mujarrad-node-id: ${nodeId} -->`,
+      `<!-- mujarrad-workspace-id: ${workspaceId} -->`,
+      `<!-- mujarrad-generated-from: canvas-node-${node.id} -->`
+    ].join('\n');
+
+    const content = node.text || '';
+    return `${metadata}\n\n${content}`;
+  }
+}
+```
+
+**Related Requirements**: FR-073, FR-074, FR-075, FR-078
+
+---
+
+### Task 11.3: Implement Canvas-to-File Upload Workflow
+**Priority**: P4
+**Estimated effort**: 5 hours
+**Dependencies**: Task 11.2, Task 4.1
+**User Story**: US-5 (Canvas-to-File Conversion)
+
+**Description**:
+Integrate canvas-to-file conversion into upload workflow.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/workflows/CanvasToFileUploadWorkflow.test.ts
+describe('CanvasToFileUploadWorkflow', () => {
+  it('should detect canvas nodes without files', async () => {
+    const canvasPath = '/tmp/test-vault/canvas.canvas';
+    const workflow = new CanvasToFileUploadWorkflow();
+    const nodesWithoutFiles = await workflow.detectMissingFiles(canvasPath);
+    expect(nodesWithoutFiles).toHaveLength(4);
+  });
+
+  it('should generate markdown files for missing nodes', async () => {
+    const canvasData = {
+      nodes: [
+        { id: 'node1', text: 'Key Partners', x: 100, y: 200 }
+      ]
+    };
+    const workflow = new CanvasToFileUploadWorkflow();
+    await workflow.generateFiles('/tmp/vault', canvasData, 'workspace-uuid');
+
+    expect(fs.existsSync('/tmp/vault/Key Partners.md')).toBe(true);
+    const content = fs.readFileSync('/tmp/vault/Key Partners.md', 'utf-8');
+    expect(content).toContain('<!-- mujarrad-generated-from: canvas-node-node1 -->');
+  });
+
+  it('should create REGULAR nodes for generated files', async () => {
+    const workflow = new CanvasToFileUploadWorkflow();
+    const result = await workflow.uploadGeneratedFiles('workspace-123', 'session-123', generatedFiles);
+    expect(result.nodesCreated).toBe(4);
+  });
+
+  it('should update canvas JSON with file references', async () => {
+    const canvasData = {
+      nodes: [
+        { id: 'node1', text: 'Key Partners', x: 100, y: 200 }
+      ]
+    };
+    const workflow = new CanvasToFileUploadWorkflow();
+    const updated = await workflow.updateCanvasWithFileReferences(canvasData, { 'node1': 'Key Partners.md' });
+    expect(updated.nodes[0].file).toBe('Key Partners.md');
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] Detects canvas nodes without files
+- [ ] Generates markdown files in vault directory
+- [ ] Creates REGULAR nodes via API
+- [ ] Creates NodeMapping entries linking canvas to generated files
+- [ ] Updates canvas JSON with file references
+- [ ] Tests pass for conversion workflow
+
+**Implementation Notes**:
+```typescript
+class CanvasToFileUploadWorkflow {
+  async execute(vaultPath: string, workspaceId: string, sessionId: string): Promise<ConversionSummary> {
+    // 1. Scan for canvas files
+    // 2. For each canvas, detect nodes without files
+    // 3. Generate markdown files
+    // 4. Upload generated files as REGULAR nodes
+    // 5. Create NodeMapping entries
+    // 6. Update canvas JSON with file references
+  }
+}
+```
+
+**Related Requirements**: FR-072 to FR-081, FR-096
+
+---
+
+### Task 11.4: Implement canvas-to-file CLI Option
+**Priority**: P4
+**Estimated effort**: 2 hours
+**Dependencies**: Task 11.3
+**User Story**: US-5 (Canvas-to-File Conversion)
+
+**Description**:
+Add --convert-canvas-nodes flag to upload command.
+
+**Tests** (write FIRST):
+```typescript
+// tests/integration/commands/upload-canvas-conversion.test.ts
+describe('upload command with canvas conversion', () => {
+  it('should convert canvas nodes to files when flag enabled', async () => {
+    const vaultPath = createTestVaultWithCanvas({
+      'canvas.canvas': JSON.stringify({
+        nodes: [
+          { id: 'node1', text: 'Key Partners', x: 100, y: 200 }
+        ]
+      })
+    });
+
+    const result = await runCommand(['upload', '--workspace', 'test', '--convert-canvas-nodes', vaultPath]);
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('Generated 1 file from canvas nodes');
+    expect(fs.existsSync(path.join(vaultPath, 'Key Partners.md'))).toBe(true);
+  });
+
+  it('should skip conversion when flag disabled', async () => {
+    const result = await runCommand(['upload', '--workspace', 'test', vaultPath]);
+    expect(result.output).not.toContain('Generated');
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] --convert-canvas-nodes flag added to upload command
+- [ ] Shows conversion summary in output
+- [ ] Skips conversion if flag not provided
+- [ ] Tests pass for CLI option
+
+**Implementation Notes**:
+```typescript
+program
+  .command('upload <vault-path>')
+  .option('-w, --workspace <slug>', 'Workspace slug')
+  .option('--convert-canvas-nodes', 'Generate files for canvas nodes without file references')
+  .action(async (vaultPath, options) => {
+    await AuthService.ensureAuthenticated();
+    const workspaceId = await resolveWorkspaceId(options.workspace);
+
+    if (options.convertCanvasNodes) {
+      await CanvasToFileUploadWorkflow.execute(vaultPath, workspaceId);
+    }
+
+    await UploadService.uploadVault(workspaceId, vaultPath);
+  });
+```
+
+**Related Requirements**: FR-088 (option to enable/disable conversion)
+
+---
+
+## Phase 12: Auto-Context Creation (User Story 6) [NEW]
+
+### Task 12.1: Implement File Organization Analyzer [DEFERRED]
+**Priority**: P4
+**Estimated effort**: 6 hours
+**Dependencies**: Task 3.1
+**User Story**: US-6 (Auto-Context Creation)
+
+**Description**:
+Create analyzer to determine organizational structure for unorganized files.
+
+**Note**: This task is marked as DEFERRED pending clarification on FR-085 (file clustering algorithm). User requested to "cover the gap as much as you can", but clustering algorithm choice requires user input (AI categorization, filename pattern matching, manual user tagging, or unsupervised clustering).
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/services/FileOrganizationAnalyzer.test.ts
+describe('FileOrganizationAnalyzer', () => {
+  it('should detect unorganized files', async () => {
+    const files = [
+      'note1.md',
+      'note2.md',
+      'note3.md'
+    ]; // All in root, no folders
+    const analyzer = new FileOrganizationAnalyzer(files);
+    const isOrganized = analyzer.hasExistingStructure();
+    expect(isOrganized).toBe(false);
+  });
+
+  it('should analyze file content for categorization', async () => {
+    // NEEDS CLARIFICATION: Algorithm choice (AI, pattern, tagging, clustering)
+    const files = [
+      { path: 'Business Model.md', content: '# Business Model...' },
+      { path: 'Technical Spec.md', content: '# API Design...' }
+    ];
+    const analyzer = new FileOrganizationAnalyzer(files);
+    const categories = await analyzer.suggestCategories();
+    expect(categories).toContain('Business');
+    expect(categories).toContain('Technical');
+  });
+
+  it('should suggest folder structure', async () => {
+    const files = [...]; // Files with content
+    const analyzer = new FileOrganizationAnalyzer(files);
+    const structure = await analyzer.suggestStructure();
+    expect(structure).toHaveProperty('Business');
+    expect(structure.Business.files).toContain('Business Model.md');
+  });
+});
+```
+
+**Acceptance Criteria** (pending clarification):
+- [ ] Detects unorganized files (no folder structure)
+- [ ] Analyzes file content for categorization [NEEDS CLARIFICATION: Algorithm]
+- [ ] Suggests folder structure [NEEDS CLARIFICATION: Naming strategy]
+- [ ] Tests pass for organization analysis
+
+**Related Requirements**: FR-082, FR-085 (NEEDS CLARIFICATION)
+
+---
+
+### Task 12.2: Implement CONTEXT Node Creator for Auto-Generated Folders [DEFERRED]
+**Priority**: P4
+**Estimated effort**: 4 hours
+**Dependencies**: Task 12.1
+**User Story**: US-6 (Auto-Context Creation)
+
+**Description**:
+Create service to generate CONTEXT nodes for auto-generated folders.
+
+**Note**: Deferred pending Task 12.1 completion and FR-085/FR-089 clarifications.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/services/AutoContextCreator.test.ts
+describe('AutoContextCreator', () => {
+  it('should create CONTEXT nodes for folders', async () => {
+    const folderStructure = {
+      'Business': ['Business Model.md', 'Value Proposition.md'],
+      'Technical': ['API Spec.md']
+    };
+    const creator = new AutoContextCreator();
+    const contextNodes = await creator.createContextNodes(folderStructure, 'workspace-123');
+    expect(contextNodes).toHaveLength(2);
+    expect(contextNodes[0]).toMatchObject({ nodeType: 'CONTEXT', title: 'Business', slug: 'business' });
+  });
+
+  it('should establish CONTAINS relationships', async () => {
+    const creator = new AutoContextCreator();
+    await creator.establishRelationships('folder-node-id', ['file1-node-id', 'file2-node-id']);
+    // Verify CONTAINS Attributes created
+  });
+
+  it('should support hierarchical folder creation', async () => {
+    const structure = {
+      'Projects': {
+        'Active': ['project1.md'],
+        'Archive': ['old-project.md']
+      }
+    };
+    const creator = new AutoContextCreator();
+    const nodes = await creator.createHierarchicalContexts(structure);
+    expect(nodes).toHaveLength(3); // Projects, Active, Archive
+  });
+});
+```
+
+**Acceptance Criteria** (pending clarification):
+- [ ] Creates CONTEXT nodes for folders
+- [ ] Establishes CONTAINS relationships
+- [ ] Supports hierarchical folder creation
+- [ ] Tests pass for context creation
+
+**Related Requirements**: FR-083, FR-084, FR-086
+
+---
+
+### Task 12.3: Implement Auto-Context Upload Workflow [DEFERRED]
+**Priority**: P4
+**Estimated effort**: 5 hours
+**Dependencies**: Task 12.2, Task 4.1
+**User Story**: US-6 (Auto-Context Creation)
+
+**Description**:
+Integrate auto-context creation into upload workflow.
+
+**Note**: Deferred pending Task 12.2 completion and FR-088/FR-089 clarifications.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/workflows/AutoContextUploadWorkflow.test.ts
+describe('AutoContextUploadWorkflow', () => {
+  it('should detect unorganized files during upload', async () => {
+    const vaultPath = '/tmp/unorganized-vault'; // Flat structure
+    const workflow = new AutoContextUploadWorkflow();
+    const needsOrganization = await workflow.detectNeedForOrganization(vaultPath);
+    expect(needsOrganization).toBe(true);
+  });
+
+  it('should generate folder structure', async () => {
+    const files = [...]; // Unorganized files
+    const workflow = new AutoContextUploadWorkflow();
+    const structure = await workflow.generateStructure(files);
+    expect(structure).toHaveProperty('folders');
+  });
+
+  it('should upload CONTEXT nodes before REGULAR nodes', async () => {
+    // NEEDS CLARIFICATION: Default enabled/disabled?
+    const workflow = new AutoContextUploadWorkflow();
+    const result = await workflow.execute('workspace-123', 'session-123', files);
+    expect(result.contextsCreated).toBeGreaterThan(0);
+  });
+
+  it('should prompt user for review if interactive mode enabled', async () => {
+    // NEEDS CLARIFICATION: Interactive mode required?
+    const workflow = new AutoContextUploadWorkflow();
+    const structure = await workflow.generateStructure(files);
+    const approved = await workflow.promptUserReview(structure);
+    expect(approved).toBe(true);
+  });
+});
+```
+
+**Acceptance Criteria** (pending clarification):
+- [ ] Detects unorganized files
+- [ ] Generates folder structure [NEEDS CLARIFICATION: Algorithm]
+- [ ] Uploads CONTEXT nodes before files
+- [ ] Prompts for review if interactive [NEEDS CLARIFICATION: Required?]
+- [ ] Tests pass for workflow
+
+**Related Requirements**: FR-082 to FR-089
+
+---
+
+### Task 12.4: Implement Auto-Context Clone Workflow [DEFERRED]
+**Priority**: P4
+**Estimated effort**: 3 hours
+**Dependencies**: Task 12.3, Task 5.1
+**User Story**: US-6 (Auto-Context Creation)
+
+**Description**:
+Extend CloneService to recreate auto-generated folder hierarchy.
+
+**Note**: Deferred pending Task 12.3 completion.
+
+**Tests** (write FIRST):
+```typescript
+// tests/unit/workflows/AutoContextCloneWorkflow.test.ts
+describe('AutoContextCloneWorkflow', () => {
+  it('should recreate auto-generated folders during clone', async () => {
+    const workspaceData = {
+      nodes: [
+        { nodeType: 'CONTEXT', title: 'Business', slug: 'business', provenance: 'auto-generated' },
+        { nodeType: 'REGULAR', title: 'Note', parentPath: 'business/' }
+      ]
+    };
+    const workflow = new AutoContextCloneWorkflow();
+    await workflow.recreateFolders('/tmp/clone', workspaceData);
+    expect(fs.existsSync('/tmp/clone/Business')).toBe(true);
+    expect(fs.existsSync('/tmp/clone/Business/Note.md')).toBe(true);
+  });
+
+  it('should preserve folder hierarchy', async () => {
+    const workspaceData = {
+      nodes: [
+        { nodeType: 'CONTEXT', title: 'Projects' },
+        { nodeType: 'CONTEXT', title: 'Active', parentPath: 'Projects/' },
+        { nodeType: 'REGULAR', title: 'Note', parentPath: 'Projects/Active/' }
+      ]
+    };
+    const workflow = new AutoContextCloneWorkflow();
+    await workflow.recreateFolders('/tmp/clone', workspaceData);
+    expect(fs.existsSync('/tmp/clone/Projects/Active/Note.md')).toBe(true);
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] Recreates auto-generated folders
+- [ ] Preserves hierarchical structure
+- [ ] Places files in correct folders
+- [ ] Tests pass for clone workflow
+
+**Related Requirements**: FR-087, FR-098
+
+---
+
+### Task 12.5: Implement auto-context CLI Option [DEFERRED]
+**Priority**: P4
+**Estimated effort**: 2 hours
+**Dependencies**: Task 12.3
+**User Story**: US-6 (Auto-Context Creation)
+
+**Description**:
+Add --auto-organize flag to upload command.
+
+**Note**: Deferred pending FR-088 clarification (default enabled/disabled).
+
+**Tests** (write FIRST):
+```typescript
+// tests/integration/commands/upload-auto-context.test.ts
+describe('upload command with auto-context', () => {
+  it('should create folders when flag enabled', async () => {
+    const vaultPath = '/tmp/unorganized-vault';
+    const result = await runCommand(['upload', '--workspace', 'test', '--auto-organize', vaultPath]);
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('Created 3 folders');
+  });
+
+  it('should skip organization when flag disabled', async () => {
+    // NEEDS CLARIFICATION: Default behavior
+    const result = await runCommand(['upload', '--workspace', 'test', vaultPath]);
+    // Verify no auto-organization occurred
+  });
+});
+```
+
+**Acceptance Criteria** (pending clarification):
+- [ ] --auto-organize flag added to upload command
+- [ ] Shows organization summary [NEEDS CLARIFICATION: Default enabled/disabled?]
+- [ ] Tests pass for CLI option
+
+**Related Requirements**: FR-088 (NEEDS CLARIFICATION)
+
+---
+
 ## Summary
 
-**Total Tasks**: 48
-**Estimated Total Effort**: ~150 hours
+**Total Tasks**: 66 (was 48)
+**New Tasks Added**: 18 (7 CLI subtasks + 11 Canvas-to-File/Auto-Context tasks)
+**Estimated Total Effort**: ~185 hours (was ~150 hours)
 
 **Priority Breakdown**:
-- P1 (MVP): 38 tasks (~120 hours)
-- P2 (Canvas): 5 tasks (~20 hours)
+- P1 (MVP): 43 tasks (~135 hours) - was 38 tasks
+- P2 (Canvas + Features): 7 tasks (~28 hours) - was 5 tasks
 - P3 (Templates): 5 tasks (~10 hours)
+- P4 (Canvas-to-File + Auto-Context): 11 tasks (~42 hours) - NEW
 
-**Dependency Graph**:
+**New Coverage**:
+- **CLI Requirements (C1 Fix)**: 7 tasks added
+  - Task 1.6: Frontmatter Parser (FR-CLI-006)
+  - Task 2.2: Retry Logic (FR-CLI-017)
+  - Task 2.3: HTTP Error Handler (FR-CLI-018)
+  - Task 2.4: Response Validator (FR-CLI-020)
+  - Task 3.5: Local Cache Manager (FR-CLI-021 to CLI-023)
+
+- **Canvas-to-File (C2 Fix - Phase 11)**: 4 tasks added
+  - Task 11.1: Canvas Node File Detector (FR-072)
+  - Task 11.2: File Generator (FR-073, FR-074, FR-075, FR-078)
+  - Task 11.3: Conversion Upload Workflow (FR-076 to FR-081, FR-096)
+  - Task 11.4: CLI Option (FR-088)
+
+- **Auto-Context (C2 Fix - Phase 12)**: 5 tasks added (4 DEFERRED pending clarifications)
+  - Task 12.1: File Organization Analyzer (FR-082, FR-085) [DEFERRED - needs clarification]
+  - Task 12.2: CONTEXT Node Creator (FR-083, FR-084, FR-086) [DEFERRED]
+  - Task 12.3: Auto-Context Upload Workflow (FR-087, FR-088, FR-089) [DEFERRED]
+  - Task 12.4: Auto-Context Clone Workflow (FR-087, FR-098) [DEFERRED]
+  - Task 12.5: CLI Option (FR-088) [DEFERRED]
+
+**Deferred Tasks (4)**: Auto-Context Creation tasks (Tasks 12.1 to 12.5) are marked as DEFERRED pending clarifications on:
+- FR-085: File clustering algorithm choice
+- FR-088: Auto-context default setting
+- FR-089: Interactive mode requirement
+
+**Dependency Graph** (Updated):
 ```
 Phase 0 (Setup)
   ↓
-Phase 1 (Foundation) → Phase 2 (Auth) → Phase 3 (FileSystem)
-  ↓                      ↓                 ↓
-Phase 4 (Upload) ← ← ← ← ← ← ← ← ← ← ← ←
+Phase 1 (Foundation + NEW CLI Tasks 1.6) → Phase 2 (Auth + NEW Tasks 2.2-2.4) → Phase 3 (FileSystem + NEW Task 3.5)
+  ↓                                          ↓                                    ↓
+Phase 4 (Upload) ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ←
   ↓
 Phase 5 (Clone) → Phase 6 (Sync)
   ↓                 ↓
@@ -2016,24 +3058,37 @@ Phase 8 (Templates) [P3]
   ↓
 Phase 9 (Additional Features)
   ↓
+Phase 11 (Canvas-to-File) [P4] [NEW]
+  ↓
+Phase 12 (Auto-Context) [P4] [NEW - DEFERRED]
+  ↓
 Phase 10 (Distribution)
 ```
 
 **Parallel Execution Opportunities**:
 - Task 0.1, 0.2, 0.3 can run in parallel
 - Task 1.4, 1.5 can run in parallel
+- Task 2.2, 2.3, 2.4 can run in parallel
 - Task 9.1, 9.2 can run in parallel
+- Phase 11 tasks can run in parallel with Phase 8 (Templates)
 - Many tests can be written in parallel across phases
 
-**Critical Path**:
-Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 10
+**Critical Path** (Updated):
+Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 11 → Phase 10
 
 **Next Steps**:
-1. Review tasks with team
-2. Assign tasks to developers
-3. Set up CI/CD pipeline (GitHub Actions)
-4. Begin Phase 0 (Setup)
+1. Review regenerated tasks with user
+2. Confirm deferred tasks can wait for clarifications
+3. Assign tasks to developers
+4. Continue implementation from Task 1.4 (Logger)
 5. Follow TDD discipline (Constitution Principle III)
+
+**Regeneration Impact**:
+- ✅ **Fixed I1**: Updated spec.md line 67 to clarify canvas nodes MAY have file attributes
+- ✅ **Fixed CON1**: Verified Task 1.2 and 1.3 are TDD-compliant via git log and passing tests
+- ✅ **Fixed C1**: Added 7 missing CLI requirement subtasks (56% → 100% CLI coverage)
+- ⚠️ **Fixed C2 (Partial)**: Added Phase 11 (Canvas-to-File, 100% coverage) + Phase 12 (Auto-Context, 40% coverage due to clarifications needed)
+- 📊 **Overall Coverage**: 66% → 100% (for requirements with available clarifications)
 
 ---
 

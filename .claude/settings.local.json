@@ -34,7 +34,8 @@
       "WebFetch(domain:circleci.com)",
       "WebFetch(domain:jsoncanvas.org)",
       "WebFetch(domain:www.npmjs.com)",
-      "Bash(.specify/scripts/bash/update-agent-context.sh:*)"
+      "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
