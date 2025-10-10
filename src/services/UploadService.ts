@@ -8,31 +8,22 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 /**
- * Upload session information
+ * Upload session tracking
  */
 export interface UploadSession {
-  /** Session ID from API */
-  uploadSessionId: string;
-  /** Recommended batch size from API */
-  batchSize: number;
+  /** Session ID from first batch upload */
+  sessionId: string;
   /** Workspace ID */
-  workspaceId?: string;
-}
-
-/**
- * Session initialization metadata
- */
-export interface SessionInitMetadata {
-  /** Total number of files to upload */
+  workspaceId: string;
+  /** Current batch number */
+  currentBatch: number;
+  /** Total files to upload */
   totalFiles: number;
-  /** Vault name (optional) */
-  vaultName?: string;
-  /** Vault path (optional) */
-  vaultPath?: string;
 }
 
 /**
- * Node data for upload */
+ * Node data prepared for upload
+ */
 export interface NodeData {
   /** Node type */
   nodeType: 'REGULAR' | 'CANVAS' | 'CONTEXT';
@@ -57,50 +48,52 @@ export interface NodeData {
 }
 
 /**
- * Batch upload result
- */
-export interface BatchUploadResult {
-  /** Successfully created nodes */
-  created: Array<{ nodeId: string; slug?: string }>;
-  /** Errors during upload */
-  errors: Array<{ filePath?: string; error: string }>;
-}
-
-/**
- * Upload summary
+ * Upload summary result
  */
 export interface UploadSummary {
   /** Whether upload succeeded */
   success: boolean;
-  /** Total nodes created */
+  /** Total nodes uploaded */
   totalNodesCreated: number;
   /** Total errors encountered */
-  totalErrors?: number;
-  /** Upload session ID */
-  uploadSessionId?: string;
+  totalErrors: number;
+  /** Session ID for tracking */
+  sessionId?: string;
+  /** Upload duration in milliseconds */
+  duration?: number;
+}
+
+/**
+ * Batch upload result from API
+ */
+export interface BatchUploadResult {
+  /** Session ID (returned on first batch) */
+  sessionId?: string;
+  /** Successfully created nodes */
+  created: Array<{ nodeId: string; slug?: string; filePath?: string }>;
+  /** Errors during upload */
+  errors: Array<{ filePath?: string; error: string }>;
+  /** Batch number processed */
+  batchNumber?: number;
 }
 
 /**
  * UploadService orchestrates batch upload of vault content to Mujarrad
  *
- * Features:
- * - Initializes upload session via API
- * - Scans vault for .md and .canvas files
- * - Prepares node data with metadata extraction
- * - Splits files into batches for efficient upload
- * - Uploads batches sequentially with error handling
- * - Embeds UUIDs in local files after successful upload
- * - Caches node mappings for sync
- * - Finalizes session with summary
+ * Uses the actual generated UploadApi which provides:
+ * - uploadBatch(): Upload files in batches (stateless, client manages session)
+ * - getUploadStatus(): Poll for upload progress
+ * - getUploadLog(): Retrieve detailed logs
  *
  * Upload Flow:
  * 1. Scan vault → FileInfo[]
- * 2. Init session → UploadSession (with batch size)
- * 3. Prepare node data (parse markdown/canvas, extract metadata)
- * 4. Create batches (split by batch size)
- * 5. Upload batches sequentially
- * 6. Cache node mappings (UUID → file path)
- * 7. Finalize session → Summary
+ * 2. Prepare node data (parse markdown/canvas, extract metadata)
+ * 3. Create batches (configurable size, default 50)
+ * 4. Upload batches sequentially:
+ *    - First batch creates session (no sessionId param)
+ *    - Subsequent batches include sessionId
+ * 5. Cache node mappings (UUID → file path)
+ * 6. Return summary
  *
  * Usage:
  * ```typescript
@@ -112,36 +105,20 @@ export interface UploadSummary {
  * Follows Constitution Principle III: TDD approach
  * Implements FR-001 to FR-011: Upload workflow
  * Implements FR-CLI-016: Batch upload API
- * Implements FR-CLI-019: Progress tracking
  */
 export class UploadService {
+  private defaultBatchSize = 50;
+
   constructor(private uploadApi: UploadApi) {}
-
-  /**
-   * Initialize upload session
-   *
-   * @param workspaceId - Target workspace ID
-   * @param metadata - Session metadata (total files, vault info)
-   * @returns Upload session with batch size
-   */
-  async initSession(workspaceId: string, metadata: SessionInitMetadata): Promise<UploadSession> {
-    const response = await this.uploadApi.initUploadSession(workspaceId, metadata as any);
-
-    return {
-      uploadSessionId: response.data.uploadSessionId,
-      batchSize: response.data.batchSize || 50,
-      workspaceId: response.data.workspaceId || workspaceId
-    };
-  }
 
   /**
    * Create batches from file list
    *
    * @param files - Files to batch
-   * @param batchSize - Size of each batch
+   * @param batchSize - Size of each batch (default 50)
    * @returns Array of batches
    */
-  createBatches<T>(files: T[], batchSize: number): T[][] {
+  createBatches<T>(files: T[], batchSize: number = this.defaultBatchSize): T[][] {
     if (files.length === 0) {
       return [];
     }
@@ -154,43 +131,60 @@ export class UploadService {
   }
 
   /**
-   * Upload a batch of nodes
+   * Upload a batch of files
    *
-   * @param sessionId - Upload session ID
    * @param workspaceId - Workspace ID
-   * @param batch - Batch of node data
+   * @param files - Files to upload (as File objects or compatible)
+   * @param batchNumber - Batch sequence number
+   * @param sessionId - Session ID (omit for first batch)
+   * @param commitMessage - Optional git commit message
    * @returns Upload result with created nodes and errors
    */
   async uploadBatch(
-    sessionId: string,
     workspaceId: string,
-    batch: NodeData[]
+    files: any[], // Use any to match generated API File type
+    batchNumber: number,
+    sessionId?: string,
+    commitMessage?: string
   ): Promise<BatchUploadResult> {
-    const response = await this.uploadApi.uploadNodes(sessionId, workspaceId, {
-      nodes: batch
-    } as any);
+    const response = await this.uploadApi.uploadBatch(
+      workspaceId,
+      files,
+      batchNumber,
+      sessionId,
+      commitMessage
+    );
 
     return {
-      created: response.data.created || [],
-      errors: response.data.errors || []
+      sessionId: (response.data as any).sessionId || sessionId,
+      created: (response.data as any).created || [],
+      errors: (response.data as any).errors || [],
+      batchNumber
     };
   }
 
   /**
-   * Finalize upload session
+   * Get upload status
    *
-   * @param sessionId - Upload session ID
    * @param workspaceId - Workspace ID
-   * @returns Upload summary
+   * @param sessionId - Session ID
+   * @returns Upload status information
    */
-  async finalizeSession(sessionId: string, workspaceId: string): Promise<UploadSummary> {
-    const response = await this.uploadApi.completeUploadSession(sessionId, workspaceId);
+  async getUploadStatus(workspaceId: string, sessionId: string): Promise<any> {
+    const response = await this.uploadApi.getUploadStatus(workspaceId, sessionId);
+    return response.data;
+  }
 
-    return {
-      success: response.data.success || false,
-      totalNodesCreated: response.data.totalNodesCreated || 0,
-      uploadSessionId: response.data.uploadSessionId
-    };
+  /**
+   * Get upload log
+   *
+   * @param workspaceId - Workspace ID
+   * @param sessionId - Session ID
+   * @returns Upload log entries
+   */
+  async getUploadLog(workspaceId: string, sessionId: string): Promise<any> {
+    const response = await this.uploadApi.getUploadLog(workspaceId, sessionId);
+    return response.data;
   }
 
   /**
@@ -199,10 +193,10 @@ export class UploadService {
    * Reads file content, parses markdown/canvas, extracts metadata
    *
    * @param fileInfo - File information
-   * @param vaultPath - Vault root path
+   * @param _vaultPath - Vault root path (reserved for future use)
    * @returns Prepared node data
    */
-  async prepareNodeData(fileInfo: FileInfo, vaultPath: string): Promise<NodeData> {
+  async prepareNodeData(fileInfo: FileInfo, _vaultPath: string): Promise<NodeData> {
     const content = await fs.readFile(fileInfo.absolutePath, 'utf-8');
 
     // Common fields
@@ -239,9 +233,6 @@ export class UploadService {
         edges: parsed.edges,
         config: parsed.config
       };
-
-      // Use canvas name from frontmatter if embedded
-      // (Some users add frontmatter to canvas JSON as comment)
     }
 
     // Generate slug from file path
@@ -254,62 +245,122 @@ export class UploadService {
   }
 
   /**
+   * Convert NodeData to File-compatible format for API
+   *
+   * The generated API expects File objects. We create a compatible structure
+   * that can be serialized for multipart/form-data upload.
+   *
+   * @param nodeData - Prepared node data
+   * @returns File-compatible object
+   */
+  private nodeDataToFile(nodeData: NodeData): any {
+    // Create File-compatible object for Node.js environment
+    return {
+      name: nodeData.filePath,
+      size: Buffer.from(nodeData.content).length,
+      type: nodeData.nodeType === 'CANVAS' ? 'application/json' : 'text/markdown',
+      content: nodeData.content,
+      // Include metadata as custom properties for backend processing
+      metadata: {
+        title: nodeData.title,
+        slug: nodeData.slug,
+        hash: nodeData.hash,
+        nodeType: nodeData.nodeType,
+        frontmatter: nodeData.frontmatter,
+        wikilinks: nodeData.wikilinks,
+        visualProperties: nodeData.visualProperties,
+        existingUUID: nodeData.existingUUID
+      }
+    };
+  }
+
+  /**
    * Upload entire vault to workspace
    *
    * Orchestrates complete upload flow:
    * 1. Scan vault
-   * 2. Init session
-   * 3. Prepare node data
-   * 4. Batch upload
-   * 5. Cache mappings
-   * 6. Finalize
+   * 2. Prepare node data
+   * 3. Batch upload (first batch creates session)
+   * 4. Cache mappings
+   * 5. Return summary
    *
    * @param workspaceId - Target workspace ID
    * @param vaultPath - Vault root path
+   * @param batchSize - Batch size (default 50)
    * @returns Upload summary
    */
-  async uploadVault(workspaceId: string, vaultPath: string): Promise<UploadSummary> {
+  async uploadVault(
+    workspaceId: string,
+    vaultPath: string,
+    batchSize: number = this.defaultBatchSize
+  ): Promise<UploadSummary> {
+    const startTime = Date.now();
+
     // Step 1: Scan vault
     const scanner = new VaultScanner(vaultPath);
     const files = await scanner.scan();
 
-    // Step 2: Initialize session
-    const session = await this.initSession(workspaceId, {
-      totalFiles: files.length,
-      vaultName: path.basename(vaultPath),
-      vaultPath
-    });
+    if (files.length === 0) {
+      return {
+        success: true,
+        totalNodesCreated: 0,
+        totalErrors: 0,
+        duration: Date.now() - startTime
+      };
+    }
 
-    // Step 3: Prepare node data for all files
+    // Step 2: Prepare node data for all files
     const nodeDataList: NodeData[] = [];
     for (const file of files) {
       const nodeData = await this.prepareNodeData(file, vaultPath);
       nodeDataList.push(nodeData);
     }
 
-    // Step 4: Create batches
-    const batches = this.createBatches(nodeDataList, session.batchSize);
+    // Step 3: Create batches
+    const batches = this.createBatches(nodeDataList, batchSize);
 
-    // Step 5: Upload batches sequentially
+    // Step 4: Upload batches sequentially
+    let sessionId: string | undefined;
     let totalCreated = 0;
     let totalErrors = 0;
     const createdNodes: Array<{ nodeId: string; filePath: string }> = [];
 
-    for (const batch of batches) {
-      const result = await this.uploadBatch(session.uploadSessionId, workspaceId, batch);
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      const batchNumber = i + 1;
+
+      // Convert node data to File-compatible format
+      const filesForUpload = batch.map(nd => this.nodeDataToFile(nd));
+
+      // Upload batch (first batch creates session)
+      const result = await this.uploadBatch(
+        workspaceId,
+        filesForUpload,
+        batchNumber,
+        sessionId,
+        `Batch ${batchNumber}/${batches.length}: ${batch.length} files`
+      );
+
+      // Store session ID from first batch
+      if (!sessionId && result.sessionId) {
+        sessionId = result.sessionId;
+      }
+
       totalCreated += result.created.length;
       totalErrors += result.errors.length;
 
       // Track created nodes for cache mapping
-      for (let i = 0; i < result.created.length; i++) {
+      for (let j = 0; j < result.created.length; j++) {
+        const createdNode = result.created[j];
+        const originalNode = batch[j];
         createdNodes.push({
-          nodeId: result.created[i].nodeId,
-          filePath: batch[i].filePath
+          nodeId: createdNode.nodeId,
+          filePath: originalNode.filePath
         });
       }
     }
 
-    // Step 6: Cache node mappings
+    // Step 5: Cache node mappings
     for (const node of createdNodes) {
       await CacheManager.cacheNodeMapping(workspaceId, node.nodeId, node.filePath);
     }
@@ -317,12 +368,13 @@ export class UploadService {
     // Update last sync time
     await CacheManager.setLastSyncTime(workspaceId, new Date().toISOString());
 
-    // Step 7: Finalize session
-    const summary = await this.finalizeSession(session.uploadSessionId, workspaceId);
-
+    // Step 6: Return summary
     return {
-      ...summary,
-      totalErrors
+      success: totalErrors === 0,
+      totalNodesCreated: totalCreated,
+      totalErrors,
+      sessionId,
+      duration: Date.now() - startTime
     };
   }
 }
