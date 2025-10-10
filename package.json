@@ -56,6 +56,9 @@
     "gray-matter": "^4.0.3",
     "inquirer": "^12.9.6",
     "ora": "^7.0.1",
+    "remark-frontmatter": "^5.0.0",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5",
     "winston": "^3.18.3"
   },
   "devDependencies": {

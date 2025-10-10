@@ -35,7 +35,8 @@
       "WebFetch(domain:jsoncanvas.org)",
       "WebFetch(domain:www.npmjs.com)",
       "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Read(//Users/mac/Developer/Software-Projects/**)"
     ],
     "deny": [],
     "ask": []
