@@ -3,7 +3,12 @@ import inquirer from 'inquirer';
 import { Logger } from '../../../src/utils/Logger.js';
 
 // Mock dependencies
-jest.mock('inquirer');
+jest.mock('inquirer', () => ({
+  default: {
+    prompt: jest.fn()
+  },
+  prompt: jest.fn()
+}));
 jest.mock('../../../src/utils/Logger.js');
 
 describe('ConflictResolver', () => {
@@ -150,7 +155,7 @@ describe('ConflictResolver', () => {
         remoteTimestamp: '2025-10-11T14:30:00.500Z'
       };
 
-      (inquirer.prompt as jest.Mock).mockResolvedValue({
+      (inquirer.prompt as any).mockResolvedValue({
         choice: 'local'
       });
 
@@ -180,7 +185,7 @@ describe('ConflictResolver', () => {
         remoteTimestamp: '2025-10-11T14:30:00Z'
       };
 
-      (inquirer.prompt as jest.Mock).mockResolvedValue({
+      (inquirer.prompt as any).mockResolvedValue({
         choice: 'remote'
       });
 
@@ -201,7 +206,7 @@ describe('ConflictResolver', () => {
         remoteTimestamp: '2025-10-11T14:30:00Z'
       };
 
-      (inquirer.prompt as jest.Mock).mockResolvedValue({
+      (inquirer.prompt as any).mockResolvedValue({
         choice: 'merge'
       });
 
