@@ -36,7 +36,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
       "Bash(cat:*)",
-      "Read(//Users/mac/Developer/Software-Projects/**)"
+      "Read(//Users/mac/Developer/Software-Projects/**)",
+      "Bash(tests/unit/services/UploadService.test.ts)"
     ],
     "deny": [],
     "ask": []
