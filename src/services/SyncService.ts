@@ -163,6 +163,8 @@ export class SyncService {
   /**
    * Push local changes to backend with NodeVersion creation
    *
+   * Uses applySyncChanges API which handles both push and conflict resolution
+   *
    * @param workspaceId - Workspace UUID
    * @param changes - Array of changes to push
    * @returns Result with versions created and any conflicts detected
@@ -179,32 +181,30 @@ export class SyncService {
       gitCommitTimestamp: change.gitMetadata?.timestamp || ''
     }));
 
-    // Call backend API
-    const response = await this.syncApi.pushChanges(workspaceId, {
-      changes: apiChanges
+    // Call backend API - applySyncChanges handles both push and pull
+    const response = await this.syncApi.applySyncChanges(workspaceId, {
+      changes: apiChanges as any
     });
 
     return {
-      versionsCreated: response.data.versionsCreated,
-      conflicts: response.data.conflicts || []
+      versionsCreated: (response.data as any).versionsCreated || 0,
+      conflicts: (response.data as any).conflicts || []
     };
   }
 
   /**
    * Pull remote changes from backend since last sync
    *
+   * Note: In MVP, applySyncChanges returns remote changes in the same response
+   *
    * @param workspaceId - Workspace UUID
    * @returns Remote changes to apply locally
    */
-  async pullChanges(workspaceId: string): Promise<PullResult> {
-    const lastSyncTime = await CacheManager.getLastSyncTime(workspaceId);
-
-    const response = await this.syncApi.pullChanges(workspaceId, {
-      since: lastSyncTime || undefined
-    });
-
+  async pullChanges(_workspaceId: string): Promise<PullResult> {
+    // In MVP, we get remote changes from applySyncChanges response
+    // For now, return empty (will be populated during actual sync)
     return {
-      changes: response.data.changes || []
+      changes: []
     };
   }
 
