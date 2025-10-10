@@ -1,3 +1,46 @@
+// Mock ora and cli-progress to avoid ESM import issues
+jest.mock('ora', () => {
+  return jest.fn((text?: string) => {
+    let _text = text || '';
+    let _isSpinning = false;
+
+    return {
+      start: jest.fn().mockImplementation(function(this: any) {
+        _isSpinning = true;
+        return this;
+      }),
+      stop: jest.fn().mockImplementation(() => {
+        _isSpinning = false;
+      }),
+      succeed: jest.fn().mockImplementation(() => {
+        _isSpinning = false;
+      }),
+      fail: jest.fn().mockImplementation(() => {
+        _isSpinning = false;
+      }),
+      warn: jest.fn().mockImplementation(() => {
+        _isSpinning = false;
+      }),
+      info: jest.fn().mockImplementation(() => {
+        _isSpinning = false;
+      }),
+      get text() { return _text; },
+      set text(value: string) { _text = value; },
+      get isSpinning() { return _isSpinning; },
+    };
+  });
+});
+
+jest.mock('cli-progress', () => {
+  return {
+    SingleBar: jest.fn().mockImplementation(() => ({
+      start: jest.fn(),
+      update: jest.fn(),
+      stop: jest.fn(),
+    })),
+  };
+});
+
 import { ProgressBar, Spinner } from '../../../src/utils/ProgressBar.js';
 
 describe('ProgressBar', () => {

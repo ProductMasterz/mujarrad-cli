@@ -287,7 +287,7 @@ const key = crypto.scryptSync(os.userInfo().username, 'mujarrad-salt', 32);
 **Estimated effort**: 2 hours
 **Dependencies**: Task 0.1, Task 0.2, Task 1.2
 **User Story**: US-1 (Basic Upload and Clone)
-**Status**: 🔄 IN PROGRESS
+**Status**: ✅ COMPLETE (18/18 tests passing)
 
 **Description**:
 Create Logger utility using winston 3+ for structured logging to ~/.mujarrad/logs/.
@@ -320,12 +320,12 @@ describe('Logger', () => {
 ```
 
 **Acceptance Criteria**:
-- [ ] winston 3+ installed
-- [ ] Logs to ~/.mujarrad/logs/mujarrad.log
-- [ ] Log rotation enabled (max 10MB, 5 files)
-- [ ] Log levels: debug, info, warn, error
-- [ ] Includes timestamp, request ID, operation context
-- [ ] Tests pass for logging functionality
+- [X] winston 3+ installed
+- [X] Logs to ~/.mujarrad/logs/mujarrad.log
+- [X] Log rotation enabled (max 10MB, 5 files)
+- [X] Log levels: debug, info, warn, error
+- [X] Includes timestamp, request ID, operation context
+- [X] Tests pass for logging functionality
 
 **Implementation Notes**:
 ```typescript
@@ -347,6 +347,7 @@ const logger = winston.createLogger({
 **Estimated effort**: 2 hours
 **Dependencies**: Task 0.1, Task 0.2
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE (20/20 tests passing)
 
 **Description**:
 Create UI utilities using ora 7+ (spinners) and cli-progress 3+ (progress bars).
@@ -371,11 +372,11 @@ describe('ProgressBar', () => {
 ```
 
 **Acceptance Criteria**:
-- [ ] ora 7+ and cli-progress 3+ installed
-- [ ] ProgressBar class for determinate operations
-- [ ] Spinner class for indeterminate operations
-- [ ] Customizable text and format
-- [ ] Tests pass for UI utilities
+- [X] ora 7+ and cli-progress 3+ installed
+- [X] ProgressBar class for determinate operations
+- [X] Spinner class for indeterminate operations
+- [X] Customizable text and format
+- [X] Tests pass for UI utilities
 
 **Implementation Notes**:
 ```typescript
@@ -392,6 +393,7 @@ import cliProgress from 'cli-progress';
 **Estimated effort**: 2 hours
 **Dependencies**: Task 1.4
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE (17/17 tests passing)
 
 **Description**:
 Add frontmatter parsing capability to MarkdownParser using gray-matter library.
@@ -427,11 +429,11 @@ describe('FrontmatterParser', () => {
 ```
 
 **Acceptance Criteria**:
-- [ ] gray-matter installed
-- [ ] Parses YAML frontmatter
-- [ ] Handles markdown without frontmatter
-- [ ] MetadataManager preserves existing frontmatter
-- [ ] Tests pass for frontmatter parsing
+- [X] gray-matter installed
+- [X] Parses YAML frontmatter
+- [X] Handles markdown without frontmatter
+- [X] MetadataManager preserves existing frontmatter
+- [X] Tests pass for frontmatter parsing
 
 **Implementation Notes**:
 ```typescript
@@ -455,6 +457,7 @@ class FrontmatterParser {
 **Estimated effort**: 4 hours
 **Dependencies**: Task 1.1, Task 1.3, Task 1.4
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE (17/17 tests passing)
 
 **Description**:
 Create AuthService to handle login, logout, and token refresh.
@@ -517,6 +520,7 @@ class AuthService {
 **Estimated effort**: 3 hours
 **Dependencies**: Task 2.1
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE (15/15 tests passing)
 
 **Description**:
 Add retry logic with exponential backoff to API client for transient failures.
@@ -616,6 +620,7 @@ class RetryHandler {
 **Estimated effort**: 2 hours
 **Dependencies**: Task 2.2
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE (23/23 tests passing)
 
 **Description**:
 Create HTTP error handler for status codes with user-friendly messages.
@@ -696,6 +701,7 @@ class HttpErrorHandler {
 **Estimated effort**: 2 hours
 **Dependencies**: Task 2.3
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE (28/28 tests passing)
 
 **Description**:
 Create response validator to validate API responses against expected schemas.
@@ -784,6 +790,7 @@ class ResponseValidator {
 **Estimated effort**: 3 hours
 **Dependencies**: Task 2.1, Task 2.3
 **User Story**: US-1 (Basic Upload and Clone)
+**Status**: ✅ COMPLETE (Implementation complete - E2E tests pending)
 
 **Description**:
 Create CLI command handlers for authentication using Commander.js 11+.

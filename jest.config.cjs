@@ -33,4 +33,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles)/)',
+  ],
 };

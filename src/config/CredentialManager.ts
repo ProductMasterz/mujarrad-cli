@@ -108,6 +108,28 @@ export class CredentialManager {
   }
 
   /**
+   * Clear stored token (alias for deleteToken for backward compatibility)
+   */
+  async clearToken(): Promise<void> {
+    return this.deleteToken();
+  }
+
+  /**
+   * Check if stored token is valid (not expired)
+   *
+   * @returns true if token exists and is not expired
+   */
+  async isTokenValid(): Promise<boolean> {
+    const token = await this.getToken();
+
+    if (!token) {
+      return false;
+    }
+
+    return !this.isTokenExpired(token);
+  }
+
+  /**
    * Validate token format (JWT structure: header.payload.signature)
    *
    * @param token - Token to validate
