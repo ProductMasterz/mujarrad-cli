@@ -314,6 +314,49 @@ As a user with unorganized notes, I want the system to suggest folder structures
 - **Conflict Resolution Strategy** - How does the system handle various conflict scenarios?
   - System uses auto-resolve strategy as primary approach: (A) Name conflicts → append UUID suffix to duplicates, (B) Concurrent edits → last-write-wins, (C) Same-name file and canvas → auto-rename with suffix, (D) Canvas node filename conflicts → UUID suffix, (E) Folder merge conflicts → auto-merge. Falls back to hybrid approach (auto-resolve simple conflicts, prompt for complex ones) if auto-resolution fails.
 
+### Conflict Resolution Decision Tree
+
+**Concurrent Edit Resolution** (FR-032, US-2 Scenario 4):
+1. Compare Git commit timestamps (client-side `git log` output)
+2. **If timestamps differ >1 second**: Remote (latest timestamp) wins automatically
+   - CLI displays: `Conflict auto-resolved: Remote changes applied to {filename} (newer by {X} seconds)`
+   - Logged to `~/.mujarrad/logs/sync-{session-id}.log` with before/after content diff
+3. **If timestamps within 1 second**: Trigger hybrid mode (interactive prompt)
+   - Display diff showing local vs remote changes
+   - Prompt user: `Conflict detected in {filename}. Choose: [L]ocal | [R]emote | [M]anual merge`
+   - User selection:
+     * `L`: Keep local changes, discard remote
+     * `R`: Keep remote changes, discard local
+     * `M`: Open in system editor for manual merge (write merged content, CLI re-reads and syncs)
+4. **Same-timestamp tiebreaker**: If both timestamps identical, compare content hashes
+   - If hashes match: No conflict (identical edits)
+   - If hashes differ: Prompt user (hybrid mode as above)
+
+**Notification Format**:
+- **Auto-resolved conflicts**: CLI displays summary after sync: `✓ 3 conflicts auto-resolved (2 remote wins, 1 local wins)`
+- **User-resolved conflicts**: CLI displays: `→ Resolved {filename}: Kept {local|remote|merged} version`
+- **Conflict log**: Stored in `~/.mujarrad/logs/sync-{session-id}.log`:
+  ```
+  [2025-10-11 14:32:15] CONFLICT AUTO-RESOLVED
+  File: notes/Strategy.md
+  Local timestamp: 2025-10-11 14:30:10
+  Remote timestamp: 2025-10-11 14:31:45
+  Resolution: Remote wins (95 seconds newer)
+  Local content (discarded): "# Strategy\n\nOld approach..."
+  Remote content (applied): "# Strategy\n\nNew approach..."
+  ```
+
+**Hybrid Mode Fallback Triggers** (auto-resolve fails when):
+1. **File deleted locally + modified remotely**: Prompt "File {filename} was deleted locally but modified remotely. Restore remote version? [Y/n]"
+2. **Metadata UUID mismatch**: Prompt "UUID mismatch in {filename}. This may indicate file corruption. Re-sync from remote? [Y/n]"
+3. **File moved + content changed**: Prompt "File {filename} was moved to {new-path} AND content changed. Apply both? [Y/n]"
+4. **Canvas structure conflict**: Prompt "Canvas {filename} has conflicting node positions. Keep [L]ocal layout | [R]emote layout | [M]erge visual properties"
+
+**Performance Requirements**:
+- Conflict detection: <100ms per file (NFR-003 sync <10s total)
+- Timestamp comparison: Use ISO-8601 format from Git metadata (FR-029)
+- Content hash: SHA-256 (reuse from upload resume FR-051 hash computation)
+
 - What happens when a user deletes a file locally and syncs?
   - System performs soft delete in Mujarrad: marks node as deleted/archived while preserving in database. This allows for recovery and maintains referential integrity.
 
@@ -323,8 +366,28 @@ As a user with unorganized notes, I want the system to suggest folder structures
 - What happens when canvas references a file that doesn't exist in the vault?
   - System should create placeholder node or warn about broken references
 
+- How are broken wikilinks handled during upload? (FR-053)
+  - **Detection**: MarkdownParser.extractWikilinks() validates that each `[[Target]]` resolves to an existing file in vault
+  - **Logging**: Broken links logged to `~/.mujarrad/logs/upload-{session-id}.log` with:
+    * Source file path (e.g., "notes/Strategy.md")
+    * Line number where broken link found (e.g., line 15)
+    * Broken link target (e.g., "[[Non-Existent Note]]")
+    * Timestamp (ISO-8601 format)
+  - **Attribute Creation**: System creates Attribute anyway (preserving user intent) but marks it with `{"broken": true, "targetNotFound": "Non-Existent Note"}` in Attribute.properties JSONB
+  - **User Notification**: At upload completion, CLI displays:
+    ```
+    ⚠ 3 broken wikilinks detected
+    See details: ~/.mujarrad/logs/upload-abc123.log
+    ```
+  - **Rationale**: Broken links are common during note-taking (forward references, work-in-progress). System preserves them for future resolution rather than failing upload.
+
 - What happens when Git history cannot be initialized (e.g., directory not writable)?
-  - System should fail gracefully with clear error message and rollback clone operation
+  - **Current Implementation (MVP)**: System fails gracefully with warning message, allows vault to remain (user can manually initialize Git later with `git init`). Clone operation succeeds without Git tracking.
+  - **FR-052 Interpretation**: "Clean up partial clone and report error" means:
+    * **Partial clone** = Files written but Git not initialized → This is a VALID state (usable vault without version control)
+    * **Cleanup required** = Files corrupted/incomplete → Would be caught by CloneService validation before Git init
+  - **Rationale**: Git is optional enhancement for version control. If Git fails, vault is still functional. Deleting a working vault due to Git failure would violate least-surprise principle and cause data loss.
+  - **Test Coverage**: Clone command includes try-catch for Git errors with user-friendly warning (lines 143-148 in src/commands/clone.ts)
 
 - How does the system handle circular references in canvas connections?
   - System should allow cycles as per FR-007 cyclic graph support, except for Context→Node CONTAINS relationships

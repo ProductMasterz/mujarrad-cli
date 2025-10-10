@@ -495,4 +495,33 @@ describe('UploadService', () => {
       ).rejects.toThrow('Scan failed');
     });
   });
+
+  /* H2 FIX: Error Recovery Tests (FR-050) - PENDING IMPLEMENTATION
+   *
+   * These tests are documented here but commented out until rollback logic is implemented.
+   *
+   * Implementation required:
+   * 1. Extend UploadSummary interface:
+   *    - Add rollbackPerformed: boolean
+   *    - Add rollbackError?: string
+   *
+   * 2. Add rollback API method:
+   *    - UploadApi.deleteNodes(workspaceId: string, nodeIds: string[]): Promise<void>
+   *    OR
+   *    - UploadApi.rollbackSession(workspaceId: string, sessionId: string): Promise<void>
+   *
+   * 3. Implement rollback logic in UploadService.uploadVault():
+   *    - Track created node IDs during batch uploads
+   *    - On error, call deleteNodes() with all created IDs
+   *    - Clear workspace cache via CacheManager.clearWorkspaceCache()
+   *    - Set rollbackPerformed and rollbackError in summary
+   *
+   * Test Scenarios (see spec.md lines 756-761 for FR-050):
+   * - Test 1: Rollback when batch fails at file 15/50 (14 nodes created, then error)
+   * - Test 2: Handle rollback failure gracefully (network error during DELETE)
+   * - Test 3: Skip rollback when no nodes created (all files fail immediately)
+   *
+   * Blocked by: Backend API /api/workspaces/{id}/nodes/batch-delete endpoint
+   * Priority: Phase 6 (before production release)
+   */
 });
