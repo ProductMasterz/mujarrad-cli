@@ -14,6 +14,22 @@ tests/
 ## Commands
 npm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] npm run lint
 
+## Specify Commands (Feature Development Workflow)
+- `/speckit.specify [feature description]` - Create feature specification from natural language
+- `/speckit.clarify` - Clarify and refine existing specification requirements  
+- `/speckit.plan` - Generate detailed implementation plan from specification
+- `/speckit.implement` - Start feature implementation with TDD approach
+- `/speckit.tasks` - View and manage implementation tasks
+- `/speckit.analyze` - Analyze current codebase and suggest improvements
+- `/speckit.checklist` - Generate quality checklists for current phase
+
+## Specify Workflow
+1. **Specify**: Start with natural language feature description
+2. **Clarify**: Resolve any ambiguous requirements 
+3. **Plan**: Create detailed implementation roadmap
+4. **Implement**: Execute with test-driven development
+5. **Tasks**: Track progress and manage implementation tasks
+
 ## Code Style
 TypeScript 5.3+ with Node.js 18+: Follow standard conventions
 
