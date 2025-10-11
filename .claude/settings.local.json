@@ -43,7 +43,15 @@
       "Bash(else echo \"NO_CHECKLISTS\")",
       "Bash(fi)",
       "Bash(if [ -d \"/Users/mac/Developer/Software-Projects/PMZ Projects/Mujarrad/Mujarrad-CLI/specs/007-obsidian-mapper-i/checklists\" ])",
-      "Bash(git push origin 007-obsidian-mapper-i)"
+      "Bash(git push origin 007-obsidian-mapper-i)",
+      "Bash(npm config:*)",
+      "Bash(npm publish:*)",
+      "Bash(npm view:*)",
+      "Bash(node:*)",
+      "Bash(nvm install:*)",
+      "Bash(nvm alias:*)",
+      "Bash(npm:*)",
+      "Bash(nvm use:*)"
     ],
     "deny": [],
     "ask": []
