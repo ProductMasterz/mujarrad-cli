@@ -42,7 +42,8 @@
       "Bash(then echo \"EXISTS\")",
       "Bash(else echo \"NO_CHECKLISTS\")",
       "Bash(fi)",
-      "Bash(if [ -d \"/Users/mac/Developer/Software-Projects/PMZ Projects/Mujarrad/Mujarrad-CLI/specs/007-obsidian-mapper-i/checklists\" ])"
+      "Bash(if [ -d \"/Users/mac/Developer/Software-Projects/PMZ Projects/Mujarrad/Mujarrad-CLI/specs/007-obsidian-mapper-i/checklists\" ])",
+      "Bash(git push origin 007-obsidian-mapper-i)"
     ],
     "deny": [],
     "ask": []
