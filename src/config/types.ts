@@ -31,7 +31,7 @@ export interface Config {
  * Default configuration values
  */
 export const DEFAULT_CONFIG: Config = {
-  apiBaseUrl: 'https://mujarrad.onrender.com/api',
+  apiBaseUrl: 'https://mujarrad.onrender.com',
   autoSync: false,
   logLevel: 'info'
 };

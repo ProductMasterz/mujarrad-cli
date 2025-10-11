@@ -48,13 +48,17 @@ export const logoSimple = chalk.hex(COLOR_DEEP_BLUE).bold('M') +
                           chalk.hex('#CADDF2').bold('A') +
                           chalk.hex(COLOR_SILVER_GRAY).bold('D');
 
-export const version = chalk.hex('#5A8DB2')('v1.0.0');
+import { getVersion } from './version.js';
+
+export function getFormattedVersion(): string {
+  return chalk.hex('#5A8DB2')(`v${getVersion()}`);
+}
 
 export function displayBanner(): void {
   console.log(logo);
-  console.log(chalk.hex('#5A8DB2')(`  ${version}\n`));
+  console.log(chalk.hex('#5A8DB2')(`  ${getFormattedVersion()}\n`));
 }
 
 export function displaySimple(): void {
-  console.log(`${logoSimple} ${version}`);
+  console.log(`${logoSimple} ${getFormattedVersion()}`);
 }

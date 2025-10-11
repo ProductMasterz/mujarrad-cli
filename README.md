@@ -278,12 +278,14 @@ Mujarrad **adapts** to your environment. Configuration stored in `~/.mujarrad/co
 
 ```json
 {
-  "apiBaseUrl": "https://api.example.com",
+  "apiBaseUrl": "https://mujarrad.onrender.com",
   "defaultWorkspace": "my-workspace",
   "autoSync": false,
   "logLevel": "info"
 }
 ```
+
+**Note**: v1.0.5+ automatically migrates old config files with incorrect API URLs.
 
 ### Credential Storage
 
@@ -425,6 +427,12 @@ mujarrad auth logout
 mujarrad auth login
 ```
 
+**Note**: If you installed v1.0.0-1.0.3 and experience 403 errors, simply upgrade to v1.0.5:
+```bash
+npm install -g mujarrad-cli@latest
+```
+The CLI will automatically fix your config file on next run.
+
 ### Sync Conflicts
 
 Mujarrad uses **intelligent** **conflict resolution**:
@@ -561,10 +569,12 @@ npm run format            # Format code (Prettier)
 - [ ] Sharing commands
 - [ ] Status command
 
-### Phase 10: Distribution 📋
-- [ ] NPM package
-- [ ] User documentation
-- [ ] Developer documentation
+### Phase 10: Distribution ✅
+- [x] NPM package (v1.0.5 published)
+- [x] User documentation (README.md)
+- [x] Developer documentation (inline comments + specs)
+
+**Current Version**: `1.0.5` - Published on npm
 
 See [tasks.md](./specs/007-obsidian-mapper-i/tasks.md) for detailed implementation plan.
 

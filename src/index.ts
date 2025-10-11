@@ -2,6 +2,8 @@
 
 import { Command } from 'commander';
 import { displayBanner } from './utils/logo.js';
+import { getVersion } from './utils/version.js';
+import { migrateConfig } from './utils/configMigration.js';
 import { authCommand } from './commands/auth.js';
 import { uploadCommand } from './commands/upload.js';
 import { cloneCommand } from './commands/clone.js';
@@ -15,6 +17,9 @@ import { templateCommand } from './commands/template.js';
  */
 
 async function main() {
+  // Migrate config if needed (silent - no output)
+  await migrateConfig();
+
   // Display brand logo
   displayBanner();
 
@@ -24,7 +29,7 @@ async function main() {
   program
     .name('mujarrad')
     .description('Obsidian Knowledge Graph Integration with Mujarrad')
-    .version('1.0.0');
+    .version(getVersion());
 
   // Register commands
   authCommand(program);

@@ -71,10 +71,17 @@ export class AuthService {
         password
       });
 
-      // Extract data from SuccessResponse wrapper
-      const loginData = response.data.data as any;
-      const accessToken = loginData.accessToken;
-      const user = loginData.user;
+      // Extract data from API response
+      const loginData = response.data as any;
+      const accessToken = loginData.token; // API returns 'token' not 'accessToken'
+      const apiUser = loginData.user;
+
+      // Map API user to our User interface (username -> name)
+      const user: User = {
+        id: apiUser.id,
+        email: apiUser.email,
+        name: apiUser.username // API uses 'username' field
+      };
 
       // Store token securely
       await credentialManager.storeToken(accessToken);
@@ -126,10 +133,17 @@ export class AuthService {
         username: name
       });
 
-      // Extract data from SuccessResponse wrapper
-      const registrationData = response.data.data as any;
-      const accessToken = registrationData.accessToken;
-      const user = registrationData.user;
+      // Extract data from API response
+      const registrationData = response.data as any;
+      const accessToken = registrationData.token; // API returns 'token' not 'accessToken'
+      const apiUser = registrationData.user;
+
+      // Map API user to our User interface (username -> name)
+      const user: User = {
+        id: apiUser.id,
+        email: apiUser.email,
+        name: apiUser.username // API uses 'username' field
+      };
 
       // Store token securely
       await credentialManager.storeToken(accessToken);
@@ -202,9 +216,16 @@ export class AuthService {
       this.logger.debug('Fetching current user profile');
 
       const response = await this.authApi.getCurrentUser();
-      const userData = response.data.data as any;
+      const apiUser = response.data as any;
 
-      return userData;
+      // Map API user to our User interface (username -> name)
+      const user: User = {
+        id: apiUser.id,
+        email: apiUser.email,
+        name: apiUser.username || apiUser.name // API uses 'username' field
+      };
+
+      return user;
     } catch (error: any) {
       this.logger.error('Failed to get current user', { error: error.message });
       throw new Error(`Failed to get user profile: ${error.message}`);
