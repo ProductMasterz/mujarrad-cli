@@ -37,7 +37,12 @@
       "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
       "Bash(cat:*)",
       "Read(//Users/mac/Developer/Software-Projects/**)",
-      "Bash(tests/unit/services/UploadService.test.ts)"
+      "Bash(tests/unit/services/UploadService.test.ts)",
+      "Bash(if [ -d \"specs/007-obsidian-mapper-i/checklists\" ])",
+      "Bash(then echo \"EXISTS\")",
+      "Bash(else echo \"NO_CHECKLISTS\")",
+      "Bash(fi)",
+      "Bash(if [ -d \"/Users/mac/Developer/Software-Projects/PMZ Projects/Mujarrad/Mujarrad-CLI/specs/007-obsidian-mapper-i/checklists\" ])"
     ],
     "deny": [],
     "ask": []

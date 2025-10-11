@@ -6,6 +6,7 @@ import { authCommand } from './commands/auth.js';
 import { uploadCommand } from './commands/upload.js';
 import { cloneCommand } from './commands/clone.js';
 import { syncCommand } from './commands/sync.js';
+import { templateCommand } from './commands/template.js';
 
 /**
  * Mujarrad CLI - Obsidian Knowledge Graph Integration
@@ -30,6 +31,7 @@ async function main() {
   uploadCommand(program);
   cloneCommand(program);
   syncCommand(program);
+  templateCommand(program);
 
   // Parse arguments
   await program.parseAsync(process.argv);

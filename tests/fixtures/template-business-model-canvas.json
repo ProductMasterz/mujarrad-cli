@@ -1,0 +1,121 @@
+{
+  "id": "template-uuid-bmc-001",
+  "creatorId": "user-uuid-test",
+  "sourceWorkspaceId": "workspace-uuid-bmc-source",
+  "name": "Business Model Canvas",
+  "description": "Strategic management template for developing and documenting business models. 9-block framework covering key areas: Customer Segments, Value Propositions, Channels, Customer Relationships, Revenue Streams, Key Resources, Key Activities, Key Partnerships, and Cost Structure.",
+  "tags": ["business", "strategy", "canvas", "planning"],
+  "isPublic": true,
+  "usageCount": 127,
+  "createdAt": "2025-10-09T10:00:00Z",
+  "updatedAt": "2025-10-11T08:30:00Z",
+  "deleted": false,
+  "contextTemplates": [
+    {
+      "id": "context-uuid-001",
+      "workspaceTemplateId": "template-uuid-bmc-001",
+      "name": "Customer Segments",
+      "path": "/Business Model Canvas/Customer Segments",
+      "description": "Who are the different groups of people or organizations your enterprise aims to reach and serve?",
+      "createdAt": "2025-10-09T10:00:00Z",
+      "updatedAt": "2025-10-09T10:00:00Z",
+      "deleted": false
+    },
+    {
+      "id": "context-uuid-002",
+      "workspaceTemplateId": "template-uuid-bmc-001",
+      "name": "Value Propositions",
+      "path": "/Business Model Canvas/Value Propositions",
+      "description": "What value do we deliver to the customer? Which customer problems are we helping to solve? What bundles of products and services are we offering?",
+      "createdAt": "2025-10-09T10:00:00Z",
+      "updatedAt": "2025-10-09T10:00:00Z",
+      "deleted": false
+    },
+    {
+      "id": "context-uuid-003",
+      "workspaceTemplateId": "template-uuid-bmc-001",
+      "name": "Channels",
+      "path": "/Business Model Canvas/Channels",
+      "description": "Through which channels do our customer segments want to be reached? How are we reaching them now?",
+      "createdAt": "2025-10-09T10:00:00Z",
+      "updatedAt": "2025-10-09T10:00:00Z",
+      "deleted": false
+    },
+    {
+      "id": "context-uuid-004",
+      "workspaceTemplateId": "template-uuid-bmc-001",
+      "name": "Customer Relationships",
+      "path": "/Business Model Canvas/Customer Relationships",
+      "description": "What type of relationship does each customer segment expect us to establish and maintain? How costly are they?",
+      "createdAt": "2025-10-09T10:00:00Z",
+      "updatedAt": "2025-10-09T10:00:00Z",
+      "deleted": false
+    },
+    {
+      "id": "context-uuid-005",
+      "workspaceTemplateId": "template-uuid-bmc-001",
+      "name": "Revenue Streams",
+      "path": "/Business Model Canvas/Revenue Streams",
+      "description": "For what value are customers really willing to pay? What do they currently pay? How are they currently paying?",
+      "createdAt": "2025-10-09T10:00:00Z",
+      "updatedAt": "2025-10-09T10:00:00Z",
+      "deleted": false
+    },
+    {
+      "id": "context-uuid-006",
+      "workspaceTemplateId": "template-uuid-bmc-001",
+      "name": "Key Resources",
+      "path": "/Business Model Canvas/Key Resources",
+      "description": "What key resources do our value propositions require? Our distribution channels? Customer relationships? Revenue streams?",
+      "createdAt": "2025-10-09T10:00:00Z",
+      "updatedAt": "2025-10-09T10:00:00Z",
+      "deleted": false
+    },
+    {
+      "id": "context-uuid-007",
+      "workspaceTemplateId": "template-uuid-bmc-001",
+      "name": "Key Activities",
+      "path": "/Business Model Canvas/Key Activities",
+      "description": "What key activities do our value propositions require? Our distribution channels? Customer relationships? Revenue streams?",
+      "createdAt": "2025-10-09T10:00:00Z",
+      "updatedAt": "2025-10-09T10:00:00Z",
+      "deleted": false
+    },
+    {
+      "id": "context-uuid-008",
+      "workspaceTemplateId": "template-uuid-bmc-001",
+      "name": "Key Partnerships",
+      "path": "/Business Model Canvas/Key Partnerships",
+      "description": "Who are our key partners? Who are our key suppliers? Which key resources are we acquiring from partners?",
+      "createdAt": "2025-10-09T10:00:00Z",
+      "updatedAt": "2025-10-09T10:00:00Z",
+      "deleted": false
+    },
+    {
+      "id": "context-uuid-009",
+      "workspaceTemplateId": "template-uuid-bmc-001",
+      "name": "Cost Structure",
+      "path": "/Business Model Canvas/Cost Structure",
+      "description": "What are the most important costs inherent in our business model? Which key resources are most expensive? Which key activities are most expensive?",
+      "createdAt": "2025-10-09T10:00:00Z",
+      "updatedAt": "2025-10-09T10:00:00Z",
+      "deleted": false
+    }
+  ],
+  "sampleNodes": [
+    {
+      "id": "node-uuid-001",
+      "slug": "customer-segment-startups",
+      "name": "Tech Startups",
+      "path": "/Business Model Canvas/Customer Segments/Tech Startups.md",
+      "content": "# Tech Startups\n\nSeed to Series A stage technology companies building SaaS products.\n\n## Characteristics\n- 5-50 employees\n- Venture-backed or bootstrapped\n- Need structured strategic planning\n- Limited time for manual knowledge management\n\n## Pain Points\n- Information scattered across tools (Notion, Google Docs, Slack)\n- Difficulty maintaining strategic alignment\n- No single source of truth for business model\n\n## Willingness to Pay\nHigh - strategic clarity is mission-critical"
+    },
+    {
+      "id": "node-uuid-002",
+      "slug": "value-prop-unified-knowledge-graph",
+      "name": "Unified Knowledge Graph",
+      "path": "/Business Model Canvas/Value Propositions/Unified Knowledge Graph.md",
+      "content": "# Unified Knowledge Graph\n\nSingle source of truth for all strategic and operational knowledge, automatically synchronized across local Obsidian and cloud workspace.\n\n## Benefits\n- **Centralized**: All business knowledge in one place\n- **Bidirectional Sync**: Work locally or in cloud, always in sync\n- **Visual Thinking**: Canvas support for strategic frameworks\n- **Git Integration**: Full version history and collaboration\n\n## Differentiation\nUnlike Notion (cloud-only) or Obsidian (local-only), Mujarrad bridges both worlds."
+    }
+  ]
+}

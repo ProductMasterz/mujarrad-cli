@@ -2154,6 +2154,151 @@ program
 
 ## Phase 9: Additional Workflows & Features
 
+### Task 9.0: Implement Workspace Management CLI Commands
+**Priority**: P2
+**Estimated effort**: 4 hours
+**Dependencies**: Task 1.1
+**User Story**: Foundation (Workspace Management)
+
+**Description**:
+Create CLI commands for workspace management (create, list, delete) to complement existing upload/clone/sync commands.
+
+**Tests** (write FIRST):
+```typescript
+// tests/integration/commands/workspace.test.ts
+describe('workspace command', () => {
+  it('should create a new workspace', async () => {
+    const result = await runCommand(['workspace', 'create', '--name', 'My Project', '--slug', 'my-project']);
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('Workspace created');
+    expect(result.output).toContain('my-project');
+  });
+
+  it('should list all workspaces', async () => {
+    const result = await runCommand(['workspace', 'list']);
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toMatch(/Name\s+Slug\s+Created/); // Table header
+  });
+
+  it('should delete a workspace', async () => {
+    const result = await runCommand(['workspace', 'delete', '--workspace', 'test-workspace', '--confirm']);
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('Workspace deleted');
+  });
+
+  it('should prompt for confirmation when deleting without --confirm flag', async () => {
+    const result = await runCommand(['workspace', 'delete', '--workspace', 'test-workspace']);
+    expect(result.output).toContain('Are you sure');
+  });
+});
+
+// tests/unit/services/WorkspaceService.test.ts
+describe('WorkspaceService', () => {
+  it('should create workspace via API', async () => {
+    const mockResponse = { id: 'workspace-uuid', slug: 'my-project', name: 'My Project' };
+    jest.spyOn(apiClient.workspacesApi, 'createWorkspace').mockResolvedValue(mockResponse);
+
+    const workspace = await WorkspaceService.create({ name: 'My Project', slug: 'my-project' });
+    expect(workspace.slug).toBe('my-project');
+  });
+
+  it('should list workspaces via API', async () => {
+    const mockResponse = { workspaces: [{ id: 'uuid1', name: 'Project 1' }, { id: 'uuid2', name: 'Project 2' }] };
+    jest.spyOn(apiClient.workspacesApi, 'listWorkspaces').mockResolvedValue(mockResponse);
+
+    const workspaces = await WorkspaceService.list();
+    expect(workspaces).toHaveLength(2);
+  });
+
+  it('should delete workspace via API', async () => {
+    jest.spyOn(apiClient.workspacesApi, 'deleteWorkspace').mockResolvedValue({ success: true });
+
+    await WorkspaceService.delete('workspace-id');
+    expect(apiClient.workspacesApi.deleteWorkspace).toHaveBeenCalledWith('workspace-id');
+  });
+});
+```
+
+**Acceptance Criteria**:
+- [ ] `mujarrad workspace create` command implemented
+- [ ] `mujarrad workspace list` command implemented
+- [ ] `mujarrad workspace delete` command implemented
+- [ ] WorkspaceService created with create/list/delete methods
+- [ ] Confirmation prompt for delete operation
+- [ ] Tests pass for workspace commands
+
+**Implementation Notes**:
+```typescript
+// src/services/WorkspaceService.ts
+import { apiClient } from '../api/generated';
+
+export class WorkspaceService {
+  async create(params: { name: string; slug?: string; description?: string }): Promise<Workspace> {
+    const response = await apiClient.workspacesApi.createWorkspace({
+      name: params.name,
+      slug: params.slug || params.name.toLowerCase().replace(/\s+/g, '-'),
+      description: params.description
+    });
+    return response.data;
+  }
+
+  async list(): Promise<Workspace[]> {
+    const response = await apiClient.workspacesApi.listWorkspaces();
+    return response.data.workspaces;
+  }
+
+  async delete(workspaceId: string): Promise<void> {
+    await apiClient.workspacesApi.deleteWorkspace(workspaceId);
+  }
+}
+
+// src/commands/workspace.ts
+program
+  .command('workspace create')
+  .option('--name <name>', 'Workspace name')
+  .option('--slug <slug>', 'Workspace slug (optional)')
+  .option('--description <description>', 'Workspace description (optional)')
+  .action(async (options) => {
+    const workspace = await WorkspaceService.create(options);
+    console.log(chalk.green('✓ Workspace created:'));
+    console.log(`  Name: ${workspace.name}`);
+    console.log(`  Slug: ${workspace.slug}`);
+    console.log(`  ID: ${workspace.id}`);
+  });
+
+program
+  .command('workspace list')
+  .action(async () => {
+    const workspaces = await WorkspaceService.list();
+    console.table(workspaces.map(w => ({
+      Name: w.name,
+      Slug: w.slug,
+      Created: new Date(w.createdAt).toLocaleDateString()
+    })));
+  });
+
+program
+  .command('workspace delete')
+  .option('--workspace <slug>', 'Workspace slug or ID')
+  .option('--confirm', 'Skip confirmation prompt')
+  .action(async (options) => {
+    if (!options.confirm) {
+      const answer = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'confirm',
+        message: `Are you sure you want to delete workspace "${options.workspace}"?`
+      }]);
+      if (!answer.confirm) return;
+    }
+    await WorkspaceService.delete(options.workspace);
+    console.log(chalk.green('✓ Workspace deleted'));
+  });
+```
+
+**Related Requirements**: Workspace management APIs from openapi.yaml (GET /api/workspaces, POST /api/workspaces, DELETE /api/workspaces/{workspaceId})
+
+---
+
 ### Task 9.1: Implement Auto-Update Mechanism
 **Priority**: P2
 **Estimated effort**: 3 hours

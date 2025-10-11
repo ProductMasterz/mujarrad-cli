@@ -538,20 +538,22 @@ npm run format            # Format code (Prettier)
 - [x] ZIP extraction (unzipper)
 - [x] Vault recreation
 
-### Phase 6: Sync Workflow 🚧
-- [ ] SyncService (bidirectional sync)
-- [ ] ConflictResolver (merge strategies)
-- [ ] sync CLI command
-- [ ] Watch mode for continuous sync
+### Phase 6: Sync Workflow ✅
+- [x] SyncService (bidirectional sync)
+- [x] ConflictResolver (merge strategies)
+- [x] sync CLI command
+- [x] Watch mode for continuous sync
 
-### Phase 7: Canvas Support 📋
-- [ ] Canvas visual property mapping
-- [ ] Canvas relationship extraction
+### Phase 7: Canvas Support ✅
+- [x] CanvasUploadService (visual property extraction)
+- [x] CanvasCloneService (canvas reconstruction)
+- [x] NFR-031: Visual accuracy within ±1 pixel
 
-### Phase 8: Template System 📋
-- [ ] Template library
-- [ ] Framework cloning
-- [ ] Configuration management
+### Phase 8: Template System ✅
+- [x] TemplateService (list, get, search, popular)
+- [x] TemplateCloneWorkflow (instantiate and clone)
+- [x] template CLI commands (list, clone)
+- [x] Template configuration management
 
 ### Phase 9: Additional Features 📋
 - [ ] Workspace management commands

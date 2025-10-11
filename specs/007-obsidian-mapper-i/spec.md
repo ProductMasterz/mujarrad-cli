@@ -1137,10 +1137,10 @@ All APIs MUST follow these standards:
 - **FR-054**: System MUST support creation and storage of WorkspaceTemplate entities containing pre-defined knowledge graph structures
 - **FR-055**: System MUST allow users to list available workspace templates via CLI command
 - **FR-056**: System MUST enable users to clone a workspace from a template, creating a new Workspace instance with template structure
-- **FR-057**: System MUST copy all CONTEXT Nodes (canvas layouts) from template to new workspace during clone operation
-- **FR-058**: System MUST copy all placeholder REGULAR Nodes from template to new workspace with empty or guidance content
-- **FR-059**: System MUST preserve all Attribute relationships defined in template when cloning to new workspace
-- **FR-060**: System MUST preserve canvas visual configuration (colors, positions, sizes) from template to cloned workspace
+- **FR-057**: System MUST apply clone requirements FR-018 to FR-024 when instantiating a workspace from a template (folder hierarchy, note generation, canvas reconstruction, wikilink conversion, Git initialization)
+- **FR-058**: System MUST include template-specific placeholder content in generated notes when cloning from template
+- **FR-059**: System MUST copy WorkspaceTemplate source structure including ContextTemplates to new Workspace instance during template clone
+- **FR-060**: Template clone MUST preserve canvas visual configuration (colors, positions, sizes) per FR-021 visual property reconstruction requirements
 - **FR-061**: System MUST generate template configuration file in cloned Obsidian vault indicating workspace follows template
 - **FR-062**: System MUST store template reference metadata in Workspace entity linking to source WorkspaceTemplate
 - **FR-063**: System MUST include template configuration file during workspace clone to Obsidian vault
