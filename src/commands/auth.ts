@@ -5,6 +5,7 @@ import { AuthService } from '../services/AuthService.js';
 import { AuthenticationApi } from '../api/generated/api.js';
 import { Configuration } from '../api/generated/configuration.js';
 import { ConfigManager } from '../config/ConfigManager.js';
+import { CredentialManager } from '../config/CredentialManager.js';
 
 /**
  * Setup auth command with Commander.js
@@ -26,8 +27,12 @@ export function authCommand(program: Command, authService?: AuthService): void {
     }
 
     const config = await new ConfigManager().load();
+    const credentialManager = new CredentialManager();
+    const token = await credentialManager.getToken();
+
     const apiConfig = new Configuration({
-      basePath: config.apiBaseUrl
+      basePath: config.apiBaseUrl,
+      accessToken: token || undefined
     });
     const authApi = new AuthenticationApi(apiConfig);
     return new AuthService(authApi);
