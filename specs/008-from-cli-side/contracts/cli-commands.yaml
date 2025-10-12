@@ -1,0 +1,397 @@
+# CLI Command Specifications
+# Feature: 008-from-cli-side (CLI Observability & Alpha Release Management)
+# Date: 2025-10-12
+
+# This file defines the command-line interface contracts for new and enhanced commands.
+# These serve as the "API contract" between the CLI tool and its users.
+
+commands:
+  # ============================================================================
+  # NEW COMMAND: mujarrad logs export
+  # ============================================================================
+  - name: logs export
+    command: mujarrad logs export [options]
+    description: |
+      Export CLI operation logs as compressed archive for debugging or sharing.
+      Creates a ZIP file containing log files, metadata, and extraction instructions.
+
+    options:
+      - name: --since
+        type: string
+        required: false
+        default: "7d"
+        description: |
+          Time range filter for log inclusion. Accepts:
+          - Relative time: "24h", "7d", "30d" (hours/days)
+          - Absolute date: "2025-10-01" (ISO 8601 date)
+          - Absolute datetime: "2025-10-01T00:00:00Z" (ISO 8601)
+        examples:
+          - "--since 24h  # Last 24 hours"
+          - "--since 7d   # Last 7 days (default)"
+          - "--since 2025-10-01  # Since October 1st"
+
+      - name: --level
+        type: string
+        required: false
+        enum: [debug, info, warn, error]
+        default: info
+        description: |
+          Minimum log level to include in export.
+          Exports all logs at this level and higher severity.
+          Levels in order: debug < info < warn < error
+        examples:
+          - "--level error  # Only error logs"
+          - "--level debug  # All logs (most verbose)"
+
+      - name: --output
+        type: string
+        required: false
+        default: "./mujarrad-logs-{timestamp}.zip"
+        description: |
+          Output path for the compressed archive.
+          Supports absolute and relative paths.
+          Timestamp placeholders: {timestamp}, {date}, {time}
+        examples:
+          - "--output ./my-logs.zip"
+          - "--output ~/Desktop/mujarrad-logs-{date}.zip"
+
+      - name: --redact-sensitive
+        type: boolean
+        required: false
+        default: true
+        description: |
+          Automatically redact sensitive data (tokens, passwords, API keys).
+          Use --no-redact-sensitive to include all data (DANGER: may expose credentials).
+        examples:
+          - "--redact-sensitive      # Default: redact sensitive data"
+          - "--no-redact-sensitive   # Include all data (use with caution)"
+
+    exit_codes:
+      0: Success - logs exported
+      1: Error - failed to export logs (see error message)
+      2: No logs found for specified criteria
+
+    examples:
+      - command: mujarrad logs export
+        description: Export last 7 days of logs (default behavior)
+
+      - command: mujarrad logs export --since "24h" --level error
+        description: Export only error-level logs from last 24 hours
+
+      - command: mujarrad logs export --output ~/Desktop/debug-logs.zip
+        description: Export to specific location
+
+      - command: mujarrad logs export --since "2025-10-01" --no-redact-sensitive
+        description: Export all logs since October 1st without redaction (for detailed debugging)
+
+    output_format: |
+      On success, prints:
+        ✓ Logs exported successfully
+        Archive: /path/to/mujarrad-logs-2025-10-12.zip
+        Size: 9.4 MB (82% compression)
+        Time range: 2025-10-10 to 2025-10-12
+        Sessions: 47
+
+        To extract:
+          unzip /path/to/mujarrad-logs-2025-10-12.zip
+
+      On failure, prints:
+        ✗ Failed to export logs: {error message}
+
+        Try:
+          - Check disk space (requires ~50MB free)
+          - Ensure ~/.mujarrad/logs/ directory exists
+          - Run with --help for usage information
+
+  # ============================================================================
+  # ENHANCED COMMAND: mujarrad upload (renamed to init with upload functionality)
+  # ============================================================================
+  - name: init
+    command: mujarrad init <vault-path> --workspace <slug> [options]
+    description: |
+      Initialize and upload an Obsidian vault to Mujarrad workspace.
+      Performs vault scanning, validation, and upload in a single operation.
+      This replaces the previous 'upload' command with combined init+upload flow.
+
+    arguments:
+      - name: vault-path
+        type: string
+        required: true
+        description: Path to Obsidian vault directory (absolute or relative)
+        validation: Must be a valid directory containing .md or .canvas files
+
+    options:
+      - name: --workspace
+        type: string
+        required: true
+        alias: -w
+        description: Workspace slug to upload to (must exist on server)
+        examples:
+          - "--workspace my-workspace"
+          - "-w my-workspace"
+
+      - name: --dry-run
+        type: boolean
+        required: false
+        default: false
+        description: |
+          Perform validation and show what would be uploaded without actually uploading.
+          Useful for testing before committing to upload.
+        examples:
+          - "--dry-run  # Validate only, don't upload"
+
+      - name: --no-progress
+        type: boolean
+        required: false
+        default: false
+        description: Disable progress indicators (useful for CI/CD environments)
+
+    exit_codes:
+      0: Success - vault initialized and uploaded
+      1: Error - validation or upload failed
+      2: Authentication required (run 'mujarrad auth login' first)
+
+    examples:
+      - command: mujarrad init ./my-vault --workspace personal
+        description: Initialize and upload vault to 'personal' workspace
+
+      - command: mujarrad init ~/Documents/Obsidian --workspace work --dry-run
+        description: Validate vault without uploading
+
+      - command: mujarrad init ./vault -w my-workspace --no-progress
+        description: Upload with progress indicators disabled (CI/CD friendly)
+
+    output_format: |
+      Initialization phase:
+        🔍 Initializing vault: /path/to/vault
+        ✓ Found 150 markdown files
+        ✓ Found 5 canvas files
+        ✓ Validation complete
+
+      Upload phase:
+        📤 Uploading to workspace: my-workspace
+        Progress: [████████████████████] 150/150 files (100%)
+
+        ✓ Upload complete
+        Files: 150 uploaded, 0 failed
+        Time: 45.2s
+        Workspace URL: https://mujarrad.com/workspaces/my-workspace
+
+  # ============================================================================
+  # ENHANCED COMMAND: mujarrad --version (with alpha warnings)
+  # ============================================================================
+  - name: version
+    command: mujarrad --version
+    alias: mujarrad -v
+    description: Display CLI version with alpha/beta warnings if applicable
+
+    options: []
+
+    output_format: |
+      For stable versions:
+        mujarrad CLI v1.0.5
+        Node.js v18.19.0
+        Platform: darwin (macOS)
+
+      For alpha/beta versions:
+        mujarrad CLI v1.0.0-alpha.1
+
+        ⚠️  ALPHA SOFTWARE ⚠️
+        This is pre-release software. Features may change without notice.
+        Use at your own risk. Report issues at:
+        https://github.com/mujarrad/mujarrad-cli/issues
+
+        Node.js v18.19.0
+        Platform: darwin (macOS)
+
+  # ============================================================================
+  # ENHANCED COMMAND: mujarrad --help (improved documentation)
+  # ============================================================================
+  - name: help
+    command: mujarrad --help
+    alias: mujarrad -h
+    description: Display comprehensive CLI help with examples and troubleshooting
+
+    options: []
+
+    output_format: |
+      mujarrad - Obsidian Knowledge Graph Integration
+
+      USAGE
+        $ mujarrad <command> [options]
+
+      COMMANDS
+        auth         Authentication commands
+          login      Log in to Mujarrad account
+          logout     Log out of current session
+          status     Check authentication status
+
+        init         Initialize and upload Obsidian vault
+        clone        Clone workspace to local vault
+        sync         Synchronize vault with workspace
+        template     Manage workspace templates
+        logs         Log management commands
+          export     Export logs as compressed archive
+
+      GLOBAL OPTIONS
+        --help, -h              Show help for command
+        --version, -v           Show CLI version
+        --no-progress           Disable progress indicators
+        --api-url <url>         Override API base URL
+        --log-level <level>     Set log level (debug|info|warn|error)
+        --accept-disclaimer     Auto-accept alpha disclaimer (for CI/CD)
+
+      EXAMPLES
+        # Authentication
+        $ mujarrad auth login --email user@example.com
+
+        # Initialize and upload vault
+        $ mujarrad init ./my-vault --workspace personal
+
+        # Clone workspace to local directory
+        $ mujarrad clone personal ./local-vault
+
+        # Export logs for debugging
+        $ mujarrad logs export --since "24h" --level error
+
+      TROUBLESHOOTING
+        Network errors:
+          - Check internet connection
+          - Verify API URL: mujarrad auth status
+          - Check firewall settings
+
+        Authentication errors:
+          - Re-authenticate: mujarrad auth login
+          - Check credentials: mujarrad auth status
+
+        Upload errors:
+          - Validate vault structure: mujarrad init --dry-run
+          - Check disk space and permissions
+          - Review logs: mujarrad logs export
+
+      DOCUMENTATION
+        https://www.mujarrad.com/docs
+
+      ISSUE REPORTING
+        https://github.com/mujarrad/mujarrad-cli/issues
+
+  # ============================================================================
+  # COMMAND-SPECIFIC HELP: mujarrad <command> --help
+  # ============================================================================
+  - name: command-help
+    command: mujarrad <command> --help
+    description: Display detailed help for specific command
+
+    examples:
+      - command: mujarrad init --help
+        output: |
+          mujarrad init - Initialize and upload Obsidian vault
+
+          USAGE
+            $ mujarrad init <vault-path> --workspace <slug> [options]
+
+          ARGUMENTS
+            vault-path    Path to Obsidian vault directory
+
+          OPTIONS
+            --workspace, -w <slug>    Workspace to upload to (required)
+            --dry-run                 Validate without uploading
+            --no-progress             Disable progress indicators
+
+          EXAMPLES
+            $ mujarrad init ./my-vault --workspace personal
+            $ mujarrad init ~/vault -w work --dry-run
+
+          For more information, visit:
+          https://www.mujarrad.com/docs/cli/init
+
+# ============================================================================
+# Global CLI Behavior
+# ============================================================================
+global_behavior:
+  alpha_disclaimer:
+    trigger: First run OR version level change (alpha → beta → stable)
+    display: |
+      ⚠️  ALPHA SOFTWARE WARNING ⚠️
+
+      Mujarrad CLI is currently in alpha development.
+
+      - Features may change without notice
+      - Data structures may be unstable
+      - Breaking changes may occur between versions
+
+      Use at your own risk. Always backup your data.
+
+      Do you accept these terms and wish to continue? (Y/n):
+
+    bypass_options:
+      - --accept-disclaimer flag
+      - MUJARRAD_ACCEPT_DISCLAIMER=true environment variable
+
+    storage: ~/.mujarrad/config.json (disclaimerAcknowledgment field)
+
+  logging:
+    level: Configurable via --log-level or MUJARRAD_LOG_LEVEL
+    location: ~/.mujarrad/logs/mujarrad-{pid}-YYYY-MM-DD.log
+    format: JSON lines
+    rotation: Daily with 7-day retention
+    redaction: Automatic for tokens, passwords, API keys
+
+  progress_indicators:
+    interactive_tty: Animated spinners and progress bars
+    non_tty: Periodic text updates every 10 seconds
+    ci_cd: Structured JSON logging
+    disable: --no-progress flag or NO_COLOR environment variable
+
+  error_handling:
+    display: Human-readable error messages with suggestions
+    logging: Full error details (message, stack trace) in log files
+    exit_codes:
+      0: Success
+      1: General error
+      2: Authentication required
+      3: Validation error
+      4: Network error
+
+  configuration:
+    location: ~/.mujarrad/config.json
+    schema:
+      apiBaseUrl: string (default: https://mujarrad.onrender.com)
+      defaultWorkspace: string (optional)
+      autoSync: boolean (default: false)
+      logLevel: string (default: info)
+      disclaimerAcknowledgment: object (optional)
+
+    environment_overrides:
+      MUJARRAD_API_BASE_URL: Override API base URL
+      MUJARRAD_DEFAULT_WORKSPACE: Override default workspace
+      MUJARRAD_AUTO_SYNC: Override auto-sync setting
+      MUJARRAD_LOG_LEVEL: Override log level
+      MUJARRAD_ACCEPT_DISCLAIMER: Auto-accept disclaimer (for CI/CD)
+
+# ============================================================================
+# Exit Codes Reference
+# ============================================================================
+exit_codes:
+  0: Success - operation completed successfully
+  1: General error - operation failed (see error message and logs)
+  2: Authentication required - user must log in first
+  3: Validation error - input validation failed
+  4: Network error - unable to reach API server
+  5: File system error - unable to read/write files
+  6: Configuration error - invalid configuration
+  7: User cancelled - operation cancelled by user (e.g., declined disclaimer)
+
+# ============================================================================
+# Version History
+# ============================================================================
+version_history:
+  - version: 1.0.0-alpha.1
+    date: 2025-10-12
+    changes:
+      - Added: mujarrad logs export command
+      - Added: Alpha disclaimer system
+      - Enhanced: mujarrad init command (replaces upload)
+      - Enhanced: Progress indicators with TTY detection
+      - Enhanced: Comprehensive help documentation
+      - Changed: Session-based logging with UUID correlation

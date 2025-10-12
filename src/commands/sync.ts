@@ -37,6 +37,21 @@ export function syncCommand(program: Command): void {
     .command('sync')
     .description('Synchronize local vault with Mujarrad workspace')
     .option('-w, --workspace <slug>', 'Workspace slug to sync')
+    .addHelpText('after', `
+Examples:
+  $ mujarrad sync
+    Sync current directory with default workspace
+
+  $ mujarrad sync --workspace my-workspace
+    Sync current directory with specific workspace
+
+Notes:
+  • Must be run from a Git-initialized vault directory
+  • Detects changes using git diff
+  • Pushes local changes to Mujarrad
+  • Resolves conflicts interactively
+  • Default workspace can be set in config
+    `)
     .action(async (options: any) => {
       const spinner = ora();
 

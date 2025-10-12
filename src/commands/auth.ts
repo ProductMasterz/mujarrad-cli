@@ -35,12 +35,31 @@ export function authCommand(program: Command, authService?: AuthService): void {
 
   const auth = program
     .command('auth')
-    .description('Authentication commands');
+    .description('Authentication commands for Mujarrad')
+    .addHelpText('after', `
+Examples:
+  $ mujarrad auth login
+    Log in with your email and password
+
+  $ mujarrad auth register
+    Create a new Mujarrad account
+
+  $ mujarrad auth status
+    Check if you're currently logged in
+
+  $ mujarrad auth logout
+    Log out from your account
+
+Notes:
+  • Credentials are stored securely in your system keychain
+  • Authentication tokens expire after 30 days
+  • Use 'mujarrad auth status' to verify login state
+    `);
 
   // auth login
   auth
     .command('login')
-    .description('Login to Mujarrad')
+    .description('Login to Mujarrad with email and password')
     .action(async () => {
       try {
         console.log(chalk.blue('Login to Mujarrad\n'));

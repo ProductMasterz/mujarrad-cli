@@ -4,6 +4,8 @@ Auto-generated from all feature plans. Last updated: 2025-10-10
 
 ## Active Technologies
 - TypeScript 5.3+ with Node.js 18+ + axios (HTTP client), chalk (CLI formatting), commander (CLI framework), simple-git (Git operations), gray-matter (frontmatter parsing) (007-obsidian-mapper-i)
+- TypeScript 5.3+ with Node.js 18+ + winston (logging), commander (CLI), ora (spinners), cli-progress (progress bars), chalk (colors), axios (HTTP), jest (testing) (008-from-cli-side)
+- File system (~/.mujarrad/logs/ for logs, ~/.mujarrad/config.json for CLI config) (008-from-cli-side)
 
 ## Project Structure
 ```
@@ -34,6 +36,7 @@ npm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNO
 TypeScript 5.3+ with Node.js 18+: Follow standard conventions
 
 ## Recent Changes
+- 008-from-cli-side: Added TypeScript 5.3+ with Node.js 18+ + winston (logging), commander (CLI), ora (spinners), cli-progress (progress bars), chalk (colors), axios (HTTP), jest (testing)
 - 007-obsidian-mapper-i: Added TypeScript 5.3+ with Node.js 18+ + axios (HTTP client), chalk (CLI formatting), commander (CLI framework), simple-git (Git operations), gray-matter (frontmatter parsing)
 
 <!-- MANUAL ADDITIONS START -->

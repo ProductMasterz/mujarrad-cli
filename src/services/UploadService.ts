@@ -4,6 +4,7 @@ import { MarkdownParser } from '../filesystem/MarkdownParser.js';
 import { CanvasParser } from '../filesystem/CanvasParser.js';
 import { MetadataManager } from '../filesystem/MetadataManager.js';
 import { CacheManager } from '../utils/CacheManager.js';
+import { Logger } from '../utils/Logger.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -108,8 +109,11 @@ export interface BatchUploadResult {
  */
 export class UploadService {
   private defaultBatchSize = 50;
+  private logger: Logger;
 
-  constructor(private uploadApi: UploadApi) {}
+  constructor(private uploadApi: UploadApi, logger?: Logger) {
+    this.logger = logger || new Logger({ logLevel: 'info' });
+  }
 
   /**
    * Create batches from file list
@@ -147,20 +151,53 @@ export class UploadService {
     sessionId?: string,
     commitMessage?: string
   ): Promise<BatchUploadResult> {
-    const response = await this.uploadApi.uploadBatch(
+    const startTime = Date.now();
+
+    this.logger.debug('Uploading batch', {
       workspaceId,
-      files,
       batchNumber,
+      fileCount: files.length,
       sessionId,
       commitMessage
-    );
+    });
 
-    return {
-      sessionId: (response.data as any).sessionId || sessionId,
-      created: (response.data as any).created || [],
-      errors: (response.data as any).errors || [],
-      batchNumber
-    };
+    try {
+      const response = await this.uploadApi.uploadBatch(
+        workspaceId,
+        files,
+        batchNumber,
+        sessionId,
+        commitMessage
+      );
+
+      const duration = Date.now() - startTime;
+      const result = {
+        sessionId: (response.data as any).sessionId || sessionId,
+        created: (response.data as any).created || [],
+        errors: (response.data as any).errors || [],
+        batchNumber
+      };
+
+      this.logger.info('Batch upload completed', {
+        workspaceId,
+        batchNumber,
+        created: result.created.length,
+        errors: result.errors.length,
+        duration
+      });
+
+      return result;
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      this.logger.error('Batch upload failed', {
+        workspaceId,
+        batchNumber,
+        error: error.message,
+        stack: error.stack,
+        duration
+      });
+      throw error;
+    }
   }
 
   /**
@@ -296,34 +333,47 @@ export class UploadService {
   ): Promise<UploadSummary> {
     const startTime = Date.now();
 
-    // Step 1: Scan vault
-    const scanner = new VaultScanner(vaultPath);
-    const files = await scanner.scan();
+    this.logger.info('Starting vault upload', {
+      workspaceId,
+      vaultPath,
+      batchSize
+    });
 
-    if (files.length === 0) {
-      return {
-        success: true,
-        totalNodesCreated: 0,
-        totalErrors: 0,
-        duration: Date.now() - startTime
-      };
-    }
+    try {
+      // Step 1: Scan vault
+      this.logger.debug('Scanning vault', { vaultPath });
+      const scanner = new VaultScanner(vaultPath);
+      const files = await scanner.scan();
+      this.logger.info('Vault scan completed', { fileCount: files.length });
 
-    // Step 2: Prepare node data for all files
-    const nodeDataList: NodeData[] = [];
-    for (const file of files) {
-      const nodeData = await this.prepareNodeData(file, vaultPath);
-      nodeDataList.push(nodeData);
-    }
+      if (files.length === 0) {
+        this.logger.warn('No files found in vault', { vaultPath });
+        return {
+          success: true,
+          totalNodesCreated: 0,
+          totalErrors: 0,
+          duration: Date.now() - startTime
+        };
+      }
 
-    // Step 3: Create batches
-    const batches = this.createBatches(nodeDataList, batchSize);
+      // Step 2: Prepare node data for all files
+      this.logger.debug('Preparing node data', { fileCount: files.length });
+      const nodeDataList: NodeData[] = [];
+      for (const file of files) {
+        const nodeData = await this.prepareNodeData(file, vaultPath);
+        nodeDataList.push(nodeData);
+      }
+      this.logger.info('Node data prepared', { nodeCount: nodeDataList.length });
 
-    // Step 4: Upload batches sequentially
-    let sessionId: string | undefined;
-    let totalCreated = 0;
-    let totalErrors = 0;
-    const createdNodes: Array<{ nodeId: string; filePath: string }> = [];
+      // Step 3: Create batches
+      const batches = this.createBatches(nodeDataList, batchSize);
+      this.logger.info('Created batches', { batchCount: batches.length, batchSize });
+
+      // Step 4: Upload batches sequentially
+      let sessionId: string | undefined;
+      let totalCreated = 0;
+      let totalErrors = 0;
+      const createdNodes: Array<{ nodeId: string; filePath: string }> = [];
 
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
@@ -360,21 +410,41 @@ export class UploadService {
       }
     }
 
-    // Step 5: Cache node mappings
-    for (const node of createdNodes) {
-      await CacheManager.cacheNodeMapping(workspaceId, node.nodeId, node.filePath);
+      // Step 5: Cache node mappings
+      this.logger.debug('Caching node mappings', { nodeCount: createdNodes.length });
+      for (const node of createdNodes) {
+        await CacheManager.cacheNodeMapping(workspaceId, node.nodeId, node.filePath);
+      }
+
+      // Update last sync time
+      await CacheManager.setLastSyncTime(workspaceId, new Date().toISOString());
+
+      const duration = Date.now() - startTime;
+      const summary = {
+        success: totalErrors === 0,
+        totalNodesCreated: totalCreated,
+        totalErrors,
+        sessionId,
+        duration
+      };
+
+      // Step 6: Return summary
+      this.logger.info('Vault upload completed', {
+        workspaceId,
+        ...summary
+      });
+
+      return summary;
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      this.logger.error('Vault upload failed', {
+        workspaceId,
+        vaultPath,
+        error: error.message,
+        stack: error.stack,
+        duration
+      });
+      throw error;
     }
-
-    // Update last sync time
-    await CacheManager.setLastSyncTime(workspaceId, new Date().toISOString());
-
-    // Step 6: Return summary
-    return {
-      success: totalErrors === 0,
-      totalNodesCreated: totalCreated,
-      totalErrors,
-      sessionId,
-      duration: Date.now() - startTime
-    };
   }
 }

@@ -3,13 +3,13 @@ import chalk from 'chalk';
 import ora from 'ora';
 import cliProgress from 'cli-progress';
 import * as path from 'path';
-import * as fs from 'fs/promises';
 import { UploadService } from '../services/UploadService.js';
 import { UploadApi } from '../api/generated/api.js';
 import { Configuration } from '../api/generated/configuration.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { CredentialManager } from '../config/CredentialManager.js';
 import { Logger } from '../utils/Logger.js';
+import { VaultValidator } from '../utils/VaultValidator.js';
 
 /**
  * Setup upload command with Commander.js
@@ -57,6 +57,23 @@ export function uploadCommand(program: Command, uploadService?: UploadService): 
     .argument('<vault-path>', 'Path to Obsidian vault directory')
     .requiredOption('-w, --workspace <slug>', 'Workspace slug')
     .option('-b, --batch-size <size>', 'Number of files per batch', '50')
+    .addHelpText('after', `
+Examples:
+  $ mujarrad upload ./my-vault --workspace my-workspace
+    Upload vault from current directory
+
+  $ mujarrad upload ~/Documents/Obsidian/MyVault -w work-notes
+    Upload vault with absolute path
+
+  $ mujarrad upload . -w project --batch-size 100
+    Upload current directory with larger batch size
+
+Notes:
+  • Vault must be an Obsidian vault (contains .obsidian folder)
+  • Workspace must exist before uploading
+  • Default batch size is 50 files
+  • Progress is tracked and can be resumed if interrupted
+    `)
     .action(async (vaultPath: string, options: any) => {
       const spinner = ora();
       let progressBar: cliProgress.SingleBar | null = null;
@@ -74,22 +91,56 @@ export function uploadCommand(program: Command, uploadService?: UploadService): 
         }
         spinner.succeed('Authenticated');
 
-        // Validate vault path
-        spinner.start('Validating vault path...');
+        // Validate vault structure (US7)
+        spinner.start('Validating vault structure...');
         const absoluteVaultPath = path.resolve(vaultPath);
-        try {
-          const stats = await fs.stat(absoluteVaultPath);
-          if (!stats.isDirectory()) {
-            spinner.fail();
-            console.error(chalk.red(`\n✗ Path is not a directory: ${absoluteVaultPath}\n`));
-            process.exit(1);
+
+        const validator = new VaultValidator(logger);
+        const validation = await validator.validateVault(absoluteVaultPath);
+
+        if (!validation.valid) {
+          spinner.fail('Vault validation failed');
+          console.error(chalk.red('\n✗ Vault validation failed:\n'));
+
+          // Display errors
+          validation.errors.forEach(error => {
+            console.error(chalk.red(`  • ${error}`));
+          });
+
+          // Display warnings if any
+          if (validation.warnings.length > 0) {
+            console.log(chalk.yellow('\nWarnings:'));
+            validation.warnings.forEach(warning => {
+              console.log(chalk.yellow(`  • ${warning}`));
+            });
           }
-        } catch (error: any) {
-          spinner.fail();
-          console.error(chalk.red(`\n✗ Vault path does not exist: ${absoluteVaultPath}\n`));
-          process.exit(1);
+
+          console.log(chalk.gray('\nTip: Make sure the directory is a valid Obsidian vault with a .obsidian folder.\n'));
+
+          logger.error('Vault validation failed', {
+            vaultPath: absoluteVaultPath,
+            errors: validation.errors,
+            warnings: validation.warnings
+          });
+
+          process.exit(3); // Exit code 3 for validation errors
         }
-        spinner.succeed(`Vault path: ${absoluteVaultPath}`);
+
+        // Display warnings even if validation passed
+        if (validation.warnings.length > 0) {
+          spinner.warn('Vault validated with warnings');
+          validation.warnings.forEach(warning => {
+            console.log(chalk.yellow(`  ⚠ ${warning}`));
+          });
+        } else {
+          spinner.succeed(`Vault validated: ${validation.fileCount} markdown files found`);
+        }
+
+        logger.info('Vault validation successful', {
+          vaultPath: absoluteVaultPath,
+          fileCount: validation.fileCount,
+          hasObsidianFolder: validation.hasObsidianFolder
+        });
 
         // Parse batch size
         const batchSize = parseInt(options.batchSize, 10);

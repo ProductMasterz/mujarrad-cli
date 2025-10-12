@@ -58,6 +58,26 @@ export function cloneCommand(program: Command, cloneService?: CloneService): voi
     .requiredOption('-w, --workspace <slug>', 'Workspace slug to clone')
     .option('--no-git', 'Skip Git repository initialization')
     .option('--include-history', 'Include version history in export')
+    .addHelpText('after', `
+Examples:
+  $ mujarrad clone ./my-vault --workspace my-workspace
+    Clone workspace to local directory
+
+  $ mujarrad clone ~/Documents/Obsidian/MyClone -w work-notes
+    Clone to absolute path
+
+  $ mujarrad clone ./vault -w project --no-git
+    Clone without initializing Git repository
+
+  $ mujarrad clone ./vault -w project --include-history
+    Clone with full version history
+
+Notes:
+  • Target directory will be created if it doesn't exist
+  • Git repository is initialized by default (use --no-git to skip)
+  • Version history is not included by default (use --include-history)
+  • Resulting vault can be opened directly in Obsidian
+    `)
     .action(async (targetPath: string, options: any) => {
       const spinner = ora();
 
