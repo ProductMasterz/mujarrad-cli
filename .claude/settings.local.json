@@ -77,7 +77,10 @@
       "Bash(npx tsc:*)",
       "Bash(git merge:*)",
       "Bash(tee:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(if [ -d \"/Users/mac/Developer/Software-Projects/PMZ Projects/Mujarrad/Mujarrad-CLI/specs/009-init-command-enhancement/checklists\" ])",
+      "Bash(java:*)",
+      "Bash(docker:*)"
     ],
     "deny": [],
     "ask": []

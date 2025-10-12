@@ -1,0 +1,239 @@
+
+> mujarrad-cli@1.1.0-alpha.2 test
+> jest tests/unit/commands/
+
+PASS unit tests/unit/commands/init.test.ts
+  Init Command (formerly Upload)
+    Command structure
+      ✓ should register init command (29 ms)
+      ✓ should have vault-path argument (3 ms)
+      ✓ should require --workspace option (1 ms)
+      ✓ should have optional --batch-size option (1 ms)
+    Help documentation
+      ✓ should have clear examples in help text (1 ms)
+      ✓ should have proper command structure (1 ms)
+    Vault structure validation
+      ✓ should validate vault structure before upload
+      ✓ should provide detailed validation errors (1 ms)
+    Progress tracking
+      ✓ should show initialization progress spinner (1 ms)
+      ✓ should show upload progress bar (56 ms)
+      ✓ should display combined statistics at end (19 ms)
+    Error handling
+      ✓ should fail gracefully if validation fails (13 ms)
+      ✓ should handle 403 errors with helpful message (3 ms)
+      ✓ should retry on 500 errors (3 ms)
+      ✓ should handle authentication errors (1 ms)
+    Retry logic
+      ✓ should retry 500 errors up to 3 times (6 ms)
+      ✓ should use exponential backoff (9 ms)
+      ✓ should not retry non-500 errors (1 ms)
+    Logging
+      ✓ should log vault validation start (1 ms)
+      ✓ should log upload completion (5 ms)
+      ✓ should log validation failures (1 ms)
+      ✓ should log retry attempts (1 ms)
+
+PASS unit tests/unit/commands/template.test.ts
+  Template Command
+    Command structure
+      ✓ should register template parent command (19 ms)
+      ✓ should register template list subcommand (3 ms)
+      ✓ should have ls alias for list command
+      ✓ should register template clone subcommand (1 ms)
+    Template list command
+      Command structure
+        ✓ should have --scope option
+        ✓ should default scope to public (1 ms)
+        ✓ should have --tags option
+      Template filtering
+        ✓ should filter by scope: public
+        ✓ should filter by scope: private (1 ms)
+        ✓ should filter by scope: all
+        ✓ should filter by tags
+        ✓ should combine scope and tags filters
+      Template display
+        ✓ should display templates in table format
+        ✓ should show template ID
+        ✓ should show template name
+        ✓ should show template description
+        ✓ should show template tags
+        ✓ should show usage count (1 ms)
+        ✓ should show context count
+        ✓ should show public/private status (1 ms)
+        ✓ should display template count (1 ms)
+        ✓ should handle empty results
+      Error handling
+        ✓ should handle 401/403 authentication errors
+        ✓ should handle 500 server errors
+        ✓ should handle network errors
+    Template clone command
+      Command structure
+        ✓ should have target-path argument (2 ms)
+        ✓ should require --template option
+        ✓ should require --name option (1 ms)
+        ✓ should have optional --description option
+      Authentication
+        ✓ should check authentication before cloning (1 ms)
+        ✓ should fail with helpful message if not authenticated
+      Target path validation
+        ✓ should create target directory if it does not exist
+        ✓ should warn if target directory is not empty
+        ✓ should resolve relative paths
+      Clone workflow
+        ✓ should call TemplateCloneWorkflow.execute
+        ✓ should pass workspace name to workflow (1 ms)
+        ✓ should pass workspace description to workflow
+        ✓ should pass empty placeholders object
+        ✓ should display progress during clone
+        ✓ should display clone summary on completion
+      Error handling
+        ✓ should handle 401 authentication errors
+        ✓ should handle 404 template not found (1 ms)
+        ✓ should handle 403 permission denied
+        ✓ should handle 500 server errors (9 ms)
+        ✓ should handle network errors
+        ✓ should stop spinner on error (1 ms)
+      Logging
+        ✓ should log clone initiation
+        ✓ should log clone completion
+        ✓ should log errors with full details
+    Help documentation
+      ✓ should have clear examples in help text
+      ✓ should document public/private templates (1 ms)
+      ✓ should document how to find template IDs
+    Edge cases
+      ✓ should handle empty template list (8 ms)
+      ✓ should handle templates with no tags (1 ms)
+      ✓ should handle templates with no description
+      ✓ should handle very long template names
+      ✓ should handle special characters in workspace name
+
+PASS unit tests/unit/commands/clone.test.ts
+  Clone Command
+    Command structure
+      ✓ should register clone command (5 ms)
+      ✓ should have target-path argument (1 ms)
+      ✓ should require --workspace option (1 ms)
+      ✓ should have optional --no-git flag
+      ✓ should have optional --include-history flag (1 ms)
+    Help documentation
+      ✓ should have clear examples in help text (1 ms)
+      ✓ should document git initialization behavior (2 ms)
+      ✓ should document version history option (1 ms)
+    Target path validation
+      ✓ should accept absolute paths (1 ms)
+      ✓ should accept relative paths
+      ✓ should handle non-existent directories
+      ✓ should warn if target directory is not empty (1 ms)
+    Authentication
+      ✓ should check authentication before cloning
+      ✓ should fail with helpful message if not authenticated
+    Cloning workflow
+      ✓ should call cloneWorkspace with correct parameters
+      ✓ should display progress during clone (1 ms)
+      ✓ should display clone summary on completion
+    Git initialization
+      ✓ should initialize git repository by default
+      ✓ should skip git initialization with --no-git flag
+      ✓ should create initial commit with workspace reference
+      ✓ should handle git initialization failures gracefully
+    Version history
+      ✓ should exclude history by default (1 ms)
+      ✓ should include history with --include-history flag
+    Error handling
+      ✓ should handle 401 authentication errors
+      ✓ should handle 404 workspace not found
+      ✓ should handle 403 permission denied
+      ✓ should handle 500 server errors
+      ✓ should handle network errors (1 ms)
+      ✓ should stop spinner on error (1 ms)
+    Logging
+      ✓ should log clone initiation
+      ✓ should log clone completion (4 ms)
+      ✓ should log git initialization (1 ms)
+      ✓ should log errors with full details (1 ms)
+    Edge cases
+      ✓ should handle empty workspace
+      ✓ should handle very large workspaces (2 ms)
+      ✓ should handle special characters in workspace slug (1 ms)
+      ✓ should handle spaces in target path
+
+FAIL unit tests/unit/commands/upload.test.ts
+  ● Test suite failed to run
+
+    [96mtests/unit/commands/upload.test.ts[0m:[93m52[0m:[93m31[0m - [91merror[0m[90m TS2307: [0mCannot find module '../../../src/commands/upload.js' or its corresponding type declarations.
+
+    [7m52[0m import { uploadCommand } from '../../../src/commands/upload.js';
+    [7m  [0m [91m                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+FAIL unit tests/unit/commands/help.test.ts
+  ● Test suite failed to run
+
+    [96mtests/unit/commands/help.test.ts[0m:[93m46[0m:[93m31[0m - [91merror[0m[90m TS2307: [0mCannot find module '../../../src/commands/upload.js' or its corresponding type declarations.
+
+    [7m46[0m import { uploadCommand } from '../../../src/commands/upload.js';
+    [7m  [0m [91m                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+PASS unit tests/unit/commands/sync.test.ts
+  Sync Command
+    Command structure
+      ✓ should register sync command (6 ms)
+      ✓ should have optional --workspace option (1 ms)
+      ✓ should use current directory as vault path
+    Help documentation
+      ✓ should have clear examples in help text
+      ✓ should document Git requirement (1 ms)
+      ✓ should document conflict resolution
+    Authentication
+      ✓ should check authentication before syncing
+      ✓ should fail with helpful message if not authenticated (1 ms)
+    Workspace resolution
+      ✓ should use --workspace flag if provided
+      ✓ should use default workspace from config if not provided
+      ✓ should fail if no workspace specified
+    Change detection
+      ✓ should detect local changes using git diff
+      ✓ should display count of changes detected
+      ✓ should exit early if no changes detected
+      ✓ should handle git errors gracefully
+    Push changes
+      ✓ should push changes to backend (1 ms)
+      ✓ should display count of versions created
+      ✓ should handle push failures
+    Conflict resolution
+      ✓ should detect conflicts from push result
+      ✓ should resolve conflicts interactively
+      ✓ should log each conflict resolution
+      ✓ should display resolution strategy to user
+      ✓ should handle KEEP_LOCAL strategy (1 ms)
+      ✓ should handle KEEP_REMOTE strategy
+      ✓ should handle MERGE strategy (2 ms)
+      ✓ should handle no conflicts scenario (1 ms)
+    Sync completion
+      ✓ should update sync timestamp
+      ✓ should display success message
+      ✓ should display sync statistics (1 ms)
+    Error handling
+      ✓ should handle 401 authentication errors
+      ✓ should handle 404 workspace not found
+      ✓ should handle 500 server errors
+      ✓ should handle network errors
+      ✓ should stop spinner on error
+    Logging
+      ✓ should log sync initiation (1 ms)
+      ✓ should log changes detected
+      ✓ should log sync completion
+      ✓ should log conflicts resolved
+      ✓ should log errors with full details
+    Edge cases
+      ✓ should handle empty change list
+      ✓ should handle large number of changes
+      ✓ should handle multiple conflicts
+      ✓ should handle sync from subdirectory (1 ms)
+
+Test Suites: 2 failed, 4 passed, 6 total
+Tests:       159 passed, 159 total
+Snapshots:   0 total
+Time:        5.545 s
+Ran all test suites matching /tests\/unit\/commands\//i.

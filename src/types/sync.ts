@@ -119,6 +119,12 @@ export enum ComparisonStatus {
 }
 
 /**
+ * Alias for ComparisonStatus (for backward compatibility and clarity)
+ * Used by VersionComparator for file status classification
+ */
+export const FileStatus = ComparisonStatus;
+
+/**
  * Comparison result for a single file
  * Represents the diff between local and remote versions
  * @interface ComparisonResult
