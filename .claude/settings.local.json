@@ -75,7 +75,9 @@
       "Bash(awk:*)",
       "Bash(git rm:*)",
       "Bash(npx tsc:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(tee:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
