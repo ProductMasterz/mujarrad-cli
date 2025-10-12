@@ -135,7 +135,7 @@ As a user initializing my vault with conflicts detected, I want to interactively
 
 ### Functional Requirements
 
-#### Workspace Verification (P1)
+#### Workspace Validation (P1)
 
 - **FR-001**: System MUST verify target workspace exists via GET request to `/api/workspaces/{slug}` before scanning local vault
 - **FR-002**: System MUST complete workspace verification within 5 seconds
@@ -189,7 +189,7 @@ As a user initializing my vault with conflicts detected, I want to interactively
 
 ### Non-Functional Requirements
 
-- **NFR-001**: Workspace verification MUST complete within 5 seconds on standard broadband connection (10 Mbps)
+- **NFR-001**: Workspace validation MUST complete within 5 seconds on standard broadband connection (10 Mbps)
 - **NFR-002**: Remote content pull MUST download at least 100 KB/second (approximately 100 markdown files/second)
 - **NFR-003**: Conflict resolution prompts MUST timeout after 120 seconds of user inactivity, skip the conflicted file, and continue sync with remaining files
 - **NFR-004**: System MUST handle workspaces with up to 10,000 remote nodes without memory issues (streaming download)

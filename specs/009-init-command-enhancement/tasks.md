@@ -56,7 +56,7 @@ Single project structure (TypeScript/Node.js CLI):
 
 - [ ] T010 [P] **[US1]** Contract test for `GET /api/workspaces/{slug}` endpoint in `tests/contract/workspace-api.test.ts`: Mock successful 200 response with WorkspaceMetadata, 404 response for non-existent workspace, 403 response for access denied, verify response schemas match contracts/backend-api.yaml
 - [ ] T011 [P] **[US1]** Unit test for WorkspaceValidator service in `tests/unit/services/WorkspaceValidator.test.ts`: Test `validateWorkspace(slug)` returns metadata on success, throws `WorkspaceNotFoundError` on 404, throws `AccessDeniedError` on 403, throws `NetworkError` on timeout, completes within 5 seconds (NFR-001)
-- [ ] T012 [P] **[US1]** Integration test for init command with workspace validation in `tests/integration/commands/init-workspace-validation.test.ts`: Test init with valid workspace proceeds to scan, init with invalid workspace fails before scan with exit code 4, init with restricted workspace fails with access denied error
+- [ ] T012 [P] **[US1]** Integration test for init command with workspace validation in `tests/integration/commands/init-workspace-validation.test.ts`: Test init with valid workspace proceeds to scan, verify display shows "✓ Workspace verified: {name} ({nodeCount} existing nodes)" format (FR-005), init with invalid workspace fails before scan with exit code 4, init with restricted workspace fails with access denied error
 
 ### Implementation for User Story 1
 

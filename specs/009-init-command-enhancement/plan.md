@@ -33,7 +33,7 @@ Transform the `mujarrad init` command from one-way vault upload into a comprehen
 
 **✅ API-First Design (Principle I - Adapted)**:
 - CLI consumes existing backend REST APIs
-- New backend endpoints required: GET `/api/workspaces/{slug}`, GET `/api/workspaces/{slug}/nodes`, GET `/api/nodes/{uuid}/versions`
+- New backend endpoints required: GET `/api/workspaces/{slug}`, GET `/api/workspaces/{slug}/nodes`, GET `/api/nodes/{uuid}/versions/compare`
 - Backend team must provide OpenAPI contracts for new endpoints before CLI integration
 - **Status**: DEPENDENT - Backend API contracts required (see Dependencies section)
 
@@ -69,7 +69,7 @@ The following backend API endpoints are REQUIRED but do not yet exist. Backend d
 
 1. **GET `/api/workspaces/{slug}`** - Workspace metadata retrieval (FR-001)
 2. **GET `/api/workspaces/{slug}/nodes`** - List all workspace nodes with pagination (FR-007)
-3. **GET `/api/nodes/{uuid}/versions`** - Node version history for common ancestor detection (FR-008)
+3. **GET `/api/nodes/{uuid}/versions/compare`** - Node version comparison for common ancestor detection (FR-008)
 4. **GET `/api/nodes/{uuid}/content`** - Download individual node content (dependency from spec)
 
 **Backend constitution compliance**: These new endpoints must follow Mujarrad Backend Constitution Principle I (API-First Design) with OpenAPI contracts defined before implementation.
