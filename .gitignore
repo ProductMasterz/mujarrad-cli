@@ -24,6 +24,9 @@ pids/
 # Coverage
 coverage/
 .nyc_output/
+*.lcov
+junit.xml
+test-results/
 
 # IDE
 .vscode/

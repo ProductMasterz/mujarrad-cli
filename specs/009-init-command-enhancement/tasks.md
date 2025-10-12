@@ -23,10 +23,10 @@ Single project structure (TypeScript/Node.js CLI):
 
 **Purpose**: Project initialization and configuration updates for bidirectional sync feature
 
-- [ ] T001 [P] Update TypeScript configuration to include new service directories in `tsconfig.json`
-- [ ] T002 [P] Install additional dependencies: `nock` (HTTP mocking for tests), ensure `jest`, `inquirer`, `ora`, `cli-progress` are at latest compatible versions
-- [ ] T003 [P] Create log directory structure `~/.mujarrad/logs/` if not exists (run-time check in Logger.ts)
-- [ ] T004 [P] Update `.gitignore` to exclude test coverage reports and local log files
+- [X] T001 [P] Update TypeScript configuration to include new service directories in `tsconfig.json`
+- [X] T002 [P] Install additional dependencies: `nock` (HTTP mocking for tests), ensure `jest`, `inquirer`, `ora`, `cli-progress` are at latest compatible versions
+- [X] T003 [P] Create log directory structure `~/.mujarrad/logs/` if not exists (run-time check in Logger.ts)
+- [X] T004 [P] Update `.gitignore` to exclude test coverage reports and local log files
 
 ---
 
