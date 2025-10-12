@@ -36,11 +36,11 @@ Single project structure (TypeScript/Node.js CLI):
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [P] **[Foundation]** Regenerate API client from contracts/backend-api.yaml using `openapi-generator-cli` to include new endpoints (`GET /api/workspaces/{slug}`, `GET /api/workspaces/{slug}/nodes`, `GET /api/nodes/{uuid}/versions/compare`, `GET /api/nodes/{uuid}/content`) in `src/api/generated/api.ts`
-- [ ] T006 [P] **[Foundation]** Define TypeScript interfaces for all entities in `src/types/sync.ts`: `WorkspaceMetadata`, `RemoteNode`, `LocalFile`, `ComparisonResult` (with `FileSyncStatus` enum: IDENTICAL, LOCAL_ONLY, REMOTE_ONLY, LOCAL_AHEAD, REMOTE_AHEAD, CONFLICTED), `ConflictResolution` (with `ResolutionStrategy` enum: KEEP_LOCAL, KEEP_REMOTE, SKIP), `SyncSession` (with `SyncSessionStatus` enum: VALIDATING_WORKSPACE, PULLING_REMOTE, COMPARING, RESOLVING_CONFLICTS, UPLOADING_LOCAL, COMPLETED, FAILED)
-- [ ] T007 [P] **[Foundation]** Create hash utility function `calculateHash(content: string): string` using SHA-256 in `src/utils/HashUtil.ts` (used by all stories for content comparison)
-- [ ] T008 **[Foundation]** Update `src/utils/Logger.ts` to add new log methods for sync operations: `logSyncStart()`, `logSyncComplete()`, `logSyncFailed()`, `logConflictResolution()`
-- [ ] T009 **[Foundation]** Create conflict log writer utility in `src/utils/ConflictLogger.ts` to write JSON Lines format to `~/.mujarrad/logs/conflicts-{sessionId}.log`
+- [X] T005 [P] **[Foundation]** Regenerate API client from contracts/backend-api.yaml using `openapi-generator-cli` to include new endpoints (`GET /api/workspaces/{slug}`, `GET /api/workspaces/{slug}/nodes`, `GET /api/nodes/{uuid}/versions/compare`, `GET /api/nodes/{uuid}/content`) in `src/api/generated/api.ts`
+- [X] T006 [P] **[Foundation]** Define TypeScript interfaces for all entities in `src/types/sync.ts`: `WorkspaceMetadata`, `RemoteNode`, `LocalFile`, `ComparisonResult` (with `FileSyncStatus` enum: IDENTICAL, LOCAL_ONLY, REMOTE_ONLY, LOCAL_AHEAD, REMOTE_AHEAD, CONFLICTED), `ConflictResolution` (with `ResolutionStrategy` enum: KEEP_LOCAL, KEEP_REMOTE, SKIP), `SyncSession` (with `SyncSessionStatus` enum: VALIDATING_WORKSPACE, PULLING_REMOTE, COMPARING, RESOLVING_CONFLICTS, UPLOADING_LOCAL, COMPLETED, FAILED)
+- [X] T007 [P] **[Foundation]** Create hash utility function `calculateHash(content: string): string` using SHA-256 in `src/utils/HashUtil.ts` (used by all stories for content comparison)
+- [X] T008 **[Foundation]** Update `src/utils/Logger.ts` to add new log methods for sync operations: `logSyncStart()`, `logSyncComplete()`, `logSyncFailed()`, `logConflictResolution()`
+- [X] T009 **[Foundation]** Create conflict log writer utility in `src/utils/ConflictLogger.ts` to write JSON Lines format to `~/.mujarrad/logs/conflicts-{sessionId}.log`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

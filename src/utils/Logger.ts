@@ -183,6 +183,209 @@ export class Logger {
   getLogLevel(): LogLevel {
     return this.logLevel;
   }
+
+  /**
+   * Log workspace validation start (FR-001)
+   * Feature: 009-init-command-enhancement
+   */
+  logWorkspaceValidationStart(workspaceSlug: string): void {
+    this.info('Workspace validation started', {
+      event: 'workspace_validation_start',
+      workspaceSlug,
+    });
+  }
+
+  /**
+   * Log workspace validation success (FR-005)
+   * Feature: 009-init-command-enhancement
+   */
+  logWorkspaceValidationSuccess(workspaceSlug: string, nodeCount: number): void {
+    this.info('Workspace validation successful', {
+      event: 'workspace_validation_success',
+      workspaceSlug,
+      nodeCount,
+    });
+  }
+
+  /**
+   * Log workspace validation failure (FR-003, FR-004)
+   * Feature: 009-init-command-enhancement
+   */
+  logWorkspaceValidationFailure(workspaceSlug: string, reason: string): void {
+    this.error('Workspace validation failed', {
+      event: 'workspace_validation_failure',
+      workspaceSlug,
+      reason,
+    });
+  }
+
+  /**
+   * Log remote content pull start (FR-007)
+   * Feature: 009-init-command-enhancement
+   */
+  logPullStart(workspaceSlug: string, expectedNodeCount: number): void {
+    this.info('Remote content pull started', {
+      event: 'pull_start',
+      workspaceSlug,
+      expectedNodeCount,
+    });
+  }
+
+  /**
+   * Log remote content pull progress
+   * Feature: 009-init-command-enhancement
+   */
+  logPullProgress(downloadedCount: number, totalCount: number): void {
+    this.debug('Remote content pull progress', {
+      event: 'pull_progress',
+      downloadedCount,
+      totalCount,
+      percentage: Math.round((downloadedCount / totalCount) * 100),
+    });
+  }
+
+  /**
+   * Log remote content pull completion (FR-014)
+   * Feature: 009-init-command-enhancement
+   */
+  logPullComplete(downloadedCount: number, durationMs: number): void {
+    this.info('Remote content pull completed', {
+      event: 'pull_complete',
+      downloadedCount,
+      durationMs,
+    });
+  }
+
+  /**
+   * Log comparison phase start (FR-021)
+   * Feature: 009-init-command-enhancement
+   */
+  logComparisonStart(localFileCount: number, remoteNodeCount: number): void {
+    this.info('Comparison phase started', {
+      event: 'comparison_start',
+      localFileCount,
+      remoteNodeCount,
+    });
+  }
+
+  /**
+   * Log comparison summary (FR-024)
+   * Feature: 009-init-command-enhancement
+   */
+  logComparisonSummary(summary: {
+    identical: number;
+    localOnly: number;
+    remoteOnly: number;
+    localAhead: number;
+    remoteAhead: number;
+    conflicted: number;
+  }): void {
+    this.info('Comparison phase completed', {
+      event: 'comparison_complete',
+      ...summary,
+    });
+  }
+
+  /**
+   * Log conflict detected (FR-023)
+   * Feature: 009-init-command-enhancement
+   */
+  logConflictDetected(filePath: string, localHash: string, remoteHash: string): void {
+    this.warn('Conflict detected', {
+      event: 'conflict_detected',
+      filePath,
+      localHash,
+      remoteHash,
+    });
+  }
+
+  /**
+   * Log conflict resolution (FR-031)
+   * Feature: 009-init-command-enhancement
+   */
+  logConflictResolution(
+    filePath: string,
+    strategy: string,
+    reason?: string
+  ): void {
+    this.info('Conflict resolved', {
+      event: 'conflict_resolved',
+      filePath,
+      strategy,
+      reason,
+    });
+  }
+
+  /**
+   * Log sync session start
+   * Feature: 009-init-command-enhancement
+   */
+  logSyncSessionStart(sessionId: string, workspaceSlug: string, vaultPath: string): void {
+    this.info('Sync session started', {
+      event: 'sync_session_start',
+      sessionId,
+      workspaceSlug,
+      vaultPath,
+    });
+  }
+
+  /**
+   * Log sync session completion
+   * Feature: 009-init-command-enhancement
+   */
+  logSyncSessionComplete(
+    sessionId: string,
+    uploaded: number,
+    downloaded: number,
+    skipped: number,
+    durationMs: number
+  ): void {
+    this.info('Sync session completed', {
+      event: 'sync_session_complete',
+      sessionId,
+      uploaded,
+      downloaded,
+      skipped,
+      durationMs,
+    });
+  }
+
+  /**
+   * Log transactional download rollback (FR-016)
+   * Feature: 009-init-command-enhancement
+   */
+  logDownloadRollback(reason: string, fileCount: number): void {
+    this.warn('Transactional download rolled back', {
+      event: 'download_rollback',
+      reason,
+      fileCount,
+    });
+  }
+
+  /**
+   * Log network retry attempt
+   * Feature: 009-init-command-enhancement
+   */
+  logNetworkRetry(operation: string, attempt: number, maxAttempts: number): void {
+    this.warn('Network operation retry', {
+      event: 'network_retry',
+      operation,
+      attempt,
+      maxAttempts,
+    });
+  }
+
+  /**
+   * Log skipped file (FR-033, FR-034)
+   * Feature: 009-init-command-enhancement
+   */
+  logFileSkipped(filePath: string, reason: string): void {
+    this.warn('File skipped', {
+      event: 'file_skipped',
+      filePath,
+      reason,
+    });
+  }
 }
 
 /**

@@ -15,4 +15,5 @@
 
 export * from "./api.js";
 export * from "./configuration.js";
+export * from "./sync-api-extension.js";
 
