@@ -51,8 +51,12 @@ export function templateCommand(
     }
 
     const config = await new ConfigManager().load();
+    const credentialManager = new CredentialManager();
+    const token = await credentialManager.getToken();
+
     const apiConfig = new Configuration({
-      basePath: config.apiBaseUrl
+      basePath: config.apiBaseUrl,
+      accessToken: token || undefined
     });
     const templatesApi = new TemplatesApi(apiConfig);
     return new TemplateService(templatesApi);
@@ -65,8 +69,12 @@ export function templateCommand(
     }
 
     const config = await new ConfigManager().load();
+    const credentialManager = new CredentialManager();
+    const token = await credentialManager.getToken();
+
     const apiConfig = new Configuration({
-      basePath: config.apiBaseUrl
+      basePath: config.apiBaseUrl,
+      accessToken: token || undefined
     });
     const templatesApi = new TemplatesApi(apiConfig);
     const workspacesApi = new WorkspacesApi(apiConfig);
@@ -162,10 +170,15 @@ Notes:
 
         if (error.response) {
           const status = error.response.status;
-          if (status === 401) {
-            console.log(chalk.gray('\nAuthentication expired. Run "mujarrad auth login" to re-authenticate'));
+          if (status === 401 || status === 403) {
+            console.log(chalk.red('\n✗ Authentication required'));
+            console.log(chalk.gray('Public template listing requires authentication in the current API version.'));
+            console.log(chalk.yellow('\nTip: Try logging in with "mujarrad auth login" to access templates.'));
+            console.log(chalk.gray('If you\'re already logged in, your session may have expired.\n'));
           } else if (status >= 500) {
-            console.log(chalk.gray('\nServer error. Please try again later.'));
+            console.log(chalk.red('\n✗ Server error'));
+            console.log(chalk.gray('The server is experiencing issues. Please try again later.'));
+            console.log(chalk.gray('If the problem persists, check https://status.mujarrad.com\n'));
           }
         } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
           console.log(chalk.gray('\nNetwork error. Check your internet connection and API configuration.'));
@@ -283,9 +296,14 @@ Notes:
           } else if (status === 404) {
             console.log(chalk.gray(`\nTemplate "${options.template}" not found. Check the template ID.`));
           } else if (status === 403) {
-            console.log(chalk.gray('\nAccess denied. You may not have permission to use this template.'));
+            console.log(chalk.red('\n✗ Access denied'));
+            console.log(chalk.gray('You may not have permission to use this template.'));
+            console.log(chalk.yellow('\nTip: Try logging in with "mujarrad auth login" if you haven\'t already.'));
+            console.log(chalk.gray('If you\'re already logged in, contact the workspace owner for access.\n'));
           } else if (status >= 500) {
-            console.log(chalk.gray('\nServer error. Please try again later.'));
+            console.log(chalk.red('\n✗ Server error after multiple retries'));
+            console.log(chalk.gray('The server is experiencing issues. Please try again later.'));
+            console.log(chalk.gray('If the problem persists, check https://status.mujarrad.com\n'));
           }
         } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
           console.log(chalk.gray('\nNetwork error. Check your internet connection and API configuration.'));

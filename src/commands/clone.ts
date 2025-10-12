@@ -44,8 +44,12 @@ export function cloneCommand(program: Command, cloneService?: CloneService): voi
     }
 
     const config = await new ConfigManager().load();
+    const credentialManager = new CredentialManager();
+    const token = await credentialManager.getToken();
+
     const apiConfig = new Configuration({
-      basePath: config.apiBaseUrl
+      basePath: config.apiBaseUrl,
+      accessToken: token || undefined
     });
     const cloneApi = new CloneApi(apiConfig);
     return new CloneService(cloneApi);
