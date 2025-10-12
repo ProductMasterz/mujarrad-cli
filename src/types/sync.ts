@@ -473,3 +473,52 @@ export interface StagedFile {
      */
     expectedHash: string;
 }
+
+/**
+ * Result of download operation
+ * Returned by TransactionalDownloader after successful/failed download
+ * @interface DownloadResult
+ */
+export interface DownloadResult {
+    /**
+     * Whether download completed successfully
+     * @type {boolean}
+     */
+    success: boolean;
+
+    /**
+     * Number of nodes downloaded
+     * @type {number}
+     */
+    downloadedCount: number;
+
+    /**
+     * Paths of files downloaded (relative to vault root)
+     * @type {Array<string>}
+     */
+    downloadedFiles: Array<string>;
+
+    /**
+     * Total size in bytes
+     * @type {number}
+     */
+    totalBytes: number;
+
+    /**
+     * Duration in milliseconds
+     * @type {number}
+     */
+    duration: number;
+
+    /**
+     * Error message if success is false
+     * @type {string | undefined}
+     */
+    errorMessage?: string;
+
+    /**
+     * Whether rollback occurred (due to error mid-operation)
+     * @type {boolean}
+     */
+    rolledBack: boolean;
+}
