@@ -15,6 +15,20 @@ This enhancement addresses critical gaps identified in production usage where us
 - Confusion about handling conflicts between local vault and remote workspace state
 - Lack of clarity about what happens to existing remote content during initialization
 
+## Clarifications
+
+### Session 2025-10-12
+
+- Q: When pulling remote nodes that already exist locally with the same file path during `--sync`, what should happen to the local file? → A: If both server version and local version have new edits (both diverged from common ancestor), treat as conflict requiring resolution. Otherwise, use version comparison to determine which is ahead.
+
+- Q: When conflict resolution prompt times out after 120 seconds, what should happen to the sync operation? → A: Skip the conflicted file only and continue with other files. User must later choose which version to keep (remote or local) for each skipped file.
+
+- Q: How should the system determine the "common ancestor" to detect if both versions have diverged? → A: Use backend version history - backend tracks all node versions and provides ancestor info via API.
+
+- Q: When downloading multiple remote nodes during sync, if some downloads fail due to network errors, what should happen? → A: Abort entire sync operation and rollback all downloads to maintain consistency.
+
+- Q: After successfully pulling remote nodes that are ahead, when should the CLI upload the local-ahead files? → A: Upload immediately after pull completes, in same sync operation.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Pre-flight Workspace Validation (Priority: P1)
@@ -100,7 +114,7 @@ As a user initializing my vault with conflicts detected, I want to interactively
 ### Edge Cases
 
 - What happens when the network fails during remote content pull?
-  - System should display error "Failed to pull remote content: network error" and abort initialization without modifying local files
+  - System should abort entire sync operation, rollback all downloaded files to maintain consistency, display error "Failed to pull remote content: network error", and leave local vault in original state
 
 - What happens when I have 1000+ conflicts and choose to resolve interactively?
   - System should display summary "1000+ conflicts detected. Use --strategy KEEP_LOCAL or --strategy KEEP_REMOTE for batch resolution" and abort interactive mode
@@ -133,39 +147,51 @@ As a user initializing my vault with conflicts detected, I want to interactively
 
 - **FR-006**: System MUST support optional `--sync` flag to enable bidirectional synchronization during init
 - **FR-007**: When `--sync` is enabled, system MUST query remote workspace for all existing nodes before upload
-- **FR-008**: System MUST download all remote nodes as markdown/canvas files to local vault preserving folder structure
-- **FR-009**: System MUST embed UUID comments in downloaded markdown files for future tracking
-- **FR-010**: System MUST create local directory structure matching remote node paths (e.g., remote node with path "folder/note.md" creates "folder/" directory locally)
-- **FR-011**: System MUST cache remote node metadata (UUID, hash, lastModified timestamp) for comparison
+- **FR-008**: System MUST query backend version history API to retrieve common ancestor information for files that exist both locally and remotely
+- **FR-009**: System MUST detect if both local and remote versions have diverged from common ancestor by comparing current hashes against ancestor hash from version history
+- **FR-010**: System MUST treat diverged versions as conflicts requiring user resolution
+- **FR-011**: System MUST download remote nodes if only remote has new edits (local unchanged from common ancestor)
+- **FR-012**: System MUST skip download and queue local-ahead files for upload if only local has new edits (remote unchanged from common ancestor)
+- **FR-013**: System MUST upload all queued local-ahead files immediately after pull operation completes successfully, in same sync operation
+- **FR-014**: System MUST download remote-only nodes (files that don't exist locally) as markdown/canvas files preserving folder structure
+- **FR-015**: System MUST download files to temporary staging directory first before moving to final location (transactional download)
+- **FR-016**: System MUST rollback all downloaded files if any download fails during sync operation, leaving local vault in original state
+- **FR-017**: System MUST embed UUID comments in downloaded markdown files for future tracking
+- **FR-018**: System MUST create local directory structure matching remote node paths (e.g., remote node with path "folder/note.md" creates "folder/" directory locally)
+- **FR-019**: System MUST cache remote node metadata (UUID, hash, lastModified timestamp, ancestorHash) for comparison
+- **FR-020**: System MUST display comparison result for each file showing status (e.g., "Note.md: conflict", "File.md: remote ahead", "Doc.md: identical")
 
 #### Difference Detection (P3)
 
-- **FR-012**: System MUST compare local files with remote nodes using SHA-256 hash comparison
-- **FR-013**: System MUST classify each file as: identical, local-only, remote-only, or conflicted
-- **FR-014**: System MUST detect conflicts when local file and remote node have same path but different hashes
-- **FR-015**: System MUST display comparison summary showing counts: X identical, Y local-only, Z remote-only, W conflicts
-- **FR-016**: System MUST skip uploading identical files (same hash) to reduce network usage
+- **FR-021**: System MUST compare local files with remote nodes using SHA-256 hash comparison
+- **FR-022**: System MUST classify each file as: identical, local-only, remote-only, local-ahead, remote-ahead, or conflicted (diverged)
+- **FR-023**: System MUST detect conflicts when both local and remote have diverged from common ancestor (different hashes, both modified)
+- **FR-024**: System MUST display comparison summary showing counts: X identical, Y local-only, Z remote-only, W local-ahead, V remote-ahead, U conflicts
+- **FR-025**: System MUST skip uploading identical files (same hash) to reduce network usage
 
 #### Conflict Resolution (P3)
 
-- **FR-017**: System MUST prompt user interactively for each conflict when no `--strategy` flag is provided
-- **FR-018**: System MUST support `--strategy KEEP_LOCAL` to auto-resolve all conflicts by keeping local versions
-- **FR-019**: System MUST support `--strategy KEEP_REMOTE` to auto-resolve all conflicts by keeping remote versions
-- **FR-020**: System MUST support `--strategy SKIP` to auto-skip all conflicts without resolution
-- **FR-021**: Interactive prompt MUST show both local and remote content with character diff
-- **FR-022**: System MUST log all conflict resolutions to `~/.mujarrad/logs/conflicts-{sessionId}.log`
-- **FR-023**: System MUST abort if more than 100 conflicts are detected without a `--strategy` flag (to prevent tedious interactive mode)
+- **FR-026**: System MUST prompt user interactively for each conflict when no `--strategy` flag is provided
+- **FR-027**: System MUST support `--strategy KEEP_LOCAL` to auto-resolve all conflicts by keeping local versions
+- **FR-028**: System MUST support `--strategy KEEP_REMOTE` to auto-resolve all conflicts by keeping remote versions
+- **FR-029**: System MUST support `--strategy SKIP` to auto-skip all conflicts without resolution
+- **FR-030**: Interactive prompt MUST show both local and remote content with character diff
+- **FR-031**: System MUST log all conflict resolutions to `~/.mujarrad/logs/conflicts-{sessionId}.log`
+- **FR-032**: System MUST abort if more than 100 conflicts are detected without a `--strategy` flag (to prevent tedious interactive mode)
+- **FR-033**: When conflict resolution prompt times out, system MUST skip the conflicted file and continue processing remaining files
+- **FR-034**: System MUST log all skipped files (due to timeout) to allow user to manually resolve later
+- **FR-035**: System MUST display summary at end showing count of skipped files requiring manual resolution
 
 #### Backward Compatibility
 
-- **FR-024**: System MUST maintain existing `mujarrad init` behavior (one-way upload without sync) when `--sync` flag is omitted
-- **FR-025**: System MUST support all existing flags (`--workspace`, `--batch-size`) with same behavior
+- **FR-036**: System MUST maintain existing `mujarrad init` behavior (one-way upload without sync) when `--sync` flag is omitted
+- **FR-037**: System MUST support all existing flags (`--workspace`, `--batch-size`) with same behavior
 
 ### Non-Functional Requirements
 
 - **NFR-001**: Workspace verification MUST complete within 5 seconds on standard broadband connection (10 Mbps)
 - **NFR-002**: Remote content pull MUST download at least 100 KB/second (approximately 100 markdown files/second)
-- **NFR-003**: Conflict resolution prompts MUST timeout after 120 seconds of user inactivity with default action (abort)
+- **NFR-003**: Conflict resolution prompts MUST timeout after 120 seconds of user inactivity, skip the conflicted file, and continue sync with remaining files
 - **NFR-004**: System MUST handle workspaces with up to 10,000 remote nodes without memory issues (streaming download)
 - **NFR-005**: All file operations MUST be atomic (no partial writes) using temporary files and rename strategy
 
@@ -177,7 +203,7 @@ As a user initializing my vault with conflicts detected, I want to interactively
 
 - **Local File**: Represents a markdown/canvas file in the local Obsidian vault, including absolute path, relative path, content, hash, and modification timestamp
 
-- **Comparison Result**: Represents the difference detection output for a single file, classified as IDENTICAL, LOCAL_ONLY, REMOTE_ONLY, or CONFLICTED with references to both local and remote versions
+- **Comparison Result**: Represents the difference detection output for a single file, classified as IDENTICAL (same hash), LOCAL_ONLY (no remote), REMOTE_ONLY (no local), LOCAL_AHEAD (local modified, remote unchanged), REMOTE_AHEAD (remote modified, local unchanged), or CONFLICTED (both local and remote diverged from common ancestor) with references to both local and remote versions
 
 - **Conflict Resolution**: Represents a user's decision for a specific conflict, including file path, resolution strategy (KEEP_LOCAL, KEEP_REMOTE, SKIP), and timestamp
 
@@ -214,6 +240,8 @@ As a user initializing my vault with conflicts detected, I want to interactively
 - Backend API must support workspace metadata retrieval (GET `/api/workspaces/{slug}`)
 - Backend API must support listing all workspace nodes (GET `/api/workspaces/{slug}/nodes`) with pagination
 - Backend API must support downloading individual node content by UUID (GET `/api/nodes/{uuid}/content`)
+- Backend API must support node version history retrieval (GET `/api/nodes/{uuid}/versions`) to provide common ancestor information for divergence detection
+- Backend API must track and store all node versions with timestamps and content hashes
 - Existing UploadService, SyncService, and ConflictResolver classes in CLI codebase
 - Git binary installed for advanced change detection (optional, not required)
 
