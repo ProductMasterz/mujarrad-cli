@@ -21,8 +21,37 @@ module.exports = {
     'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles)/)',
   ],
 
-  // Multi-project configuration for unit, integration, and performance tests
+  // Multi-project configuration for contract, unit, integration, and performance tests
   projects: [
+    {
+      displayName: 'contract',
+      preset: 'ts-jest/presets/default-esm',
+      testEnvironment: 'node',
+      testMatch: ['**/tests/contract/**/*.test.ts'],
+      setupFilesAfterEnv: ['<rootDir>/tests/setup/contract-setup.ts'],
+      extensionsToTreatAsEsm: ['.ts'],
+      moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+      transform: {
+        '^.+\\.tsx?$': ['ts-jest', {
+          useESM: true,
+          tsconfig: {
+            esModuleInterop: true,
+          },
+        }],
+      },
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^(\\.{1,2}/.*)\\.js$': '$1',
+      },
+      transformIgnorePatterns: [
+        'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles)/)',
+      ],
+      collectCoverageFrom: [
+        'src/api/generated/**/*.ts',
+        '!src/api/generated/**/*.d.ts',
+      ],
+      coverageDirectory: 'coverage/contract',
+    },
     {
       displayName: 'unit',
       preset: 'ts-jest/presets/default-esm',
