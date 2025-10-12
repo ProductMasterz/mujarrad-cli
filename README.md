@@ -1,5 +1,7 @@
 # MUJARRAD CLI
 
+> ⚠️ **ALPHA SOFTWARE** - This CLI is currently in alpha development. Features may change without notice, and breaking changes may occur between versions. Use at your own risk. See [Version Status](#version-status) for details.
+
 <div align="center">
 
 ```
@@ -32,6 +34,35 @@
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 
 </div>
+
+---
+
+## Version Status
+
+**Current Version**: `1.0.5` (Alpha)
+
+This CLI is in **active alpha development**. While core functionality is stable and tested, you should expect:
+
+- **Feature Changes**: New features may be added, modified, or removed based on feedback
+- **Breaking Changes**: Commands, options, and configurations may change between minor versions
+- **API Evolution**: The underlying API and data structures are being refined
+- **Beta Timeline**: We expect to reach beta status after completing comprehensive user testing
+
+**What's Stable**:
+- ✅ Authentication (login, logout, registration)
+- ✅ Upload workflow (vault to workspace)
+- ✅ Clone workflow (workspace to vault)
+- ✅ Sync workflow (bidirectional synchronization)
+- ✅ Template system (list and clone)
+- ✅ Canvas support (visual preservation)
+
+**What's Being Refined**:
+- ⚠️ Error messages and user feedback
+- ⚠️ Performance optimization
+- ⚠️ Edge case handling
+- ⚠️ Advanced conflict resolution
+
+**Reporting Issues**: Please report bugs and feedback at [GitHub Issues](https://github.com/mujarrad/mujarrad-cli/issues). Your feedback helps us improve!
 
 ---
 

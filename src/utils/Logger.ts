@@ -1,4 +1,5 @@
 import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
@@ -22,30 +23,29 @@ export interface LoggerOptions {
  * Logger provides structured logging with file rotation and metadata support
  *
  * Features:
- * - Logs to ~/.mujarrad/logs/mujarrad.log by default
- * - Automatic log rotation (10MB max file size, 5 files by default)
+ * - Logs to ~/.mujarrad/logs/mujarrad-{pid}-YYYY-MM-DD.log by default
+ * - Daily rotation with per-process log files for concurrent instance safety
+ * - Automatic cleanup (7 day retention, 10MB max file size)
  * - Support for log levels: debug, info, warn, error
  * - Includes timestamp in ISO 8601 format
- * - Supports child loggers with request ID
+ * - Supports child loggers with sessionId for request correlation
  * - Graceful shutdown for flushing logs
  *
  * Follows Constitution Principle III: TDD approach with comprehensive tests
- * Follows Constitution Principle V: Security by Default (file permissions)
+ * Follows Constitution Principle V: Security by Default (file permissions, async logging)
  */
 export class Logger {
   private winston: winston.Logger;
   private logDir: string;
   private logLevel: LogLevel;
   private maxFileSize: number;
-  private maxFiles: number;
 
   constructor(options: LoggerOptions = {}) {
     this.logDir = options.logDir || path.join(os.homedir(), '.mujarrad', 'logs');
     this.logLevel = options.logLevel || 'info';
     this.maxFileSize = options.maxFileSize || 10 * 1024 * 1024; // 10MB default
-    this.maxFiles = options.maxFiles || 5;
 
-    // Initialize winston logger
+    // Initialize winston logger with daily rotation
     this.winston = winston.createLogger({
       level: this.logLevel,
       format: winston.format.combine(
@@ -66,11 +66,14 @@ export class Logger {
         winston.format.json()
       ),
       transports: [
-        new winston.transports.File({
-          filename: path.join(this.logDir, 'mujarrad.log'),
-          maxsize: this.maxFileSize,
-          maxFiles: this.maxFiles,
-          tailable: true
+        new DailyRotateFile({
+          // Per-process log files for concurrent instance safety
+          filename: path.join(this.logDir, `mujarrad-${process.pid}-%DATE%.log`),
+          datePattern: 'YYYY-MM-DD',
+          maxSize: this.maxFileSize,
+          maxFiles: '7d', // Keep 7 days of logs
+          zippedArchive: false, // Don't compress for multi-instance compatibility
+          auditFile: path.join(this.logDir, `.audit-${process.pid}.json`),
         })
       ]
     });
@@ -180,4 +183,23 @@ export class Logger {
   getLogLevel(): LogLevel {
     return this.logLevel;
   }
+}
+
+/**
+ * Create a session logger with sessionId context
+ * This is a convenience function for creating child loggers with session tracking
+ *
+ * @param logger - Parent logger instance
+ * @param sessionId - Session identifier (UUID)
+ * @returns Child logger with sessionId in all logs
+ *
+ * @example
+ * ```typescript
+ * const logger = new Logger();
+ * const sessionLogger = createSessionLogger(logger, 'abc-123-def');
+ * sessionLogger.info('Command started'); // Will include sessionId in log
+ * ```
+ */
+export function createSessionLogger(logger: Logger, sessionId: string): Logger {
+  return logger.child({ sessionId });
 }

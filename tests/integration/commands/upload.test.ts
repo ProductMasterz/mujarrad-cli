@@ -58,17 +58,18 @@ jest.mock('cli-progress', () => {
 });
 
 // Mock chalk
-jest.mock('chalk', () => {
-  const mockChalk: any = (text: string) => text;
-  mockChalk.blue = (text: string) => text;
-  mockChalk.green = (text: string) => text;
-  mockChalk.yellow = (text: string) => text;
-  mockChalk.red = (text: string) => text;
-  mockChalk.gray = (text: string) => text;
-  mockChalk.white = (text: string) => text;
-  mockChalk.cyan = (text: string) => text;
-  return { default: mockChalk };
-});
+jest.mock('chalk', () => ({
+  __esModule: true,
+  default: {
+    blue: jest.fn((str: string) => str),
+    green: jest.fn((str: string) => str),
+    yellow: jest.fn((str: string) => str),
+    red: jest.fn((str: string) => str),
+    gray: jest.fn((str: string) => str),
+    white: jest.fn((str: string) => str),
+    cyan: jest.fn((str: string) => str),
+  },
+}));
 
 describe('upload command', () => {
   let program: Command;
@@ -83,6 +84,9 @@ describe('upload command', () => {
     // Create temp vault directory
     tempVaultDir = path.join(os.tmpdir(), `mujarrad-test-vault-${Date.now()}`);
     await fs.mkdir(tempVaultDir, { recursive: true });
+
+    // Create .obsidian folder (required for valid Obsidian vault)
+    await fs.mkdir(path.join(tempVaultDir, '.obsidian'), { recursive: true });
 
     // Create a sample file
     await fs.writeFile(
@@ -199,11 +203,11 @@ describe('upload command', () => {
       try {
         await program.parseAsync(['node', 'test', 'upload', nonExistentPath, '-w', 'my-workspace']);
       } catch (error: any) {
-        expect(error.exitCode).toBe(1);
+        expect(error.exitCode).toBe(3); // Exit code 3 for validation errors
       }
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Vault path does not exist')
+        expect.stringContaining('Vault validation failed')
       );
     });
 

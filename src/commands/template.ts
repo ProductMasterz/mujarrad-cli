@@ -79,7 +79,24 @@ export function templateCommand(
   // Create template parent command
   const templateCmd = program
     .command('template')
-    .description('Manage workspace templates');
+    .description('Manage workspace templates')
+    .addHelpText('after', `
+Examples:
+  $ mujarrad template list
+    List all public templates
+
+  $ mujarrad template list --scope all
+    List all available templates (public and private)
+
+  $ mujarrad template clone ./vault -t bmc-template-uuid -n "My Startup"
+    Clone workspace from Business Model Canvas template
+
+Notes:
+  • Public templates are available to all users
+  • Private templates are only visible to their creators
+  • Template cloning creates a new workspace with pre-filled content
+  • Use template list to find template IDs
+    `);
 
   // Template list command
   templateCmd

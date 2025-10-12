@@ -1,0 +1,465 @@
+# Log Export Archive Structure Specification
+# Feature: 008-from-cli-side (CLI Observability & Alpha Release Management)
+# Date: 2025-10-12
+
+# This file defines the structure and contents of log export archives created
+# by the "mujarrad logs export" command.
+
+archive_format: ZIP
+compression: gzip (DEFLATE algorithm)
+compression_level: 6  # Balance between speed and ratio (0-9 scale)
+
+archive_naming_convention:
+  pattern: "mujarrad-logs-{timestamp}.zip"
+  timestamp_format: "YYYY-MM-DDTHH-mm-ss"  # ISO 8601 friendly (colons replaced with hyphens)
+  examples:
+    - "mujarrad-logs-2025-10-12T14-30-00.zip"
+    - "mujarrad-logs-2025-10-12T16-45-23.zip"
+
+# ============================================================================
+# Archive Contents
+# ============================================================================
+
+archive_structure:
+  # ------------------------------------------------------------------------
+  # Root Level Files
+  # ------------------------------------------------------------------------
+  - name: export-metadata.json
+    location: /export-metadata.json
+    format: JSON
+    required: true
+    description: |
+      Machine-readable metadata about the export operation.
+      Contains information about time range, compression, and included sessions.
+
+    schema:
+      type: object
+      required: [exportedAt, timeRange, includedSessions, compressionRatio, toolVersion, uncompressedSize, compressedSize]
+      properties:
+        exportedAt:
+          type: string
+          format: date-time
+          description: "ISO 8601 timestamp when export was created"
+          example: "2025-10-12T16:45:00.000Z"
+
+        timeRange:
+          type: object
+          required: [from, to]
+          properties:
+            from:
+              type: string
+              format: date-time
+              description: "Earliest log entry timestamp in export"
+              example: "2025-10-10T00:00:00.000Z"
+            to:
+              type: string
+              format: date-time
+              description: "Latest log entry timestamp in export"
+              example: "2025-10-12T23:59:59.999Z"
+
+        includedSessions:
+          type: integer
+          minimum: 0
+          description: "Number of CLI command sessions included in export"
+          example: 47
+
+        compressionRatio:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: "Compression efficiency (0 = no compression, 1 = perfect compression)"
+          example: 0.82
+          calculation: "1 - (compressedSize / uncompressedSize)"
+
+        toolVersion:
+          type: string
+          description: "Version of Mujarrad CLI that created the export"
+          pattern: "^\\d+\\.\\d+\\.\\d+(-[a-z]+\\.\\d+)?$"
+          example: "1.0.0-alpha.1"
+
+        uncompressedSize:
+          type: integer
+          minimum: 0
+          description: "Total size of log files before compression (bytes)"
+          example: 52428800
+
+        compressedSize:
+          type: integer
+          minimum: 0
+          description: "Archive size after compression (bytes)"
+          example: 9437184
+
+        platform:
+          type: string
+          description: "Operating system platform where export was created"
+          enum: [darwin, linux, win32]
+          example: "darwin"
+
+        filters:
+          type: object
+          description: "Filters applied during export (if any)"
+          properties:
+            since:
+              type: string
+              description: "Time range filter that was applied"
+              example: "7d"
+            level:
+              type: string
+              enum: [debug, info, warn, error]
+              description: "Minimum log level filter that was applied"
+              example: "info"
+
+    example_content: |
+      {
+        "exportedAt": "2025-10-12T16:45:00.000Z",
+        "timeRange": {
+          "from": "2025-10-10T00:00:00.000Z",
+          "to": "2025-10-12T23:59:59.999Z"
+        },
+        "includedSessions": 47,
+        "compressionRatio": 0.82,
+        "toolVersion": "1.0.0-alpha.1",
+        "uncompressedSize": 52428800,
+        "compressedSize": 9437184,
+        "platform": "darwin",
+        "filters": {
+          "since": "7d",
+          "level": "info"
+        }
+      }
+
+  # ------------------------------------------------------------------------
+  - name: README.txt
+    location: /README.txt
+    format: Plain text (UTF-8)
+    required: true
+    description: |
+      Human-readable instructions for extracting and viewing logs.
+      Provides quick reference for users unfamiliar with log format.
+
+    template: |
+      # Mujarrad CLI Log Export
+
+      Export Date: {exportedAt}
+      Time Range: {timeRange.from} to {timeRange.to}
+      Sessions Included: {includedSessions}
+      Compression: {compressionRatio * 100}%
+      CLI Version: {toolVersion}
+
+      ## Contents
+
+      - export-metadata.json - Export metadata (machine-readable)
+      - README.txt - This file
+      - logs/ - Directory containing log files
+
+      ## Log File Format
+
+      Logs are stored in JSON Lines format (http://jsonlines.org/).
+      Each line is a complete JSON object representing a single log entry.
+
+      Log files are named: mujarrad-{pid}-YYYY-MM-DD.log
+      - {pid} is the process ID of the CLI instance
+      - YYYY-MM-DD is the date
+
+      ## How to View Logs
+
+      ### View Raw JSON
+      $ cat logs/mujarrad-12345-2025-10-12.log
+
+      ### Pretty Print with jq (if installed)
+      $ cat logs/mujarrad-12345-2025-10-12.log | jq '.'
+
+      ### Filter by Log Level
+      $ cat logs/*.log | jq 'select(.level == "error")'
+
+      ### Filter by Session ID
+      $ cat logs/*.log | jq 'select(.sessionId == "abc-123-def")'
+
+      ### View Specific Fields
+      $ cat logs/*.log | jq '{timestamp, level, message}'
+
+      ## How to Extract This Archive
+
+      ### Windows
+      1. Right-click the .zip file
+      2. Select "Extract All..."
+      3. Choose destination folder
+      4. Click "Extract"
+
+      ### macOS
+      1. Double-click the .zip file
+      2. Archive will extract automatically
+
+      ### Linux
+      $ unzip mujarrad-logs-{timestamp}.zip -d destination-folder
+
+      ## Log Entry Schema
+
+      Each log entry contains:
+      - timestamp: ISO 8601 timestamp
+      - level: Log level (debug, info, warn, error)
+      - sessionId: UUID identifying CLI command session
+      - source: Module/component name
+      - message: Human-readable message
+      - metadata: (optional) Structured additional data
+
+      ## Security Notice
+
+      Sensitive data (API tokens, passwords, keys) has been automatically
+      redacted in these logs. Look for [REDACTED] placeholders.
+
+      If you need unredacted logs for debugging (CAUTION: may expose credentials):
+      $ mujarrad logs export --no-redact-sensitive
+
+      ## Support
+
+      For help interpreting logs or reporting issues:
+      - Documentation: https://www.mujarrad.com/docs
+      - Issue Tracker: https://github.com/mujarrad/mujarrad-cli/issues
+
+      ## Tool Information
+
+      Mujarrad CLI v{toolVersion}
+      Export created on: {platform}
+
+  # ------------------------------------------------------------------------
+  # logs/ Directory
+  # ------------------------------------------------------------------------
+  - name: logs/
+    location: /logs/
+    type: directory
+    required: true
+    description: |
+      Directory containing all log files included in the export.
+      Log files are stored flat (no nested subdirectories).
+
+    contents:
+      - pattern: "mujarrad-{pid}-{date}.log"
+        format: JSON Lines (one JSON object per line)
+        description: |
+          Daily log files from CLI execution.
+          {pid} identifies the CLI process (allows multiple concurrent instances)
+          {date} is in YYYY-MM-DD format
+        examples:
+          - "mujarrad-12345-2025-10-10.log"
+          - "mujarrad-12345-2025-10-11.log"
+          - "mujarrad-67890-2025-10-12.log"  # Different process
+
+      - pattern: ".audit-{pid}.json"
+        format: JSON
+        optional: true
+        description: |
+          Winston rotation audit files (one per process).
+          Tracks log file rotation metadata.
+          Only included if present in source log directory.
+
+# ============================================================================
+# Archive Creation Process
+# ============================================================================
+
+creation_workflow:
+  steps:
+    - step: 1
+      action: Scan log directory
+      description: Find all log files in ~/.mujarrad/logs/
+
+    - step: 2
+      action: Apply filters
+      description: Filter log files by --since and --level parameters
+
+    - step: 3
+      action: Calculate uncompressed size
+      description: Sum total size of all log files to be included
+
+    - step: 4
+      action: Create ZIP archive
+      description: Initialize archiver with gzip compression level 6
+
+    - step: 5
+      action: Add export-metadata.json
+      description: Generate metadata with time range, session count, sizes
+
+    - step: 6
+      action: Add README.txt
+      description: Generate human-readable instructions with template values filled
+
+    - step: 7
+      action: Add log files
+      description: Stream log files into logs/ directory (flat structure)
+
+    - step: 8
+      action: Finalize archive
+      description: Close archive and flush remaining data
+
+    - step: 9
+      action: Calculate compressed size
+      description: Stat the output file to get final compressed size
+
+    - step: 10
+      action: Verify integrity
+      description: Optional: verify ZIP can be opened and metadata is valid
+
+    - step: 11
+      action: Return metadata
+      description: Return LogExport entity to caller
+
+# ============================================================================
+# Performance Characteristics
+# ============================================================================
+
+performance:
+  compression_ratio:
+    expected: "70-85% for JSON logs"
+    calculation: "1 - (compressed / uncompressed)"
+    example: "50MB logs → 7-15MB archive"
+
+  compression_speed:
+    target: "<10 seconds for 50MB logs"
+    expected: "3-5 seconds for 50MB logs (level 6)"
+    note: "Streaming approach prevents memory issues with large logs"
+
+  memory_usage:
+    streaming: "~10-20MB constant (archiver streaming mode)"
+    non_streaming: "~150MB (3x file size) - NOT USED"
+
+  disk_space_required:
+    minimum: "compressed_size + uncompressed_size (temporary)"
+    typical: "~60MB free for 50MB of logs"
+
+# ============================================================================
+# Cross-Platform Compatibility
+# ============================================================================
+
+compatibility:
+  extraction:
+    windows:
+      native: true
+      method: "Right-click → Extract All (built into Windows Explorer)"
+      since: "Windows XP"
+
+    macos:
+      native: true
+      method: "Double-click or Archive Utility"
+      command_line: "unzip mujarrad-logs-*.zip"
+
+    linux:
+      native: true
+      method: "Right-click → Extract Here (most file managers)"
+      command_line: "unzip mujarrad-logs-*.zip"
+      package: "unzip (pre-installed on most distributions)"
+
+  encoding:
+    readme: "UTF-8 with BOM (for Windows Notepad compatibility)"
+    logs: "UTF-8 (JSON standard)"
+    filenames: "ASCII only (maximum compatibility)"
+
+# ============================================================================
+# Validation Rules
+# ============================================================================
+
+validation:
+  archive_integrity:
+    - rule: "ZIP file must be valid and openable"
+      test: "Can be extracted without errors"
+
+    - rule: "All required files must be present"
+      test: "export-metadata.json and README.txt exist in root"
+
+    - rule: "Metadata must be valid JSON"
+      test: "export-metadata.json parses without errors"
+
+    - rule: "Metadata values must be consistent"
+      test: "compressionRatio = 1 - (compressedSize / uncompressedSize)"
+
+    - rule: "Time range must be valid"
+      test: "timeRange.to >= timeRange.from"
+
+    - rule: "Compressed size must be <= uncompressed size"
+      test: "compressedSize <= uncompressedSize"
+
+  log_file_integrity:
+    - rule: "All log files must be valid JSON Lines"
+      test: "Each line in logs/*.log is valid JSON"
+
+    - rule: "Log entries must match schema"
+      test: "Each log entry validates against log-format.json schema"
+
+    - rule: "Log entries must be within time range"
+      test: "All timestamps between timeRange.from and timeRange.to"
+
+# ============================================================================
+# Error Handling
+# ============================================================================
+
+error_scenarios:
+  no_logs_found:
+    condition: "No log files match the specified filters"
+    exit_code: 2
+    message: "No logs found for specified criteria (--since '{since}', --level '{level}')"
+    suggestion: "Try a wider time range or lower log level"
+
+  disk_space_insufficient:
+    condition: "Not enough free disk space for archive"
+    exit_code: 5
+    message: "Insufficient disk space (need ~{required}MB, have {available}MB)"
+    suggestion: "Free up disk space or choose a different output location"
+
+  compression_failed:
+    condition: "archiver throws error during compression"
+    exit_code: 1
+    message: "Failed to create archive: {error.message}"
+    suggestion: "Check log files are not locked by another process"
+
+  invalid_output_path:
+    condition: "Output path is not writable"
+    exit_code: 5
+    message: "Cannot write to output path: {outputPath}"
+    suggestion: "Check directory exists and you have write permissions"
+
+# ============================================================================
+# Usage Examples
+# ============================================================================
+
+usage_examples:
+  - command: "mujarrad logs export"
+    description: "Export last 7 days of logs (default)"
+    resulting_archive:
+      name: "mujarrad-logs-2025-10-12T16-45-00.zip"
+      size_uncompressed: "~50MB"
+      size_compressed: "~9MB"
+      contents:
+        - "export-metadata.json"
+        - "README.txt"
+        - "logs/mujarrad-12345-2025-10-10.log"
+        - "logs/mujarrad-12345-2025-10-11.log"
+        - "logs/mujarrad-12345-2025-10-12.log"
+
+  - command: "mujarrad logs export --since '24h' --level error"
+    description: "Export only error logs from last 24 hours"
+    resulting_archive:
+      name: "mujarrad-logs-2025-10-12T16-45-00.zip"
+      size_uncompressed: "~2MB"
+      size_compressed: "~400KB"
+      contents:
+        - "export-metadata.json (filters.level = 'error')"
+        - "README.txt"
+        - "logs/mujarrad-12345-2025-10-12.log (filtered)"
+
+  - command: "mujarrad logs export --output ~/Desktop/debug.zip"
+    description: "Export to specific location"
+    resulting_archive:
+      name: "debug.zip"
+      location: "~/Desktop/debug.zip"
+
+# ============================================================================
+# Version History
+# ============================================================================
+
+version_history:
+  - version: "1.0.0"
+    date: "2025-10-12"
+    changes:
+      - "Initial log export archive specification"
+      - "ZIP format with gzip compression"
+      - "Flat logs/ directory structure"
+      - "Metadata + README inclusion"

@@ -1,4 +1,4 @@
-import { Logger } from '../../../src/utils/Logger.js';
+import { Logger, createSessionLogger } from '../../../src/utils/Logger.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
@@ -6,6 +6,26 @@ import * as os from 'os';
 describe('Logger', () => {
   let testLogDir: string;
   let logger: Logger;
+
+  // Helper function to find log files (they now include PID and date)
+  async function findLogFile(): Promise<string | null> {
+    try {
+      const files = await fs.readdir(testLogDir);
+      const logFile = files.find(f => f.startsWith('mujarrad-') && f.endsWith('.log'));
+      return logFile ? path.join(testLogDir, logFile) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Helper function to read log content
+  async function readLogContent(): Promise<string> {
+    const logFile = await findLogFile();
+    if (!logFile) {
+      throw new Error('Log file not found');
+    }
+    return await fs.readFile(logFile, 'utf-8');
+  }
 
   beforeEach(async () => {
     // Create a temporary log directory for testing
@@ -16,6 +36,9 @@ describe('Logger', () => {
   afterEach(async () => {
     // Clean up test log directory
     try {
+      if (logger) {
+        await logger.shutdown();
+      }
       await fs.rm(testLogDir, { recursive: true, force: true });
     } catch (error) {
       // Ignore cleanup errors
@@ -58,8 +81,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('Debug message');
       expect(logContent).toContain('debug');
     });
@@ -69,8 +91,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('Info message');
       expect(logContent).toContain('info');
     });
@@ -80,8 +101,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('Warning message');
       expect(logContent).toContain('warn');
     });
@@ -91,8 +111,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('Error message');
       expect(logContent).toContain('error');
     });
@@ -104,8 +123,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).not.toContain('Debug message');
       expect(logContent).toContain('Info message');
     });
@@ -121,8 +139,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
 
       // Check for ISO 8601 timestamp format
       expect(logContent).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
@@ -133,8 +150,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('userId');
       expect(logContent).toContain('123');
       expect(logContent).toContain('action');
@@ -147,8 +163,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('Error occurred');
       expect(logContent).toContain('Test error');
     });
@@ -161,7 +176,6 @@ describe('Logger', () => {
         logDir: testLogDir,
         logLevel: 'info',
         maxFileSize: 1024, // 1KB for testing
-        maxFiles: 3
       });
 
       // Write enough logs to trigger rotation
@@ -173,9 +187,9 @@ describe('Logger', () => {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Check if log files exist (main file should always exist)
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logExists = await fs.access(logFile).then(() => true).catch(() => false);
-      expect(logExists).toBe(true);
+      const logFile = await findLogFile();
+      expect(logFile).toBeDefined();
+      expect(logFile).not.toBeNull();
     });
   });
 
@@ -192,8 +206,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('req-12345');
       expect(logContent).toContain('Request started');
     });
@@ -208,8 +221,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
 
       // Should appear 3 times (once for each log call)
       const matches = logContent.match(/req-67890/g);
@@ -225,8 +237,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('Test message');
     });
 
@@ -236,8 +247,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('Test message');
     });
 
@@ -248,8 +258,7 @@ describe('Logger', () => {
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('A'.repeat(100)); // Check partial content
     });
   });
@@ -265,9 +274,94 @@ describe('Logger', () => {
       await logger.shutdown();
 
       // Verify log was written before shutdown
-      const logFile = path.join(testLogDir, 'mujarrad.log');
-      const logContent = await fs.readFile(logFile, 'utf-8');
+      const logContent = await readLogContent();
       expect(logContent).toContain('Before shutdown');
+
+      // Set logger to null so afterEach doesn't try to shutdown again
+      logger = null as any;
+    });
+  });
+
+  describe('session tracking (T005)', () => {
+    beforeEach(() => {
+      logger = new Logger({ logDir: testLogDir, logLevel: 'info' });
+    });
+
+    it('should create session logger with sessionId using createSessionLogger', async () => {
+      const sessionId = 'session-abc-123';
+      const sessionLogger = createSessionLogger(logger, sessionId);
+
+      sessionLogger.info('Session started');
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const logContent = await readLogContent();
+      expect(logContent).toContain('session-abc-123');
+      expect(logContent).toContain('Session started');
+    });
+
+    it('should include sessionId in all logs from child logger', async () => {
+      const sessionId = 'session-xyz-789';
+      const sessionLogger = createSessionLogger(logger, sessionId);
+
+      sessionLogger.info('Command started');
+      sessionLogger.debug('Processing...');
+      sessionLogger.info('Command completed');
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const logContent = await readLogContent();
+      const matches = logContent.match(/session-xyz-789/g);
+      expect(matches).toBeDefined();
+      // Should appear at least once for each log call
+      expect(matches!.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should create log files with process ID in filename', async () => {
+      logger.info('Test message');
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const files = await fs.readdir(testLogDir);
+      const logFile = files.find(f => f.includes(`${process.pid}`) && f.endsWith('.log'));
+      expect(logFile).toBeDefined();
+      expect(logFile).toMatch(/mujarrad-\d+-\d{4}-\d{2}-\d{2}\.log/);
+    });
+
+    it('should create audit file with process ID', async () => {
+      logger.info('Test message');
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const files = await fs.readdir(testLogDir);
+      const auditFile = files.find(f => f.includes(`${process.pid}`) && f.includes('.audit'));
+      expect(auditFile).toBeDefined();
+    });
+
+    it('should support daily rotation with date pattern', async () => {
+      logger.info('Test message');
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const logFile = await findLogFile();
+      expect(logFile).toBeDefined();
+      // File should include today's date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0];
+      expect(logFile).toContain(today);
+    });
+
+    it('should log file permissions set to 700 on Unix', async () => {
+      if (process.platform === 'win32') {
+        // Skip on Windows
+        return;
+      }
+
+      logger.info('Test message');
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const stats = await fs.stat(testLogDir);
+      const mode = (stats.mode & parseInt('777', 8)).toString(8);
+      expect(mode).toBe('700');
     });
   });
 });

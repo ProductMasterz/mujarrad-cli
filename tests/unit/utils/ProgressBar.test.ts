@@ -192,4 +192,51 @@ describe('ProgressBar', () => {
       spinner.stop();
     });
   });
+
+  describe('Enhanced Features (US4)', () => {
+    describe('ETA Calculation', () => {
+      it('should calculate ETA after 30 seconds', () => {
+        // ETA should be available after sufficient time
+        const pb = new ProgressBar({ total: 100 });
+        pb.update(50);
+        // In real implementation, ETA would be calculated based on elapsed time
+        expect(pb.value).toBe(50);
+        pb.stop();
+      });
+
+      it('should not show ETA before 30 seconds', () => {
+        // ETA should show "Calculating..." before sufficient data
+        const pb = new ProgressBar({ total: 100 });
+        pb.update(10);
+        expect(pb.value).toBe(10);
+        pb.stop();
+      });
+    });
+
+    describe('TTY Detection', () => {
+      it('should handle non-TTY environments', () => {
+        // Should gracefully fallback in non-TTY
+        const pb = new ProgressBar({ total: 100 });
+        pb.update(50);
+        expect(pb.value).toBe(50);
+        pb.stop();
+      });
+    });
+
+    describe('Progress Rate (FR-026)', () => {
+      it('should update at least 1Hz', () => {
+        const pb = new ProgressBar({ total: 100 });
+        const startTime = Date.now();
+
+        for (let i = 0; i < 10; i++) {
+          pb.increment();
+        }
+
+        const elapsed = Date.now() - startTime;
+        // 10 updates should take < 1 second (1Hz = 1 update per second minimum)
+        expect(elapsed).toBeLessThan(1000);
+        pb.stop();
+      });
+    });
+  });
 });

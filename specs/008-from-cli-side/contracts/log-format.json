@@ -1,0 +1,293 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Mujarrad CLI Log Entry Format",
+  "description": "Schema for structured log entries written by Mujarrad CLI. Each log entry is a single JSON object written as one line in the log file (JSON Lines format).",
+  "type": "object",
+  "required": ["timestamp", "level", "sessionId", "source", "message"],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp with millisecond precision (e.g., '2025-10-12T14:30:00.123Z')",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+      "examples": ["2025-10-12T14:30:00.123Z"]
+    },
+    "level": {
+      "type": "string",
+      "enum": ["debug", "info", "warn", "error"],
+      "description": "Log severity level. debug < info < warn < error"
+    },
+    "sessionId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID v4 identifier for CLI command execution session. Correlates all log entries from a single command invocation.",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "examples": ["f9ed4675-f1c5-4513-c61a-3b3b4e25b4c0"]
+    },
+    "source": {
+      "type": "string",
+      "description": "Module or component name that generated the log entry (e.g., 'AuthService', 'UploadService')",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["AuthService", "UploadService", "ProgressBar", "ConfigManager"]
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable log message describing the event",
+      "minLength": 1,
+      "maxLength": 1000,
+      "examples": [
+        "User authenticated successfully",
+        "Uploading file: note.md",
+        "Network request failed"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Structured additional data providing context for the log entry",
+      "properties": {
+        "apiRequest": {
+          "type": "object",
+          "description": "HTTP API request details (if log entry relates to API call)",
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+              "description": "HTTP method"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Full URL of the request",
+              "examples": ["https://mujarrad.onrender.com/api/v1/auth/login"]
+            },
+            "headers": {
+              "type": "object",
+              "description": "Request headers (sensitive values like Authorization are automatically redacted)",
+              "additionalProperties": {"type": "string"},
+              "examples": [
+                {
+                  "Content-Type": "application/json",
+                  "Authorization": "[REDACTED]",
+                  "User-Agent": "mujarrad-cli/1.0.0"
+                }
+              ]
+            },
+            "body": {
+              "description": "Request payload (sensitive fields like password are automatically redacted)",
+              "oneOf": [
+                {"type": "object"},
+                {"type": "null"}
+              ],
+              "examples": [
+                {
+                  "email": "user@example.com",
+                  "password": "[REDACTED]"
+                }
+              ]
+            }
+          },
+          "required": ["method", "url"]
+        },
+        "apiResponse": {
+          "type": "object",
+          "description": "HTTP API response details (if log entry relates to API call)",
+          "properties": {
+            "status": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599,
+              "description": "HTTP status code",
+              "examples": [200, 201, 400, 401, 500]
+            },
+            "headers": {
+              "type": "object",
+              "description": "Response headers (sensitive values like Set-Cookie are automatically redacted)",
+              "additionalProperties": {"type": "string"},
+              "examples": [
+                {
+                  "Content-Type": "application/json",
+                  "Set-Cookie": "[REDACTED]"
+                }
+              ]
+            },
+            "body": {
+              "description": "Response payload (may be truncated if very large)",
+              "oneOf": [
+                {"type": "object"},
+                {"type": "array"},
+                {"type": "string"},
+                {"type": "null"}
+              ]
+            },
+            "duration": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Request duration in milliseconds",
+              "examples": [234, 1567]
+            }
+          },
+          "required": ["status", "duration"]
+        },
+        "error": {
+          "type": "object",
+          "description": "Error details (if log entry represents an error)",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Error class name",
+              "examples": ["Error", "AxiosError", "ValidationError", "TypeError"]
+            },
+            "message": {
+              "type": "string",
+              "description": "Error message",
+              "examples": [
+                "Network request failed",
+                "File not found",
+                "Invalid credentials"
+              ]
+            },
+            "stack": {
+              "type": "string",
+              "description": "Stack trace (multiline string)",
+              "examples": [
+                "Error: Network request failed\\n    at AxiosAdapter.request (/path/to/file.js:123:45)\\n    at AuthService.login (/path/to/auth.js:67:89)"
+              ]
+            },
+            "code": {
+              "type": "string",
+              "description": "Error code (if available)",
+              "examples": ["ENOENT", "ECONNREFUSED", "ETIMEDOUT", "ERR_BAD_REQUEST"]
+            }
+          },
+          "required": ["name", "message"]
+        },
+        "filePath": {
+          "type": "string",
+          "description": "File system path being operated on (if log entry relates to file operation)",
+          "examples": [
+            "/Users/user/vault/note.md",
+            "~/Documents/Obsidian/canvas.canvas"
+          ]
+        },
+        "operation": {
+          "type": "string",
+          "enum": ["read", "write", "delete", "upload", "download", "clone", "sync"],
+          "description": "Type of operation being performed"
+        },
+        "fileSize": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes",
+          "examples": [1024, 2048, 1048576]
+        },
+        "filesProcessed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of files processed so far in batch operation",
+          "examples": [45, 150]
+        },
+        "filesTotal": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of files to process in batch operation",
+          "examples": [100, 500]
+        },
+        "userId": {
+          "type": "string",
+          "description": "Authenticated user ID (if applicable)",
+          "examples": ["user-123", "abc-def-456"]
+        },
+        "workspaceSlug": {
+          "type": "string",
+          "description": "Workspace identifier (if operation targets a workspace)",
+          "examples": ["personal", "work", "my-project"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "timestamp": "2025-10-12T14:30:00.123Z",
+      "level": "info",
+      "sessionId": "f9ed4675-f1c5-4513-c61a-3b3b4e25b4c0",
+      "source": "AuthService",
+      "message": "User authenticated successfully",
+      "metadata": {
+        "apiRequest": {
+          "method": "POST",
+          "url": "https://mujarrad.onrender.com/api/v1/auth/login",
+          "headers": {
+            "Content-Type": "application/json",
+            "Authorization": "[REDACTED]"
+          },
+          "body": {
+            "email": "user@example.com",
+            "password": "[REDACTED]"
+          }
+        },
+        "apiResponse": {
+          "status": 200,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "accessToken": "[REDACTED_JWT]",
+            "user": {
+              "id": "user-123",
+              "email": "user@example.com"
+            }
+          },
+          "duration": 234
+        },
+        "userId": "user-123"
+      }
+    },
+    {
+      "timestamp": "2025-10-12T14:30:01.456Z",
+      "level": "debug",
+      "sessionId": "f9ed4675-f1c5-4513-c61a-3b3b4e25b4c0",
+      "source": "UploadService",
+      "message": "Uploading file",
+      "metadata": {
+        "filePath": "/Users/user/vault/note.md",
+        "operation": "upload",
+        "fileSize": 2048,
+        "filesProcessed": 45,
+        "filesTotal": 150,
+        "workspaceSlug": "personal"
+      }
+    },
+    {
+      "timestamp": "2025-10-12T14:30:02.789Z",
+      "level": "error",
+      "sessionId": "f9ed4675-f1c5-4513-c61a-3b3b4e25b4c0",
+      "source": "UploadService",
+      "message": "File upload failed",
+      "metadata": {
+        "filePath": "/Users/user/vault/large-file.md",
+        "operation": "upload",
+        "fileSize": 10485760,
+        "error": {
+          "name": "AxiosError",
+          "message": "Request failed with status code 413",
+          "code": "ERR_BAD_REQUEST",
+          "stack": "AxiosError: Request failed with status code 413\\n    at settle (/node_modules/axios/lib/core/settle.js:19:12)"
+        },
+        "apiResponse": {
+          "status": 413,
+          "duration": 1567
+        }
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "notes": [
+    "Each log file contains multiple log entries, one per line (JSON Lines format: http://jsonlines.org/)",
+    "Sensitive data (tokens, passwords, API keys) is automatically redacted before logging",
+    "Log files are rotated daily with 7-day retention policy",
+    "SessionId allows correlation of all log entries from a single CLI command execution",
+    "Metadata is optional but strongly recommended for providing context",
+    "Error stack traces may be truncated if excessively long (>5000 characters)"
+  ]
+}
