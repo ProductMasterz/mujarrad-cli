@@ -1,0 +1,653 @@
+openapi: 3.0.3
+info:
+  title: Mujarrad Backend API - Init Command Enhancement Endpoints
+  description: |
+    Backend API contracts required for the enhanced `mujarrad init` command with bidirectional synchronization.
+
+    **Feature**: 009-init-command-enhancement
+    **Date**: 2025-10-12
+    **Reference**: This is a REFERENCE contract for CLI validation. Actual backend implementation
+    follows Mujarrad Backend Constitution (Principle I: API-First Design with OpenAPI contracts).
+
+    **New Endpoints Required**:
+    1. GET `/api/workspaces/{slug}` - Workspace metadata retrieval (FR-001)
+    2. GET `/api/workspaces/{slug}/nodes` - List all workspace nodes with pagination (FR-007)
+    3. GET `/api/nodes/{uuid}/versions/compare` - Node version history for ancestor detection (FR-008)
+    4. GET `/api/nodes/{uuid}/content` - Download individual node content
+
+    **Authentication**: All endpoints require JWT Bearer token in Authorization header.
+  version: 1.0.0
+  contact:
+    name: Mujarrad Backend Team
+    url: https://mujarrad.onrender.com
+
+servers:
+  - url: https://mujarrad.onrender.com
+    description: Production API
+  - url: http://localhost:8080
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/workspaces/{slug}:
+    get:
+      summary: Get workspace metadata
+      description: |
+        Retrieve workspace metadata for pre-flight verification. Used by CLI to verify workspace
+        exists and user has write permissions before scanning local vault (FR-001, FR-004, FR-005).
+
+        **Performance**: MUST respond within 2 seconds (NFR-001 requires <5s total verification).
+      operationId: getWorkspaceMetadata
+      tags:
+        - Workspaces
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: URL-safe workspace identifier (lowercase alphanumeric with hyphens)
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]{3,50}$'
+            example: my-knowledge-base
+      responses:
+        '200':
+          description: Workspace metadata retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMetadata'
+              examples:
+                typical:
+                  value:
+                    slug: my-knowledge-base
+                    name: My Knowledge Base
+                    owner: john-doe
+                    nodeCount: 42
+                    userPermissions:
+                      canRead: true
+                      canWrite: true
+                      canDelete: false
+                      canShare: false
+                    createdAt: '2025-01-15T10:30:00Z'
+                    lastModified: '2025-10-12T14:22:33Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User does not have access to this workspace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: Access denied to workspace 'my-knowledge-base'. Contact the workspace owner for permissions.
+                code: WORKSPACE_ACCESS_DENIED
+                timestamp: '2025-10-12T15:30:00Z'
+        '404':
+          description: Workspace not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: Workspace 'invalid-workspace' not found
+                code: WORKSPACE_NOT_FOUND
+                timestamp: '2025-10-12T15:30:00Z'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/workspaces/{slug}/nodes:
+    get:
+      summary: List all workspace nodes with pagination
+      description: |
+        Retrieve all nodes in a workspace with cursor-based pagination for memory-efficient streaming.
+        Used by CLI during remote content pull phase (FR-007, FR-019).
+
+        **Pagination**: Uses opaque cursor tokens for efficient streaming of large workspaces (NFR-004
+        requires handling 10,000+ nodes). Client should fetch pages until `nextCursor` is null.
+
+        **Performance**: MUST return at least 100 nodes per page. Recommended page size: 100-500 nodes.
+      operationId: listWorkspaceNodes
+      tags:
+        - Workspaces
+        - Nodes
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Workspace identifier
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]{3,50}$'
+            example: my-knowledge-base
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque pagination cursor from previous response (omit for first page)
+          schema:
+            type: string
+            example: eyJsYXN0SWQiOjEyMzQ1fQ==
+        - name: limit
+          in: query
+          required: false
+          description: Number of nodes per page (default 100, max 500)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+      responses:
+        '200':
+          description: Paginated list of workspace nodes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNodesResponse'
+              examples:
+                firstPage:
+                  value:
+                    data:
+                      - uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                        title: Meeting Notes
+                        content: "# Meeting Notes\n\nDiscussed project roadmap..."
+                        filePath: meetings/2025-10-12.md
+                        hash: 3a5b7c9d1e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0a2b4c6d8e0f2a4
+                        lastModified: '2025-10-12T14:00:00Z'
+                        ancestorHash: null
+                        fileType: markdown
+                        metadata:
+                          tags: [meeting, roadmap]
+                          frontmatter:
+                            date: '2025-10-12'
+                            attendees: [Alice, Bob]
+                      - uuid: b2c3d4e5-f6a7-8901-bcde-f12345678901
+                        title: Project Canvas
+                        content: '{"nodes":[...],"edges":[...]}'
+                        filePath: projects/roadmap.canvas
+                        hash: 4b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0a2b4c6d8e0f2a4b
+                        lastModified: '2025-10-11T16:30:00Z'
+                        ancestorHash: null
+                        fileType: canvas
+                        metadata: {}
+                    pagination:
+                      nextCursor: eyJsYXN0SWQiOjEwMH0=
+                      hasMore: true
+                emptyWorkspace:
+                  value:
+                    data: []
+                    pagination:
+                      nextCursor: null
+                      hasMore: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Workspace not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/nodes/{uuid}/versions/compare:
+    get:
+      summary: Compare node versions for divergence detection
+      description: |
+        Retrieve version comparison information for three-way merge detection. Backend calculates
+        common ancestor between local and remote versions using version history graph.
+
+        Used by CLI to determine if file has diverged (both local and remote modified from ancestor)
+        or if one side is ahead (FR-008, FR-009, FR-010).
+
+        **Algorithm**: Backend uses version history DAG to find lowest common ancestor (LCA) similar
+        to Git's merge-base. Returns ancestor hash for CLI to perform three-way comparison.
+      operationId: compareNodeVersions
+      tags:
+        - Nodes
+        - Versions
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          description: Node UUID (must exist in workspace user has access to)
+          schema:
+            type: string
+            format: uuid
+            example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        - name: localHash
+          in: query
+          required: true
+          description: SHA-256 hash of local file content (lowercase hex)
+          schema:
+            type: string
+            pattern: '^[a-f0-9]{64}$'
+            example: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2
+      responses:
+        '200':
+          description: Version comparison result with ancestor information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionComparisonResponse'
+              examples:
+                localAhead:
+                  summary: Local version ahead (remote unchanged from ancestor)
+                  value:
+                    nodeUuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    remoteHash: 789abc...
+                    localHash: abc123...
+                    ancestorHash: 789abc...
+                    divergenceAnalysis:
+                      status: LOCAL_AHEAD
+                      localModified: true
+                      remoteModified: false
+                      explanation: "Local version has new edits, remote unchanged from common ancestor"
+                remoteAhead:
+                  summary: Remote version ahead (local unchanged from ancestor)
+                  value:
+                    nodeUuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    remoteHash: def456...
+                    localHash: 789abc...
+                    ancestorHash: 789abc...
+                    divergenceAnalysis:
+                      status: REMOTE_AHEAD
+                      localModified: false
+                      remoteModified: true
+                      explanation: "Remote version has new edits, local unchanged from common ancestor"
+                conflicted:
+                  summary: Both versions diverged (conflict)
+                  value:
+                    nodeUuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    remoteHash: def456...
+                    localHash: abc123...
+                    ancestorHash: 789xyz...
+                    divergenceAnalysis:
+                      status: CONFLICTED
+                      localModified: true
+                      remoteModified: true
+                      explanation: "Both local and remote have diverged from common ancestor"
+                identical:
+                  summary: Versions identical (no sync needed)
+                  value:
+                    nodeUuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    remoteHash: abc123...
+                    localHash: abc123...
+                    ancestorHash: abc123...
+                    divergenceAnalysis:
+                      status: IDENTICAL
+                      localModified: false
+                      remoteModified: false
+                      explanation: "Local and remote have identical content"
+                noAncestor:
+                  summary: No common ancestor (independent creation)
+                  value:
+                    nodeUuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    remoteHash: def456...
+                    localHash: abc123...
+                    ancestorHash: null
+                    divergenceAnalysis:
+                      status: CONFLICTED
+                      localModified: true
+                      remoteModified: true
+                      explanation: "No common ancestor found - files created independently"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Node not found or user has no access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/nodes/{uuid}/content:
+    get:
+      summary: Download individual node content
+      description: |
+        Download full content of a specific node. Used during remote content pull when node
+        needs to be downloaded to local vault (REMOTE_ONLY or REMOTE_AHEAD classification).
+
+        Returns raw markdown or canvas JSON content without wrapper.
+      operationId: downloadNodeContent
+      tags:
+        - Nodes
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          description: Node UUID
+          schema:
+            type: string
+            format: uuid
+            example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      responses:
+        '200':
+          description: Node content (raw markdown or canvas JSON)
+          content:
+            text/markdown:
+              schema:
+                type: string
+              example: |
+                # Meeting Notes
+
+                Discussed project roadmap for Q4 2025.
+
+                ## Action Items
+                - Review design mockups
+                - Schedule follow-up meeting
+            application/json:
+              schema:
+                type: object
+                description: Canvas JSON format (see https://jsoncanvas.org)
+              example:
+                nodes:
+                  - id: node1
+                    type: text
+                    text: "Sample canvas node"
+                    x: 0
+                    y: 0
+                    width: 250
+                    height: 100
+                edges: []
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Node not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from authentication endpoints. Token stored in system keychain
+        via @napi-rs/keyring. Include in Authorization header as `Bearer <token>`.
+
+  schemas:
+    WorkspaceMetadata:
+      type: object
+      required:
+        - slug
+        - name
+        - owner
+        - nodeCount
+        - userPermissions
+        - createdAt
+        - lastModified
+      properties:
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]{3,50}$'
+          description: URL-safe workspace identifier
+          example: my-knowledge-base
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Human-readable workspace name
+          example: My Knowledge Base
+        owner:
+          type: string
+          description: Username of workspace owner
+          example: john-doe
+        nodeCount:
+          type: integer
+          minimum: 0
+          description: Total number of nodes in workspace
+          example: 42
+        userPermissions:
+          type: object
+          required:
+            - canRead
+            - canWrite
+            - canDelete
+            - canShare
+          properties:
+            canRead:
+              type: boolean
+              description: User can view workspace content
+            canWrite:
+              type: boolean
+              description: User can create/modify nodes (REQUIRED for init operation)
+            canDelete:
+              type: boolean
+              description: User can delete nodes
+            canShare:
+              type: boolean
+              description: User can invite others to workspace
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of workspace creation
+          example: '2025-01-15T10:30:00Z'
+        lastModified:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last content modification
+          example: '2025-10-12T14:22:33Z'
+
+    RemoteNode:
+      type: object
+      required:
+        - uuid
+        - title
+        - content
+        - filePath
+        - hash
+        - lastModified
+        - fileType
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique node identifier (UUID v4)
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        title:
+          type: string
+          description: Node title (filename without extension)
+          example: Meeting Notes
+        content:
+          type: string
+          description: Full markdown or canvas JSON content
+          example: "# Meeting Notes\n\nDiscussed project roadmap..."
+        filePath:
+          type: string
+          pattern: '^[^/].*\.(md|canvas)$'
+          description: Relative path within vault (forward slashes, no leading slash)
+          example: meetings/2025-10-12.md
+        hash:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          description: SHA-256 hash of content (lowercase hex)
+          example: 3a5b7c9d1e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0a2b4c6d8e0f2a4
+        lastModified:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last modification
+          example: '2025-10-12T14:00:00Z'
+        ancestorHash:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          nullable: true
+          description: |
+            SHA-256 hash of common ancestor (null if no local version exists or no ancestor found).
+            Used for three-way merge detection. Backend calculates using version history graph.
+          example: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2
+        fileType:
+          type: string
+          enum: [markdown, canvas]
+          description: File type for correct extension
+        metadata:
+          type: object
+          description: Optional metadata extracted from content
+          properties:
+            tags:
+              type: array
+              items:
+                type: string
+              description: Extracted tags from content
+            frontmatter:
+              type: object
+              additionalProperties: true
+              description: YAML frontmatter if present
+
+    PaginatedNodesResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RemoteNode'
+          description: Array of nodes for current page
+        pagination:
+          type: object
+          required:
+            - nextCursor
+            - hasMore
+          properties:
+            nextCursor:
+              type: string
+              nullable: true
+              description: Opaque cursor for next page (null if no more pages)
+              example: eyJsYXN0SWQiOjEwMH0=
+            hasMore:
+              type: boolean
+              description: Whether more pages exist
+
+    VersionComparisonResponse:
+      type: object
+      required:
+        - nodeUuid
+        - remoteHash
+        - localHash
+        - ancestorHash
+        - divergenceAnalysis
+      properties:
+        nodeUuid:
+          type: string
+          format: uuid
+          description: Node being compared
+        remoteHash:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          description: Current remote version hash
+        localHash:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          description: Local version hash (from query parameter)
+        ancestorHash:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          nullable: true
+          description: Common ancestor hash (null if no ancestor found)
+        divergenceAnalysis:
+          type: object
+          required:
+            - status
+            - localModified
+            - remoteModified
+            - explanation
+          properties:
+            status:
+              type: string
+              enum: [IDENTICAL, LOCAL_AHEAD, REMOTE_AHEAD, CONFLICTED]
+              description: |
+                Classification result:
+                - IDENTICAL: localHash == remoteHash
+                - LOCAL_AHEAD: localHash != ancestorHash && remoteHash == ancestorHash
+                - REMOTE_AHEAD: remoteHash != ancestorHash && localHash == ancestorHash
+                - CONFLICTED: localHash != ancestorHash && remoteHash != ancestorHash && localHash != remoteHash
+            localModified:
+              type: boolean
+              description: Whether local version differs from ancestor
+            remoteModified:
+              type: boolean
+              description: Whether remote version differs from ancestor
+            explanation:
+              type: string
+              description: Human-readable explanation of classification
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - code
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: Workspace 'invalid-workspace' not found
+        code:
+          type: string
+          description: Machine-readable error code
+          example: WORKSPACE_NOT_FOUND
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of error
+          example: '2025-10-12T15:30:00Z'
+        details:
+          type: object
+          additionalProperties: true
+          description: Optional additional error context
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Authentication required. Please log in with 'mujarrad auth login'
+            code: UNAUTHORIZED
+            timestamp: '2025-10-12T15:30:00Z'
+
+    Forbidden:
+      description: User does not have permission for this operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: You do not have write access to this workspace
+            code: FORBIDDEN
+            timestamp: '2025-10-12T15:30:00Z'
+
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: An unexpected error occurred. Please try again later.
+            code: INTERNAL_SERVER_ERROR
+            timestamp: '2025-10-12T15:30:00Z'
+
+tags:
+  - name: Workspaces
+    description: Workspace metadata and operations
+  - name: Nodes
+    description: Node content and version management
+  - name: Versions
+    description: Version history and comparison

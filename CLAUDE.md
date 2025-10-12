@@ -6,6 +6,8 @@ Auto-generated from all feature plans. Last updated: 2025-10-10
 - TypeScript 5.3+ with Node.js 18+ + axios (HTTP client), chalk (CLI formatting), commander (CLI framework), simple-git (Git operations), gray-matter (frontmatter parsing) (007-obsidian-mapper-i)
 - TypeScript 5.3+ with Node.js 18+ + winston (logging), commander (CLI), ora (spinners), cli-progress (progress bars), chalk (colors), axios (HTTP), jest (testing) (008-from-cli-side)
 - File system (~/.mujarrad/logs/ for logs, ~/.mujarrad/config.json for CLI config) (008-from-cli-side)
+- TypeScript 5.3+ with Node.js 18+ + Commander.js (CLI framework), Axios (HTTP client), Inquirer (interactive prompts), Ora (spinners), cli-progress (progress bars), Chalk (colors), simple-git (Git operations - optional), gray-matter (frontmatter parsing), @napi-rs/keyring (credential storage), winston (logging) (009-init-command-enhancement)
+- Local filesystem (~/.mujarrad/cache/ for node mappings, ~/.mujarrad/logs/ for conflict logs), remote PostgreSQL database via REST API (009-init-command-enhancement)
 
 ## Project Structure
 ```
@@ -36,6 +38,7 @@ npm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNO
 TypeScript 5.3+ with Node.js 18+: Follow standard conventions
 
 ## Recent Changes
+- 009-init-command-enhancement: Added TypeScript 5.3+ with Node.js 18+ + Commander.js (CLI framework), Axios (HTTP client), Inquirer (interactive prompts), Ora (spinners), cli-progress (progress bars), Chalk (colors), simple-git (Git operations - optional), gray-matter (frontmatter parsing), @napi-rs/keyring (credential storage), winston (logging)
 - 008-from-cli-side: Added TypeScript 5.3+ with Node.js 18+ + winston (logging), commander (CLI), ora (spinners), cli-progress (progress bars), chalk (colors), axios (HTTP), jest (testing)
 - 007-obsidian-mapper-i: Added TypeScript 5.3+ with Node.js 18+ + axios (HTTP client), chalk (CLI formatting), commander (CLI framework), simple-git (Git operations), gray-matter (frontmatter parsing)
 
