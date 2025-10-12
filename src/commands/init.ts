@@ -12,6 +12,8 @@ import { CredentialManager } from '../config/CredentialManager.js';
 import { Logger } from '../utils/Logger.js';
 import { VaultValidator } from '../utils/VaultValidator.js';
 import { WorkspaceValidator } from '../services/WorkspaceValidator.js';
+import { RemoteNodeFetcher } from '../services/RemoteNodeFetcher.js';
+import { TransactionalDownloader } from '../services/TransactionalDownloader.js';
 import { WorkspaceNotFoundError, AccessDeniedError, WorkspaceValidationError } from '../errors/WorkspaceErrors.js';
 
 /**
@@ -104,22 +106,33 @@ export function initCommand(program: Command, uploadService?: UploadService): vo
     .argument('<vault-path>', 'Path to Obsidian vault directory')
     .requiredOption('-w, --workspace <slug>', 'Workspace slug')
     .option('-b, --batch-size <size>', 'Number of files per batch', '50')
+    .option('-s, --sync', 'Enable bidirectional sync (pull remote content before upload)', false)
     .addHelpText('after', `
 Examples:
   $ mujarrad init ./my-vault --workspace my-workspace
-    Initialize vault from current directory
+    One-way upload (default): Upload local vault to workspace
 
-  $ mujarrad init ~/Documents/Obsidian/MyVault -w work-notes
-    Initialize vault with absolute path
+  $ mujarrad init ./my-vault -w my-workspace --sync
+    Bidirectional sync: Pull remote content, then upload local changes
 
-  $ mujarrad init . -w project --batch-size 100
-    Initialize current directory with larger batch size
+  $ mujarrad init ~/Documents/Obsidian/MyVault -w work-notes --sync
+    Sync vault with absolute path
 
-Process:
+  $ mujarrad init . -w project --batch-size 100 --sync
+    Sync with larger batch size
+
+Process (without --sync):
   1. Verifies workspace exists and you have write access (fast check)
   2. Validates vault structure (must contain .obsidian folder)
   3. Scans vault for markdown and canvas files
   4. Uploads files in batches to the workspace
+
+Process (with --sync):
+  1. Verifies workspace exists and you have write access (fast check)
+  2. Pulls remote content from workspace to local vault
+  3. Validates vault structure (must contain .obsidian folder)
+  4. Scans vault for markdown and canvas files
+  5. Uploads files in batches to the workspace
 
 Notes:
   • Workspace must exist before uploading (create at https://www.mujarrad.com)
@@ -212,6 +225,86 @@ Exit Codes:
           } else {
             // Unknown error
             throw error;
+          }
+        }
+
+        // Pull remote content if --sync flag is enabled (FR-007, T025)
+        if (options.sync) {
+          spinner.start(chalk.blue('Pulling remote content...'));
+
+          try {
+            // Create RemoteNodeFetcher and TransactionalDownloader
+            const fetcher = new RemoteNodeFetcher(workspaceApi, logger);
+            const downloader = new TransactionalDownloader(logger);
+
+            // Collect nodes (streaming for memory efficiency)
+            const remoteNodes = [];
+            let nodeCount = 0;
+
+            for await (const node of fetcher.fetchAllNodes(options.workspace)) {
+              remoteNodes.push(node);
+              nodeCount++;
+
+              // Update spinner with progress
+              if (nodeCount % 100 === 0) {
+                spinner.text = chalk.blue(`Pulling remote content... (${nodeCount} nodes)`);
+              }
+            }
+
+            spinner.succeed(chalk.green(`Fetched ${nodeCount} remote nodes`));
+
+            if (nodeCount > 0) {
+              // Download nodes to vault
+              spinner.start(chalk.blue('Downloading remote content to vault...'));
+
+              const downloadResult = await downloader.downloadNodesAtomically(
+                remoteNodes,
+                path.resolve(vaultPath)
+              );
+
+              if (downloadResult.success) {
+                const sizeMB = (downloadResult.totalBytes / (1024 * 1024)).toFixed(2);
+                spinner.succeed(chalk.green(
+                  `Pulled ${downloadResult.downloadedCount} remote nodes (${sizeMB} MB)`
+                ));
+
+                logger.info('Remote content pull completed', {
+                  workspaceSlug: options.workspace,
+                  downloadedCount: downloadResult.downloadedCount,
+                  totalBytes: downloadResult.totalBytes,
+                  duration: downloadResult.duration
+                });
+              } else {
+                spinner.fail(chalk.red('Failed to download remote content'));
+                console.error(chalk.red(`\n✗ Download failed: ${downloadResult.errorMessage}`));
+
+                if (downloadResult.rolledBack) {
+                  console.log(chalk.yellow('All changes were rolled back. Vault is in original state.'));
+                }
+
+                logger.error('Remote content download failed', {
+                  workspaceSlug: options.workspace,
+                  error: downloadResult.errorMessage,
+                  rolledBack: downloadResult.rolledBack
+                });
+
+                process.exit(1);
+              }
+            } else {
+              spinner.succeed(chalk.gray('No remote content to pull (workspace is empty)'));
+            }
+
+          } catch (error: any) {
+            spinner.fail(chalk.red('Failed to pull remote content'));
+
+            logger.error('Remote content pull failed', {
+              workspaceSlug: options.workspace,
+              error: error.message,
+              stack: error.stack
+            });
+
+            console.error(chalk.red(`\n✗ Pull failed: ${error.message}\n`));
+            process.exit(1);
           }
         }
 
