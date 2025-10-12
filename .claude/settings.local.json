@@ -70,7 +70,12 @@
       "WebFetch(domain:idlob.dev)",
       "WebFetch(domain:medium.com)",
       "Bash(if [ -d \"/Users/mac/Developer/Software-Projects/PMZ Projects/Mujarrad/Mujarrad-CLI/specs/008-from-cli-side/checklists\" ])",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git tag:*)",
+      "Bash(awk:*)",
+      "Bash(git rm:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []
