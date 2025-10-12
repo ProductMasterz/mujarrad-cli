@@ -49,21 +49,21 @@ jest.mock('cli-progress', () => ({
 }));
 
 import { Command } from 'commander';
-import { uploadCommand } from '../../../src/commands/upload.js';
+import { initCommand } from '../../../src/commands/init.js';
 
 describe('Upload Command (US7)', () => {
   let program: Command;
 
   beforeEach(() => {
     program = new Command();
-    uploadCommand(program);
+    initCommand(program);
   });
 
   describe('Vault structure validation', () => {
     it('should validate vault structure before upload', async () => {
-      const cmd = program.commands.find(c => c.name() === 'upload');
+      const cmd = program.commands.find(c => c.name() === 'init');
       expect(cmd).toBeDefined();
-      expect(cmd!.description()).toContain('Upload Obsidian vault');
+      expect(cmd!.description()).toContain('Initialize Obsidian vault');
     });
 
     it('should check for .obsidian folder', async () => {
@@ -158,16 +158,16 @@ describe('Upload Command (US7)', () => {
 
   describe('Command options', () => {
     it('should accept vault-path argument', () => {
-      const cmd = program.commands.find(c => c.name() === 'upload');
+      const cmd = program.commands.find(c => c.name() === 'init');
       expect(cmd).toBeDefined();
 
-      // Upload command has a vault-path argument (verified through help text)
+      // Init command has a vault-path argument (verified through help text)
       const helpText = cmd!.helpInformation();
       expect(helpText).toContain('vault-path');
     });
 
     it('should require --workspace option', () => {
-      const cmd = program.commands.find(c => c.name() === 'upload');
+      const cmd = program.commands.find(c => c.name() === 'init');
       expect(cmd).toBeDefined();
 
       const options = cmd!.options;
@@ -177,7 +177,7 @@ describe('Upload Command (US7)', () => {
     });
 
     it('should accept optional --batch-size option', () => {
-      const cmd = program.commands.find(c => c.name() === 'upload');
+      const cmd = program.commands.find(c => c.name() === 'init');
       expect(cmd).toBeDefined();
 
       const options = cmd!.options;
@@ -189,17 +189,17 @@ describe('Upload Command (US7)', () => {
 
   describe('Help documentation (US3)', () => {
     it('should have examples in addHelpText', () => {
-      const cmd = program.commands.find(c => c.name() === 'upload');
+      const cmd = program.commands.find(c => c.name() === 'init');
       expect(cmd).toBeDefined();
 
       // Check that command has help text configured
       // (examples are added via addHelpText which is visible with --help)
       const description = cmd!.description();
-      expect(description).toContain('Upload Obsidian vault');
+      expect(description).toContain('Initialize Obsidian vault');
     });
 
     it('should have description and options', () => {
-      const cmd = program.commands.find(c => c.name() === 'upload');
+      const cmd = program.commands.find(c => c.name() === 'init');
       const helpText = cmd!.helpInformation();
 
       // Check basic structure
@@ -209,7 +209,7 @@ describe('Upload Command (US7)', () => {
     });
 
     it('should have proper command structure', () => {
-      const cmd = program.commands.find(c => c.name() === 'upload');
+      const cmd = program.commands.find(c => c.name() === 'init');
       expect(cmd).toBeDefined();
       expect(cmd!.description()).toBeTruthy();
 

@@ -43,7 +43,7 @@ jest.mock('ora', () => ({
 
 import { Command } from 'commander';
 import { authCommand } from '../../../src/commands/auth.js';
-import { uploadCommand } from '../../../src/commands/upload.js';
+import { initCommand } from '../../../src/commands/init.js';
 import { cloneCommand } from '../../../src/commands/clone.js';
 import { syncCommand } from '../../../src/commands/sync.js';
 import { templateCommand } from '../../../src/commands/template.js';
@@ -67,7 +67,7 @@ describe('Enhanced Help System', () => {
 
     it('should list all available commands', () => {
       authCommand(program);
-      uploadCommand(program);
+      initCommand(program);
       cloneCommand(program);
       syncCommand(program);
       templateCommand(program);
@@ -75,7 +75,7 @@ describe('Enhanced Help System', () => {
       const commands = program.commands.map(cmd => cmd.name());
 
       expect(commands).toContain('auth');
-      expect(commands).toContain('upload');
+      expect(commands).toContain('init');
       expect(commands).toContain('clone');
       expect(commands).toContain('sync');
       expect(commands).toContain('template');
@@ -85,7 +85,7 @@ describe('Enhanced Help System', () => {
   describe('Command Help Requirements', () => {
     const commandSetups = [
       { name: 'auth', setup: authCommand },
-      { name: 'upload', setup: uploadCommand },
+      { name: 'init', setup: initCommand },
       { name: 'clone', setup: cloneCommand },
       { name: 'sync', setup: syncCommand },
       { name: 'template', setup: templateCommand },
@@ -135,11 +135,11 @@ describe('Enhanced Help System', () => {
 
     it('should include command examples in summary', () => {
       // This will be satisfied by addHelpText() calls in implementation
-      uploadCommand(program);
-      const uploadCmd = program.commands.find(cmd => cmd.name() === 'upload')!;
+      initCommand(program);
+      const initCmd = program.commands.find(cmd => cmd.name() === 'init')!;
 
       // Command should exist
-      expect(uploadCmd).toBeDefined();
+      expect(initCmd).toBeDefined();
     });
   });
 
@@ -167,7 +167,7 @@ describe('Enhanced Help System', () => {
   describe('Help Accessibility', () => {
     it('should support --help flag on all commands', () => {
       authCommand(program);
-      uploadCommand(program);
+      initCommand(program);
       cloneCommand(program);
       syncCommand(program);
       templateCommand(program);
