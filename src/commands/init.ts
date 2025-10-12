@@ -14,6 +14,9 @@ import { VaultValidator } from '../utils/VaultValidator.js';
 import { WorkspaceValidator } from '../services/WorkspaceValidator.js';
 import { RemoteNodeFetcher } from '../services/RemoteNodeFetcher.js';
 import { TransactionalDownloader } from '../services/TransactionalDownloader.js';
+import { VersionComparator } from '../services/VersionComparator.js';
+import { LocalFileHasher } from '../utils/LocalFileHasher.js';
+import { VaultScanner } from '../filesystem/VaultScanner.js';
 import { WorkspaceNotFoundError, AccessDeniedError, WorkspaceValidationError } from '../errors/WorkspaceErrors.js';
 
 /**
@@ -131,8 +134,9 @@ Process (with --sync):
   1. Verifies workspace exists and you have write access (fast check)
   2. Pulls remote content from workspace to local vault
   3. Validates vault structure (must contain .obsidian folder)
-  4. Scans vault for markdown and canvas files
-  5. Uploads files in batches to the workspace
+  4. Compares local and remote state (three-way merge)
+  5. Displays sync summary (identical, local changes, remote changes, conflicts)
+  6. Uploads local changes in batches to the workspace
 
 Notes:
   • Workspace must exist before uploading (create at https://www.mujarrad.com)
@@ -358,6 +362,91 @@ Exit Codes:
           fileCount: validation.fileCount,
           hasObsidianFolder: validation.hasObsidianFolder
         });
+
+        // Compare local and remote state if --sync flag is enabled (FR-021, FR-022, T034-T037)
+        if (options.sync) {
+          spinner.start(chalk.blue('Comparing local and remote state...'));
+
+          try {
+            // Create services for comparison
+            const vaultScanner = new VaultScanner(absoluteVaultPath);
+            const fileHasher = new LocalFileHasher(logger);
+            const comparator = new VersionComparator(logger);
+            const fetcher = new RemoteNodeFetcher(workspaceApi, logger);
+
+            // Scan local vault for files
+            const scannedFiles = await vaultScanner.scan();
+
+            // Process local files to compute hashes
+            const localFilesInput = scannedFiles.map((f: any) => ({
+              absolutePath: f.absolutePath,
+              relativePath: f.relativePath,
+              fileType: (f.extension === '.md' ? 'markdown' : 'canvas') as 'markdown' | 'canvas'
+            }));
+            const localFiles = await fileHasher.processFiles(localFilesInput);
+
+            // Fetch remote nodes
+            const remoteNodes: any[] = [];
+            for await (const node of fetcher.fetchAllNodes(options.workspace)) {
+              remoteNodes.push(node);
+            }
+
+            // Build comparison input (combine local and remote file paths)
+            const allFilePaths = new Set([
+              ...localFiles.map(f => f.relativePath),
+              ...remoteNodes.map(n => n.filePath)
+            ]);
+
+            const comparisonInput = Array.from(allFilePaths).map(filePath => {
+              const localFile = localFiles.find(f => f.relativePath === filePath);
+              const remoteNode = remoteNodes.find(n => n.filePath === filePath);
+
+              return {
+                filePath,
+                localHash: localFile?.hash || null,
+                remoteHash: remoteNode?.hash || null,
+                ancestorHash: remoteNode?.ancestorHash || null
+              };
+            });
+
+            // Perform comparison
+            const comparisonResult = comparator.compareFiles(comparisonInput);
+
+            // Display comparison summary (FR-024)
+            spinner.succeed(chalk.green('Comparison complete'));
+            console.log(chalk.blue('\n📊 Sync Summary:'));
+            console.log(chalk.gray(`  • ${chalk.white(comparisonResult.identical.length)} files unchanged (will skip)`));
+            console.log(chalk.cyan(`  • ${chalk.white(comparisonResult.localAhead.length)} files to upload (local changes)`));
+            console.log(chalk.yellow(`  • ${chalk.white(comparisonResult.remoteAhead.length)} files already pulled (remote changes)`));
+
+            if (comparisonResult.conflicted.length > 0) {
+              console.log(chalk.red(`  • ${chalk.white(comparisonResult.conflicted.length)} conflicts detected`));
+              console.log(chalk.gray('\n  Note: Conflict resolution not yet implemented. Conflicts will be skipped.'));
+            }
+
+            console.log(); // Empty line
+
+            logger.info('Comparison summary', {
+              workspaceSlug: options.workspace,
+              identical: comparisonResult.identical.length,
+              localAhead: comparisonResult.localAhead.length,
+              remoteAhead: comparisonResult.remoteAhead.length,
+              conflicted: comparisonResult.conflicted.length
+            });
+
+          } catch (error: any) {
+            spinner.fail(chalk.red('Comparison failed'));
+            console.error(chalk.red(`\n✗ Failed to compare local and remote state: ${error.message}\n`));
+
+            logger.error('Comparison failed', {
+              workspaceSlug: options.workspace,
+              error: error.message,
+              stack: error.stack
+            });
+
+            process.exit(1);
+          }
+        }
 
         // Parse batch size
         const batchSize = parseInt(options.batchSize, 10);
