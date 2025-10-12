@@ -10,7 +10,7 @@ import { AlphaDisclaimer } from './utils/AlphaDisclaimer.js';
 import { VersionInfo } from './utils/versionInfo.js';
 import { ConfigManager } from './config/ConfigManager.js';
 import { authCommand } from './commands/auth.js';
-import { uploadCommand } from './commands/upload.js';
+import { initCommand } from './commands/init.js';
 import { cloneCommand } from './commands/clone.js';
 import { syncCommand } from './commands/sync.js';
 import { templateCommand } from './commands/template.js';
@@ -81,11 +81,11 @@ async function main() {
     program
       .name('mujarrad')
       .description('Obsidian Knowledge Graph Integration with Mujarrad\n\nSync your Obsidian vaults with Mujarrad workspaces for knowledge graph visualization and collaboration.')
-      .version(getVersion(), '-v, --version', 'Display version information')
+      .version(getVersion(), '-V, --version', 'Display version information')
       .addHelpText('after', `
 Examples:
   $ mujarrad auth login
-  $ mujarrad upload ./my-vault --workspace my-workspace
+  $ mujarrad init ./my-vault --workspace my-workspace
   $ mujarrad clone my-workspace ./local-folder
   $ mujarrad sync ./my-vault --workspace my-workspace
 
@@ -110,7 +110,7 @@ Troubleshooting:
 
     // Register commands
     authCommand(program);
-    uploadCommand(program);
+    initCommand(program);
     cloneCommand(program);
     syncCommand(program);
     templateCommand(program);

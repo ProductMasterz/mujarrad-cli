@@ -180,12 +180,46 @@ Notes:
     .command('status')
     .description('Show authentication status')
     .action(async () => {
+      /**
+       * Retry logic for 500 errors
+       */
+      async function retryOn500<T>(
+        operation: () => Promise<T>,
+        maxRetries: number = 3,
+        baseDelay: number = 1000
+      ): Promise<T> {
+        let lastError: any;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            return await operation();
+          } catch (error: any) {
+            lastError = error;
+
+            // Only retry on 500 errors
+            if (error.response?.status >= 500 && error.response?.status < 600) {
+              if (attempt < maxRetries) {
+                const delay = baseDelay * Math.pow(2, attempt - 1);
+                console.log(chalk.yellow(`  ⚠ Server error, retrying in ${delay / 1000}s... (attempt ${attempt}/${maxRetries})`));
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+              }
+            }
+
+            // Don't retry other errors
+            throw error;
+          }
+        }
+
+        throw lastError;
+      }
+
       try {
         const service = await getAuthService();
         const isAuthenticated = await service.isAuthenticated();
 
         if (isAuthenticated) {
-          const user = await service.getCurrentUser();
+          const user = await retryOn500(async () => await service.getCurrentUser());
 
           console.log(chalk.green('✓ Authenticated'));
           console.log(chalk.gray(`\nUser: ${user.name || 'N/A'}`));
@@ -197,6 +231,17 @@ Notes:
         }
       } catch (error: any) {
         console.error(chalk.red('✗ Error checking authentication status:'), error.message);
+
+        // Enhanced error messages
+        if (error.response) {
+          const status = error.response.status;
+          if (status >= 500) {
+            console.log(chalk.red('\n✗ Server error after multiple retries'));
+            console.log(chalk.gray('The server is experiencing issues. Please try again later.'));
+            console.log(chalk.gray('If the problem persists, check https://status.mujarrad.com\n'));
+          }
+        }
+
         process.exit(1);
       }
     });
