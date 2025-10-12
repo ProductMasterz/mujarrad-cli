@@ -54,17 +54,17 @@ Single project structure (TypeScript/Node.js CLI):
 
 ### Tests for User Story 1 (TDD - Write First, Ensure They FAIL)
 
-- [ ] T010 [P] **[US1]** Contract test for `GET /api/workspaces/{slug}` endpoint in `tests/contract/workspace-api.test.ts`: Mock successful 200 response with WorkspaceMetadata, 404 response for non-existent workspace, 403 response for access denied, verify response schemas match contracts/backend-api.yaml
-- [ ] T011 [P] **[US1]** Unit test for WorkspaceValidator service in `tests/unit/services/WorkspaceValidator.test.ts`: Test `validateWorkspace(slug)` returns metadata on success, throws `WorkspaceNotFoundError` on 404, throws `AccessDeniedError` on 403, throws `NetworkError` on timeout, completes within 5 seconds (NFR-001)
-- [ ] T012 [P] **[US1]** Integration test for init command with workspace validation in `tests/integration/commands/init-workspace-validation.test.ts`: Test init with valid workspace proceeds to scan, verify display shows "✓ Workspace verified: {name} ({nodeCount} existing nodes)" format (FR-005), init with invalid workspace fails before scan with exit code 4, init with restricted workspace fails with access denied error
+- [X] T010 [P] **[US1]** Contract test for `GET /api/workspaces/{slug}` endpoint in `tests/contract/workspace-api.test.ts`: Mock successful 200 response with WorkspaceMetadata, 404 response for non-existent workspace, 403 response for access denied, verify response schemas match contracts/backend-api.yaml
+- [X] T011 [P] **[US1]** Unit test for WorkspaceValidator service in `tests/unit/services/WorkspaceValidator.test.ts`: Test `validateWorkspace(slug)` returns metadata on success, throws `WorkspaceNotFoundError` on 404, throws `AccessDeniedError` on 403, throws `NetworkError` on timeout, completes within 5 seconds (NFR-001)
+- [X] T012 [P] **[US1]** Integration test for init command with workspace validation in `tests/integration/commands/init-workspace-validation.test.ts`: Test init with valid workspace proceeds to scan, verify display shows "✓ Workspace verified: {name} ({nodeCount} existing nodes)" format (FR-005), init with invalid workspace fails before scan with exit code 4, init with restricted workspace fails with access denied error
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] **[US1]** Create custom error classes in `src/errors/WorkspaceErrors.ts`: `WorkspaceNotFoundError`, `AccessDeniedError`, `WorkspaceValidationError` (all extend base `Error`)
-- [ ] T014 **[US1]** Implement WorkspaceValidator service in `src/services/WorkspaceValidator.ts`: Method `async validateWorkspace(slug: string): Promise<WorkspaceMetadata>` that calls `GET /api/workspaces/{slug}`, handles 200/404/403 responses, implements 3-retry logic with exponential backoff for timeouts, returns WorkspaceMetadata or throws appropriate error (FR-001, FR-002, FR-003, FR-004)
-- [ ] T015 **[US1]** Add workspace validation logic to init command in `src/commands/init.ts`: Call `WorkspaceValidator.validateWorkspace()` BEFORE calling `VaultScanner.scan()`, display "🔍 Verifying workspace '{slug}'..." spinner, on success display "✓ Workspace verified: {name} ({nodeCount} existing nodes)" (FR-005), on failure display error and exit with code 4, ensure no vault scanning occurs before validation
-- [ ] T016 **[US1]** Add logging for workspace validation in WorkspaceValidator: Log validation start, success with workspace details, and failures with error type
-- [ ] T017 **[US1]** Update init command help text in `src/commands/init.ts` to mention pre-flight workspace verification behavior
+- [X] T013 [P] **[US1]** Create custom error classes in `src/errors/WorkspaceErrors.ts`: `WorkspaceNotFoundError`, `AccessDeniedError`, `WorkspaceValidationError` (all extend base `Error`)
+- [X] T014 **[US1]** Implement WorkspaceValidator service in `src/services/WorkspaceValidator.ts`: Method `async validateWorkspace(slug: string): Promise<WorkspaceMetadata>` that calls `GET /api/workspaces/{slug}`, handles 200/404/403 responses, implements 3-retry logic with exponential backoff for timeouts, returns WorkspaceMetadata or throws appropriate error (FR-001, FR-002, FR-003, FR-004)
+- [X] T015 **[US1]** Add workspace validation logic to init command in `src/commands/init.ts`: Call `WorkspaceValidator.validateWorkspace()` BEFORE calling `VaultScanner.scan()`, display "🔍 Verifying workspace '{slug}'..." spinner, on success display "✓ Workspace verified: {name} ({nodeCount} existing nodes)" (FR-005), on failure display error and exit with code 4, ensure no vault scanning occurs before validation
+- [X] T016 **[US1]** Add logging for workspace validation in WorkspaceValidator: Log validation start, success with workspace details, and failures with error type
+- [X] T017 **[US1]** Update init command help text in `src/commands/init.ts` to mention pre-flight workspace verification behavior
 
 **Checkpoint**: User Story 1 complete - workspace validation works independently. Test by running `mujarrad init . --workspace <valid/invalid>` and verifying fast feedback.
 

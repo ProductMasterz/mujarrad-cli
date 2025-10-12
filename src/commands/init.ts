@@ -5,11 +5,14 @@ import cliProgress from 'cli-progress';
 import * as path from 'path';
 import { UploadService } from '../services/UploadService.js';
 import { UploadApi } from '../api/generated/api.js';
+import { SyncWorkspacesApi } from '../api/generated/index.js';
 import { Configuration } from '../api/generated/configuration.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { CredentialManager } from '../config/CredentialManager.js';
 import { Logger } from '../utils/Logger.js';
 import { VaultValidator } from '../utils/VaultValidator.js';
+import { WorkspaceValidator } from '../services/WorkspaceValidator.js';
+import { WorkspaceNotFoundError, AccessDeniedError, WorkspaceValidationError } from '../errors/WorkspaceErrors.js';
 
 /**
  * Setup init command with Commander.js
@@ -112,12 +115,25 @@ Examples:
   $ mujarrad init . -w project --batch-size 100
     Initialize current directory with larger batch size
 
+Process:
+  1. Verifies workspace exists and you have write access (fast check)
+  2. Validates vault structure (must contain .obsidian folder)
+  3. Scans vault for markdown and canvas files
+  4. Uploads files in batches to the workspace
+
 Notes:
-  • Vault must be an Obsidian vault (contains .obsidian folder)
-  • Workspace must exist before uploading
+  • Workspace must exist before uploading (create at https://www.mujarrad.com)
+  • Workspace slug must be 3-50 characters, lowercase alphanumeric with hyphens
   • Default batch size is 50 files
   • Progress is tracked and can be resumed if interrupted
-  • Automatically retries on server errors (500+)
+  • Automatically retries on network timeouts and server errors
+  • Pre-flight workspace verification prevents wasted processing time
+
+Exit Codes:
+  • 0: Success
+  • 1: General error (authentication, network, validation)
+  • 3: Vault validation failed
+  • 4: Workspace not found or access denied
     `)
     .action(async (vaultPath: string, options: any) => {
       const spinner = ora();
@@ -135,6 +151,69 @@ Notes:
           process.exit(1);
         }
         spinner.succeed('Authenticated');
+
+        // Validate workspace BEFORE scanning vault (FR-001, US1)
+        // This provides fast feedback if workspace doesn't exist (FR-003)
+        spinner.start(chalk.blue('Verifying workspace...'));
+
+        const config = await new ConfigManager().load();
+        const apiConfig = new Configuration({
+          basePath: config.apiBaseUrl,
+          accessToken: token || undefined
+        });
+
+        const workspaceApi = new SyncWorkspacesApi(apiConfig);
+        const workspaceValidator = new WorkspaceValidator(workspaceApi, logger);
+
+        try {
+          const workspaceMetadata = await workspaceValidator.validateWorkspace(options.workspace);
+
+          // Display workspace verification success (FR-005)
+          spinner.succeed(chalk.green(
+            `Workspace verified: ${chalk.white(workspaceMetadata.name)} ` +
+            chalk.gray(`(${workspaceMetadata.nodeCount} existing nodes)`)
+          ));
+
+          logger.info('Workspace validation successful', {
+            workspaceSlug: options.workspace,
+            workspaceName: workspaceMetadata.name,
+            nodeCount: workspaceMetadata.nodeCount,
+            owner: workspaceMetadata.owner
+          });
+        } catch (error: any) {
+          spinner.fail(chalk.red('Workspace verification failed'));
+
+          // Handle specific workspace validation errors (FR-003, FR-004)
+          if (error instanceof WorkspaceNotFoundError) {
+            console.error(chalk.red(`\n✗ Workspace '${options.workspace}' not found`));
+            console.log(chalk.gray('\nTip: Check the workspace slug or create a new workspace at https://www.mujarrad.com\n'));
+            process.exit(4); // Exit code 4 for workspace not found (FR-003)
+          } else if (error instanceof AccessDeniedError) {
+            console.error(chalk.red('\n✗ Access denied to workspace'));
+            console.log(chalk.yellow(`\nYou do not have write access to workspace '${options.workspace}'.`));
+            console.log(chalk.gray('Contact the workspace owner for permissions.\n'));
+            process.exit(4); // Exit code 4 for access denied
+          } else if (error instanceof WorkspaceValidationError) {
+            console.error(chalk.red(`\n✗ Workspace validation failed: ${error.message}`));
+
+            if (error.message.includes('Authentication required')) {
+              console.log(chalk.gray('\nRun "mujarrad auth login" to authenticate\n'));
+              process.exit(1);
+            } else if (error.message.includes('Invalid workspace slug')) {
+              console.log(chalk.gray('\nWorkspace slug must be 3-50 characters, lowercase alphanumeric with hyphens\n'));
+              process.exit(1);
+            } else if (error.message.includes('timeout')) {
+              console.log(chalk.gray('\nNetwork timeout occurred. Check your internet connection and try again.\n'));
+              process.exit(1);
+            }
+
+            console.log(); // Empty line
+            process.exit(1);
+          } else {
+            // Unknown error
+            throw error;
+          }
+        }
 
         // Validate vault structure (US7)
         spinner.start('Validating vault structure...');
