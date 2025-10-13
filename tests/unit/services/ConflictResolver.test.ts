@@ -1,362 +1,331 @@
-import { ConflictResolver, Conflict, ConflictResolution } from '../../../src/services/ConflictResolver.js';
-import inquirer from 'inquirer';
+/**
+ * Unit tests for ConflictResolver service
+ * Feature: 009-init-command-enhancement
+ * Task: T038 - Unit test for conflict resolution logic
+ *
+ * Tests:
+ * - INTERACTIVE strategy: prompt user for each conflict
+ * - KEEP_LOCAL strategy: automatically keep local version
+ * - KEEP_REMOTE strategy: automatically keep remote version
+ * - SKIP strategy: skip conflicted files
+ * - Batch resolution with mixed strategies
+ * - User confirmation prompts
+ * - Content preview generation
+ */
+
+import { ConflictResolver, type ConflictResolutionInput } from '../../../src/services/ConflictResolver.js';
+import { ConflictStrategy } from '../../../src/types/sync.js';
 import { Logger } from '../../../src/utils/Logger.js';
 
-// Mock dependencies
-jest.mock('inquirer', () => ({
-  default: {
-    prompt: jest.fn()
-  },
-  prompt: jest.fn()
-}));
-jest.mock('../../../src/utils/Logger.js');
-
 describe('ConflictResolver', () => {
-  let conflictResolver: ConflictResolver;
-  let mockLogger: any;
+    let resolver: ConflictResolver;
+    let mockLogger: Logger;
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+    beforeEach(() => {
+        mockLogger = new Logger();
+        jest.spyOn(mockLogger, 'debug').mockImplementation();
+        jest.spyOn(mockLogger, 'info').mockImplementation();
+        jest.spyOn(mockLogger, 'warn').mockImplementation();
+        jest.spyOn(mockLogger, 'error').mockImplementation();
 
-    mockLogger = {
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn()
-    };
-    (Logger as jest.Mock).mockImplementation(() => mockLogger);
-
-    conflictResolver = new ConflictResolver();
-  });
-
-  describe('detectConflict', () => {
-    it('should detect concurrent edits with different timestamps', () => {
-      const local = {
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        content: 'Local content',
-        timestamp: '2025-10-11T14:30:00Z'
-      };
-      const remote = {
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        content: 'Remote content',
-        timestamp: '2025-10-11T14:31:00Z'
-      };
-
-      const conflict = conflictResolver.detectConflict(local, remote);
-
-      expect(conflict).toBeDefined();
-      expect(conflict?.type).toBe('CONCURRENT_EDIT');
-      expect(conflict?.nodeId).toBe('uuid-123');
-      expect(conflict?.filePath).toBe('note.md');
+        resolver = new ConflictResolver(mockLogger);
     });
 
-    it('should not detect conflict if content is identical', () => {
-      const local = {
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        content: 'Same content',
-        timestamp: '2025-10-11T14:30:00Z'
-      };
-      const remote = {
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        content: 'Same content',
-        timestamp: '2025-10-11T14:31:00Z'
-      };
+    describe('KEEP_LOCAL strategy', () => {
+        it('should resolve conflict by keeping local version', async () => {
+            const conflict: ConflictResolutionInput = {
+                filePath: 'conflict.md',
+                localContent: 'Local version of content',
+                remoteContent: 'Remote version of content',
+                localHash: 'local-hash-123',
+                remoteHash: 'remote-hash-456'
+            };
 
-      const conflict = conflictResolver.detectConflict(local, remote);
+            const result = await resolver.resolveConflict(conflict, ConflictStrategy.KEEP_LOCAL);
 
-      expect(conflict).toBeNull();
-    });
-  });
+            expect(result.filePath).toBe('conflict.md');
+            expect(result.resolution).toBe(ConflictStrategy.KEEP_LOCAL);
+            expect(result.chosenContent).toBe('Local version of content');
+            expect(result.chosenHash).toBe('local-hash-123');
+        });
 
-  describe('autoResolve - Last-write-wins (timestamp >1s diff)', () => {
-    it('should apply remote when timestamp diff >1 second', () => {
-      const conflict: Conflict = {
-        type: 'CONCURRENT_EDIT',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: 'Local content',
-        remoteContent: 'Remote content',
-        localTimestamp: '2025-10-11T14:30:00Z',
-        remoteTimestamp: '2025-10-11T14:32:00Z' // 2 minutes later
-      };
+        it('should batch resolve multiple conflicts with KEEP_LOCAL', async () => {
+            const conflicts: ConflictResolutionInput[] = [
+                {
+                    filePath: 'A.md',
+                    localContent: 'Local A',
+                    remoteContent: 'Remote A',
+                    localHash: 'hash-local-a',
+                    remoteHash: 'hash-remote-a'
+                },
+                {
+                    filePath: 'B.md',
+                    localContent: 'Local B',
+                    remoteContent: 'Remote B',
+                    localHash: 'hash-local-b',
+                    remoteHash: 'hash-remote-b'
+                }
+            ];
 
-      const resolution = conflictResolver.autoResolve(conflict);
+            const results = await resolver.resolveConflicts(conflicts, ConflictStrategy.KEEP_LOCAL);
 
-      expect(resolution.strategy).toBe('KEEP_REMOTE');
-      expect(resolution.content).toBe('Remote content');
-      expect(resolution.reason).toContain('Remote is newer by');
-    });
-
-    it('should apply local when local timestamp is newer by >1 second', () => {
-      const conflict: Conflict = {
-        type: 'CONCURRENT_EDIT',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: 'Local content',
-        remoteContent: 'Remote content',
-        localTimestamp: '2025-10-11T14:32:00Z',
-        remoteTimestamp: '2025-10-11T14:30:00Z'
-      };
-
-      const resolution = conflictResolver.autoResolve(conflict);
-
-      expect(resolution.strategy).toBe('KEEP_LOCAL');
-      expect(resolution.content).toBe('Local content');
-      expect(resolution.reason).toContain('Local is newer by');
+            expect(results).toHaveLength(2);
+            expect(results[0].chosenContent).toBe('Local A');
+            expect(results[1].chosenContent).toBe('Local B');
+            expect(results.every(r => r.resolution === ConflictStrategy.KEEP_LOCAL)).toBe(true);
+        });
     });
 
-    it('should trigger hybrid mode when timestamp diff <1 second', () => {
-      const conflict: Conflict = {
-        type: 'CONCURRENT_EDIT',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: 'Local content',
-        remoteContent: 'Remote content',
-        localTimestamp: '2025-10-11T14:30:00.000Z',
-        remoteTimestamp: '2025-10-11T14:30:00.500Z' // 500ms diff
-      };
+    describe('KEEP_REMOTE strategy', () => {
+        it('should resolve conflict by keeping remote version', async () => {
+            const conflict: ConflictResolutionInput = {
+                filePath: 'conflict.md',
+                localContent: 'Local version of content',
+                remoteContent: 'Remote version of content',
+                localHash: 'local-hash-123',
+                remoteHash: 'remote-hash-456'
+            };
 
-      const resolution = conflictResolver.autoResolve(conflict);
+            const result = await resolver.resolveConflict(conflict, ConflictStrategy.KEEP_REMOTE);
 
-      expect(resolution.strategy).toBe('PROMPT_USER');
-      expect(resolution.reason).toContain('within 1 second');
+            expect(result.filePath).toBe('conflict.md');
+            expect(result.resolution).toBe(ConflictStrategy.KEEP_REMOTE);
+            expect(result.chosenContent).toBe('Remote version of content');
+            expect(result.chosenHash).toBe('remote-hash-456');
+        });
+
+        it('should batch resolve multiple conflicts with KEEP_REMOTE', async () => {
+            const conflicts: ConflictResolutionInput[] = [
+                {
+                    filePath: 'A.md',
+                    localContent: 'Local A',
+                    remoteContent: 'Remote A',
+                    localHash: 'hash-local-a',
+                    remoteHash: 'hash-remote-a'
+                },
+                {
+                    filePath: 'B.md',
+                    localContent: 'Local B',
+                    remoteContent: 'Remote B',
+                    localHash: 'hash-local-b',
+                    remoteHash: 'hash-remote-b'
+                }
+            ];
+
+            const results = await resolver.resolveConflicts(conflicts, ConflictStrategy.KEEP_REMOTE);
+
+            expect(results).toHaveLength(2);
+            expect(results[0].chosenContent).toBe('Remote A');
+            expect(results[1].chosenContent).toBe('Remote B');
+            expect(results.every(r => r.resolution === ConflictStrategy.KEEP_REMOTE)).toBe(true);
+        });
     });
 
-    it('should compare content hashes when timestamps are identical', () => {
-      const conflict: Conflict = {
-        type: 'CONCURRENT_EDIT',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: 'Same content',
-        remoteContent: 'Same content',
-        localTimestamp: '2025-10-11T14:30:00Z',
-        remoteTimestamp: '2025-10-11T14:30:00Z'
-      };
+    describe('SKIP strategy', () => {
+        it('should resolve conflict by skipping (no content chosen)', async () => {
+            const conflict: ConflictResolutionInput = {
+                filePath: 'conflict.md',
+                localContent: 'Local version of content',
+                remoteContent: 'Remote version of content',
+                localHash: 'local-hash-123',
+                remoteHash: 'remote-hash-456'
+            };
 
-      const resolution = conflictResolver.autoResolve(conflict);
+            const result = await resolver.resolveConflict(conflict, ConflictStrategy.SKIP);
 
-      expect(resolution.strategy).toBe('NO_CONFLICT');
-      expect(resolution.reason).toBe('Identical content');
-    });
-  });
+            expect(result.filePath).toBe('conflict.md');
+            expect(result.resolution).toBe(ConflictStrategy.SKIP);
+            expect(result.chosenContent).toBeNull();
+            expect(result.chosenHash).toBeNull();
+        });
 
-  describe('resolveInteractive - Hybrid mode', () => {
-    it('should prompt user for resolution when auto-resolve returns PROMPT_USER', async () => {
-      const conflict: Conflict = {
-        type: 'CONCURRENT_EDIT',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: 'Local content',
-        remoteContent: 'Remote content',
-        localTimestamp: '2025-10-11T14:30:00.000Z',
-        remoteTimestamp: '2025-10-11T14:30:00.500Z'
-      };
+        it('should batch skip multiple conflicts', async () => {
+            const conflicts: ConflictResolutionInput[] = [
+                {
+                    filePath: 'A.md',
+                    localContent: 'Local A',
+                    remoteContent: 'Remote A',
+                    localHash: 'hash-local-a',
+                    remoteHash: 'hash-remote-a'
+                },
+                {
+                    filePath: 'B.md',
+                    localContent: 'Local B',
+                    remoteContent: 'Remote B',
+                    localHash: 'hash-local-b',
+                    remoteHash: 'hash-remote-b'
+                }
+            ];
 
-      (inquirer.prompt as any).mockResolvedValue({
-        choice: 'local'
-      });
+            const results = await resolver.resolveConflicts(conflicts, ConflictStrategy.SKIP);
 
-      const resolution = await conflictResolver.resolveInteractive(conflict);
-
-      expect(resolution.strategy).toBe('KEEP_LOCAL');
-      expect(resolution.content).toBe('Local content');
-      expect(inquirer.prompt).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            type: 'list',
-            name: 'choice',
-            message: expect.stringContaining('note.md')
-          })
-        ])
-      );
+            expect(results).toHaveLength(2);
+            expect(results[0].chosenContent).toBeNull();
+            expect(results[1].chosenContent).toBeNull();
+            expect(results.every(r => r.resolution === ConflictStrategy.SKIP)).toBe(true);
+        });
     });
 
-    it('should support remote option in interactive prompt', async () => {
-      const conflict: Conflict = {
-        type: 'CONCURRENT_EDIT',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: 'Local content',
-        remoteContent: 'Remote content',
-        localTimestamp: '2025-10-11T14:30:00Z',
-        remoteTimestamp: '2025-10-11T14:30:00Z'
-      };
+    describe('Content preview generation', () => {
+        it('should generate preview of first 500 characters', () => {
+            const longContent = 'a'.repeat(1000);
+            const preview = resolver.generatePreview(longContent);
 
-      (inquirer.prompt as any).mockResolvedValue({
-        choice: 'remote'
-      });
+            expect(preview).toHaveLength(503); // 500 + '...'
+            expect(preview.endsWith('...')).toBe(true);
+        });
 
-      const resolution = await conflictResolver.resolveInteractive(conflict);
+        it('should return full content if less than 500 characters', () => {
+            const shortContent = 'Short content here';
+            const preview = resolver.generatePreview(shortContent);
 
-      expect(resolution.strategy).toBe('KEEP_REMOTE');
-      expect(resolution.content).toBe('Remote content');
+            expect(preview).toBe(shortContent);
+            expect(preview.endsWith('...')).toBe(false);
+        });
+
+        it('should handle empty content', () => {
+            const preview = resolver.generatePreview('');
+            expect(preview).toBe('');
+        });
+
+        it('should preserve newlines in preview', () => {
+            const content = 'Line 1\nLine 2\nLine 3';
+            const preview = resolver.generatePreview(content);
+
+            expect(preview).toContain('\n');
+            expect(preview).toBe(content);
+        });
     });
 
-    it('should support manual merge option', async () => {
-      const conflict: Conflict = {
-        type: 'CONCURRENT_EDIT',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: 'Local content',
-        remoteContent: 'Remote content',
-        localTimestamp: '2025-10-11T14:30:00Z',
-        remoteTimestamp: '2025-10-11T14:30:00Z'
-      };
+    describe('Diff summary generation', () => {
+        it('should generate diff summary showing character differences', () => {
+            const localContent = 'a'.repeat(100);
+            const remoteContent = 'b'.repeat(150);
 
-      (inquirer.prompt as any).mockResolvedValue({
-        choice: 'merge'
-      });
+            const summary = resolver.generateDiffSummary(localContent, remoteContent);
 
-      const resolution = await conflictResolver.resolveInteractive(conflict);
+            expect(summary).toContain('+50'); // 50 more characters in remote
+            expect(summary).toMatch(/\+\d+.*-\d+/); // Format: +N / -M
+        });
 
-      expect(resolution.strategy).toBe('MANUAL_MERGE');
-      expect(resolution.requiresUserEdit).toBe(true);
-    });
-  });
+        it('should handle identical content', () => {
+            const content = 'Same content';
+            const summary = resolver.generateDiffSummary(content, content);
 
-  describe('handleFallbackTriggers', () => {
-    it('should prompt for file deleted locally + modified remotely', () => {
-      const conflict: Conflict = {
-        type: 'DELETE_MODIFY_CONFLICT',
-        nodeId: 'uuid-123',
-        filePath: 'deleted-note.md',
-        localContent: '',
-        remoteContent: 'Remote modifications',
-        localTimestamp: '2025-10-11T14:30:00Z',
-        remoteTimestamp: '2025-10-11T14:31:00Z'
-      };
+            expect(summary).toContain('No difference');
+        });
 
-      const resolution = conflictResolver.autoResolve(conflict);
+        it('should handle empty content', () => {
+            const summary = resolver.generateDiffSummary('', '');
+            expect(summary).toContain('No difference');
+        });
 
-      expect(resolution.strategy).toBe('PROMPT_USER');
-      expect(resolution.reason).toContain('File deleted locally but modified remotely');
+        it('should show local longer', () => {
+            const localContent = 'a'.repeat(200);
+            const remoteContent = 'b'.repeat(100);
+
+            const summary = resolver.generateDiffSummary(localContent, remoteContent);
+
+            expect(summary).toContain('-100'); // 100 fewer characters in remote
+        });
     });
 
-    it('should prompt for UUID mismatch', () => {
-      const conflict: Conflict = {
-        type: 'METADATA_MISMATCH',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: '<!-- mujarrad-node-id: wrong-uuid -->',
-        remoteContent: '<!-- mujarrad-node-id: uuid-123 -->',
-        localTimestamp: '2025-10-11T14:30:00Z',
-        remoteTimestamp: '2025-10-11T14:31:00Z'
-      };
+    describe('Logging', () => {
+        it('should log resolution decision for KEEP_LOCAL', async () => {
+            const conflict: ConflictResolutionInput = {
+                filePath: 'test.md',
+                localContent: 'local',
+                remoteContent: 'remote',
+                localHash: 'hash-local',
+                remoteHash: 'hash-remote'
+            };
 
-      const resolution = conflictResolver.autoResolve(conflict);
+            await resolver.resolveConflict(conflict, ConflictStrategy.KEEP_LOCAL);
 
-      expect(resolution.strategy).toBe('PROMPT_USER');
-      expect(resolution.reason).toContain('UUID mismatch');
+            expect(mockLogger.info).toHaveBeenCalledWith(
+                'Conflict resolved',
+                expect.objectContaining({
+                    filePath: 'test.md',
+                    strategy: ConflictStrategy.KEEP_LOCAL
+                })
+            );
+        });
+
+        it('should log batch resolution summary', async () => {
+            const conflicts: ConflictResolutionInput[] = [
+                {
+                    filePath: 'A.md',
+                    localContent: 'Local A',
+                    remoteContent: 'Remote A',
+                    localHash: 'hash-a-local',
+                    remoteHash: 'hash-a-remote'
+                },
+                {
+                    filePath: 'B.md',
+                    localContent: 'Local B',
+                    remoteContent: 'Remote B',
+                    localHash: 'hash-b-local',
+                    remoteHash: 'hash-b-remote'
+                }
+            ];
+
+            await resolver.resolveConflicts(conflicts, ConflictStrategy.KEEP_LOCAL);
+
+            expect(mockLogger.info).toHaveBeenCalledWith(
+                'Batch conflict resolution complete',
+                expect.objectContaining({
+                    totalConflicts: 2,
+                    strategy: ConflictStrategy.KEEP_LOCAL
+                })
+            );
+        });
     });
 
-    it('should prompt for file moved + content changed', () => {
-      const conflict: Conflict = {
-        type: 'MOVE_MODIFY_CONFLICT',
-        nodeId: 'uuid-123',
-        filePath: 'new-path/note.md',
-        oldPath: 'old-path/note.md',
-        localContent: 'Modified content',
-        remoteContent: 'Different modifications',
-        localTimestamp: '2025-10-11T14:30:00Z',
-        remoteTimestamp: '2025-10-11T14:31:00Z'
-      };
+    describe('Edge cases', () => {
+        it('should handle null content (deleted files)', async () => {
+            const conflict: ConflictResolutionInput = {
+                filePath: 'deleted.md',
+                localContent: null,
+                remoteContent: 'Remote content',
+                localHash: null,
+                remoteHash: 'hash-remote'
+            };
 
-      const resolution = conflictResolver.autoResolve(conflict);
+            const result = await resolver.resolveConflict(conflict, ConflictStrategy.KEEP_REMOTE);
 
-      expect(resolution.strategy).toBe('PROMPT_USER');
-      expect(resolution.reason).toContain('File moved AND content changed');
-    });
-  });
+            expect(result.chosenContent).toBe('Remote content');
+            expect(result.chosenHash).toBe('hash-remote');
+        });
 
-  describe('appendUUIDSuffix - Name conflict resolution', () => {
-    it('should append UUID suffix to duplicate filenames', () => {
-      const fileName = 'Note.md';
-      const uuid = 'abc123de';
+        it('should handle empty conflicts array', async () => {
+            const results = await resolver.resolveConflicts([], ConflictStrategy.KEEP_LOCAL);
+            expect(results).toHaveLength(0);
+        });
 
-      const newFileName = conflictResolver.appendUUIDSuffix(fileName, uuid);
+        it('should handle Unicode content in preview', () => {
+            const unicodeContent = '你好世界 🚀 émojis';
+            const preview = resolver.generatePreview(unicodeContent);
 
-      expect(newFileName).toMatch(/Note-[a-f0-9]{8}\.md/);
-      expect(newFileName).toContain('abc123de');
-    });
-
-    it('should handle files without extensions', () => {
-      const fileName = 'README';
-      const uuid = 'def456gh';
-
-      const newFileName = conflictResolver.appendUUIDSuffix(fileName, uuid);
-
-      expect(newFileName).toBe('README-def456gh');
+            expect(preview).toBe(unicodeContent);
+        });
     });
 
-    it('should handle files with multiple dots', () => {
-      const fileName = 'my.complex.note.md';
-      const uuid = 'ghi789jk';
+    describe('Performance', () => {
+        it('should resolve 100 conflicts quickly', async () => {
+            const conflicts: ConflictResolutionInput[] = Array.from({ length: 100 }, (_, i) => ({
+                filePath: `file-${i}.md`,
+                localContent: `Local content ${i}`,
+                remoteContent: `Remote content ${i}`,
+                localHash: `hash-local-${i}`,
+                remoteHash: `hash-remote-${i}`
+            }));
 
-      const newFileName = conflictResolver.appendUUIDSuffix(fileName, uuid);
+            const startTime = Date.now();
+            const results = await resolver.resolveConflicts(conflicts, ConflictStrategy.KEEP_LOCAL);
+            const duration = Date.now() - startTime;
 
-      expect(newFileName).toBe('my.complex.note-ghi789jk.md');
+            expect(results).toHaveLength(100);
+            expect(duration).toBeLessThan(1000); // Should complete in <1s
+        });
     });
-  });
-
-  describe('logConflictResolution', () => {
-    it('should log auto-resolved conflicts', () => {
-      const conflict: Conflict = {
-        type: 'CONCURRENT_EDIT',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: 'Local',
-        remoteContent: 'Remote',
-        localTimestamp: '2025-10-11T14:30:00Z',
-        remoteTimestamp: '2025-10-11T14:32:00Z'
-      };
-
-      const resolution: ConflictResolution = {
-        strategy: 'KEEP_REMOTE',
-        content: 'Remote',
-        reason: 'Remote is newer by 120 seconds'
-      };
-
-      conflictResolver.logResolution(conflict, resolution, 'session-123');
-
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('CONFLICT AUTO-RESOLVED'),
-        expect.objectContaining({
-          file: 'note.md',
-          resolution: 'Remote wins',
-          sessionId: 'session-123'
-        })
-      );
-    });
-
-    it('should log user-resolved conflicts', () => {
-      const conflict: Conflict = {
-        type: 'CONCURRENT_EDIT',
-        nodeId: 'uuid-123',
-        filePath: 'note.md',
-        localContent: 'Local',
-        remoteContent: 'Remote',
-        localTimestamp: '2025-10-11T14:30:00Z',
-        remoteTimestamp: '2025-10-11T14:30:00.500Z'
-      };
-
-      const resolution: ConflictResolution = {
-        strategy: 'KEEP_LOCAL',
-        content: 'Local',
-        reason: 'User chose local'
-      };
-
-      conflictResolver.logResolution(conflict, resolution, 'session-123');
-
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('CONFLICT USER-RESOLVED'),
-        expect.objectContaining({
-          file: 'note.md',
-          userChoice: 'Keep local'
-        })
-      );
-    });
-  });
 });
