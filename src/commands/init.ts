@@ -17,6 +17,8 @@ import { TransactionalDownloader } from '../services/TransactionalDownloader.js'
 import { VersionComparator } from '../services/VersionComparator.js';
 import { LocalFileHasher } from '../utils/LocalFileHasher.js';
 import { VaultScanner } from '../filesystem/VaultScanner.js';
+import { ConflictResolver } from '../services/ConflictResolver.js';
+import { ConflictStrategy } from '../types/sync.js';
 import { WorkspaceNotFoundError, AccessDeniedError, WorkspaceValidationError } from '../errors/WorkspaceErrors.js';
 
 /**
@@ -110,6 +112,7 @@ export function initCommand(program: Command, uploadService?: UploadService): vo
     .requiredOption('-w, --workspace <slug>', 'Workspace slug')
     .option('-b, --batch-size <size>', 'Number of files per batch', '50')
     .option('-s, --sync', 'Enable bidirectional sync (pull remote content before upload)', false)
+    .option('--strategy <strategy>', 'Conflict resolution strategy: KEEP_LOCAL, KEEP_REMOTE, SKIP (only with --sync)', 'SKIP')
     .addHelpText('after', `
 Examples:
   $ mujarrad init ./my-vault --workspace my-workspace
@@ -123,6 +126,12 @@ Examples:
 
   $ mujarrad init . -w project --batch-size 100 --sync
     Sync with larger batch size
+
+  $ mujarrad init ./my-vault -w my-workspace --sync --strategy KEEP_LOCAL
+    Sync and automatically keep local version for conflicts
+
+  $ mujarrad init ./my-vault -w my-workspace --sync --strategy KEEP_REMOTE
+    Sync and automatically keep remote version for conflicts
 
 Process (without --sync):
   1. Verifies workspace exists and you have write access (fast check)
@@ -145,6 +154,10 @@ Notes:
   • Progress is tracked and can be resumed if interrupted
   • Automatically retries on network timeouts and server errors
   • Pre-flight workspace verification prevents wasted processing time
+  • --strategy flag only applies when --sync is enabled
+  • Default strategy is SKIP (conflicts are skipped)
+  • KEEP_LOCAL: Automatically keeps local version for all conflicts
+  • KEEP_REMOTE: Automatically keeps remote version for all conflicts
 
 Exit Codes:
   • 0: Success
@@ -419,9 +432,73 @@ Exit Codes:
             console.log(chalk.cyan(`  • ${chalk.white(comparisonResult.localAhead.length)} files to upload (local changes)`));
             console.log(chalk.yellow(`  • ${chalk.white(comparisonResult.remoteAhead.length)} files already pulled (remote changes)`));
 
+            // Handle conflicts with conflict resolution (FR-026-FR-029, T040-T047)
             if (comparisonResult.conflicted.length > 0) {
               console.log(chalk.red(`  • ${chalk.white(comparisonResult.conflicted.length)} conflicts detected`));
-              console.log(chalk.gray('\n  Note: Conflict resolution not yet implemented. Conflicts will be skipped.'));
+
+              // Parse and validate strategy
+              const strategyInput = (options.strategy || 'SKIP').toUpperCase();
+              let strategy: ConflictStrategy;
+
+              if (strategyInput === 'KEEP_LOCAL') {
+                strategy = ConflictStrategy.KEEP_LOCAL;
+              } else if (strategyInput === 'KEEP_REMOTE') {
+                strategy = ConflictStrategy.KEEP_REMOTE;
+              } else if (strategyInput === 'SKIP') {
+                strategy = ConflictStrategy.SKIP;
+              } else {
+                console.log(chalk.red(`\n✗ Invalid strategy: ${strategyInput}`));
+                console.log(chalk.gray('Valid strategies: KEEP_LOCAL, KEEP_REMOTE, SKIP\n'));
+                process.exit(1);
+              }
+
+              // Display strategy being used
+              if (strategy === ConflictStrategy.SKIP) {
+                console.log(chalk.gray('\n  Strategy: SKIP (conflicts will be skipped)'));
+              } else if (strategy === ConflictStrategy.KEEP_LOCAL) {
+                console.log(chalk.cyan('\n  Strategy: KEEP_LOCAL (local version will be kept for all conflicts)'));
+              } else if (strategy === ConflictStrategy.KEEP_REMOTE) {
+                console.log(chalk.yellow('\n  Strategy: KEEP_REMOTE (remote version will be kept for all conflicts)'));
+              }
+
+              // Resolve conflicts
+              spinner.start(chalk.blue('Resolving conflicts...'));
+
+              const conflictResolver = new ConflictResolver(logger);
+              const conflictsToResolve = comparisonResult.conflicted.map(conflict => {
+                const localFile = localFiles.find(f => f.relativePath === conflict.filePath);
+                const remoteNode = remoteNodes.find(n => n.filePath === conflict.filePath);
+
+                return {
+                  filePath: conflict.filePath,
+                  localContent: localFile?.content || null,
+                  remoteContent: remoteNode?.content || null,
+                  localHash: conflict.localHash,
+                  remoteHash: conflict.remoteHash
+                };
+              });
+
+              const resolutions = await conflictResolver.resolveConflicts(conflictsToResolve, strategy);
+
+              const resolvedCount = resolutions.filter(r => r.chosenContent !== null).length;
+              const skippedCount = resolutions.filter(r => r.chosenContent === null).length;
+
+              spinner.succeed(chalk.green('Conflicts resolved'));
+
+              if (resolvedCount > 0) {
+                console.log(chalk.cyan(`  • ${chalk.white(resolvedCount)} conflicts resolved`));
+              }
+              if (skippedCount > 0) {
+                console.log(chalk.gray(`  • ${chalk.white(skippedCount)} conflicts skipped`));
+              }
+
+              logger.info('Conflict resolution complete', {
+                workspaceSlug: options.workspace,
+                strategy,
+                totalConflicts: comparisonResult.conflicted.length,
+                resolved: resolvedCount,
+                skipped: skippedCount
+              });
             }
 
             console.log(); // Empty line

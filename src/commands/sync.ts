@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import { SyncService } from '../services/SyncService.js';
-import { ConflictResolver } from '../services/ConflictResolver.js';
+// import { ConflictResolver } from '../services/ConflictResolver.js'; // TODO: Uncomment when implementing interactive resolution
 import { SyncApi } from '../api/generated/api.js';
 import { Configuration } from '../api/generated/configuration.js';
 import { ConfigManager } from '../config/ConfigManager.js';
@@ -85,7 +85,7 @@ Notes:
         });
         const syncApi = new SyncApi(apiConfig);
         const syncService = new SyncService(syncApi);
-        const conflictResolver = new ConflictResolver();
+        // const conflictResolver = new ConflictResolver(logger); // TODO: Use when implementing interactive resolution
 
         // Get current directory as vault path
         const vaultPath = process.cwd();
@@ -111,15 +111,14 @@ Notes:
         // Handle conflicts if any
         if (pushResult.conflicts && pushResult.conflicts.length > 0) {
           console.log(chalk.yellow(`\n⚠ ${pushResult.conflicts.length} conflict(s) detected\n`));
+          console.log(chalk.gray('  Note: Interactive conflict resolution not yet implemented in sync command.'));
+          console.log(chalk.gray('  Use "mujarrad init --sync --strategy KEEP_LOCAL" for automatic resolution.\n'));
 
-          for (const conflict of pushResult.conflicts) {
-            const resolution = await conflictResolver.resolveInteractive(conflict as any);
-            conflictResolver.logResolution(conflict as any, resolution, 'sync-session');
-
-            if (resolution.strategy === 'KEEP_LOCAL' || resolution.strategy === 'KEEP_REMOTE') {
-              console.log(chalk.green(`→ Resolved ${conflict.filePath}: ${resolution.strategy}`));
-            }
-          }
+          // TODO: Implement interactive conflict resolution
+          // for (const conflict of pushResult.conflicts) {
+          //   const resolution = await conflictResolver.resolveConflict(...);
+          //   ...
+          // }
         }
 
         // Complete sync
