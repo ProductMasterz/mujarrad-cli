@@ -88,7 +88,9 @@
       "Bash(./generate-vault.sh:*)",
       "Bash(./run-stress-tests.sh:*)",
       "Read(//private/tmp/**)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(MUJARRAD_LOG_LEVEL=debug node:*)",
+      "Bash(/tmp/test-upload-api.sh)"
     ],
     "deny": [],
     "ask": []
