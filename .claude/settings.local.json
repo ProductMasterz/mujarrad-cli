@@ -82,7 +82,13 @@
       "Bash(java:*)",
       "Bash(docker:*)",
       "Bash(if [ -d \"/Users/mac/Developer/Software-Projects/PMZ Projects/Mujarrad/Mujarrad-CLI/specs/010-alter-the-init/checklists\" ])",
-      "Bash(node --version:*)"
+      "Bash(node --version:*)",
+      "Read(//private/tmp/test-mujarrad-init/**)",
+      "Bash(MUJARRAD_LOG_LEVEL=debug mujarrad init:*)",
+      "Bash(./generate-vault.sh:*)",
+      "Bash(./run-stress-tests.sh:*)",
+      "Read(//private/tmp/**)",
+      "Read(//tmp/**)"
     ],
     "deny": [],
     "ask": []
