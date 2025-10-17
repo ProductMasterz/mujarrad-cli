@@ -80,7 +80,7 @@ export class SpaceValidator {
                 const spaceData: SpaceMetadata = {
                     slug: backendSpaceData.slug || slug,
                     name: backendSpaceData.name || slug,
-                    owner: backendSpaceData.ownerId || 'unknown',
+                    owner: backendSpaceData.ownerId || backendSpaceData.owner || 'unknown',
                     nodeCount: 0, // Backend doesn't provide this in SpaceResponse yet
                     userPermissions: {
                         canRead: true, // If we can fetch the space, we can read it
