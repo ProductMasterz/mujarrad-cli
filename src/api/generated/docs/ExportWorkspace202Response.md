@@ -1,4 +1,4 @@
-# ExportWorkspace202Response
+# ExportSpace202Response
 
 
 ## Properties
@@ -6,15 +6,15 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [default to undefined]
-**data** | [**ExportWorkspace202ResponseAllOfData**](ExportWorkspace202ResponseAllOfData.md) |  | [default to undefined]
+**data** | [**ExportSpace202ResponseAllOfData**](ExportSpace202ResponseAllOfData.md) |  | [default to undefined]
 **timestamp** | **string** |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { ExportWorkspace202Response } from 'mujarrad-api-client';
+import { ExportSpace202Response } from 'mujarrad-api-client';
 
-const instance: ExportWorkspace202Response = {
+const instance: ExportSpace202Response = {
     success,
     data,
     timestamp,

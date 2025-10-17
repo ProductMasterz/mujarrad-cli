@@ -1,5 +1,5 @@
 import { CloneService } from '../../src/services/CloneService.js';
-import { WorkspaceApi } from '../../src/api/generated/api.js';
+import { SpaceApi } from '../../src/api/generated/api.js';
 import { Configuration } from '../../src/api/generated/configuration.js';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -17,19 +17,19 @@ jest.mock('simple-git');
 
 describe('NFR-002: Clone Performance (1000 nodes in <3 minutes)', () => {
   let cloneService: CloneService;
-  let mockWorkspaceApi: jest.Mocked<WorkspaceApi>;
+  let mockSpaceApi: jest.Mocked<SpaceApi>;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockWorkspaceApi = {
-      exportWorkspace: jest.fn(),
-      getWorkspace: jest.fn()
+    mockSpaceApi = {
+      exportSpace: jest.fn(),
+      getSpace: jest.fn()
     } as any;
 
-    (WorkspaceApi as jest.Mock).mockImplementation(() => mockWorkspaceApi);
+    (SpaceApi as jest.Mock).mockImplementation(() => mockSpaceApi);
 
-    cloneService = new CloneService(mockWorkspaceApi);
+    cloneService = new CloneService(mockSpaceApi);
   });
 
   afterEach(() => {
@@ -40,11 +40,11 @@ describe('NFR-002: Clone Performance (1000 nodes in <3 minutes)', () => {
     }
   });
 
-  it('should clone 1000-node workspace within performance target (simulated)', async () => {
+  it('should clone 1000-node space within performance target (simulated)', async () => {
     const nodeCount = 1000;
     const targetPath = path.join(process.cwd(), 'test-clone-performance');
 
-    // Generate mock workspace data with 1000 nodes
+    // Generate mock space data with 1000 nodes
     const mockNodes = Array.from({ length: nodeCount }, (_, i) => ({
       id: `uuid-${i}`,
       nodeType: 'REGULAR',
@@ -54,11 +54,11 @@ describe('NFR-002: Clone Performance (1000 nodes in <3 minutes)', () => {
       parentPath: i % 10 === 0 ? '' : `folder-${Math.floor(i / 10)}/`
     }));
 
-    const mockWorkspaceData = {
-      workspace: {
-        id: 'workspace-uuid',
-        name: 'Performance Test Workspace',
-        slug: 'perf-test-workspace',
+    const mockSpaceData = {
+      space: {
+        id: 'space-uuid',
+        name: 'Performance Test Space',
+        slug: 'perf-test-space',
         templateId: null
       },
       nodes: mockNodes,
@@ -67,14 +67,14 @@ describe('NFR-002: Clone Performance (1000 nodes in <3 minutes)', () => {
       attributes: []
     };
 
-    mockWorkspaceApi.exportWorkspace.mockResolvedValue({
-      data: mockWorkspaceData
+    mockSpaceApi.exportSpace.mockResolvedValue({
+      data: mockSpaceData
     } as any);
 
     const start = Date.now();
 
     // Simulate clone operation
-    // In real implementation, this would call cloneService.cloneWorkspace()
+    // In real implementation, this would call cloneService.cloneSpace()
     // For performance test, we measure file creation speed
 
     // Create target directory
@@ -226,7 +226,7 @@ describe('NFR-002: Clone Performance (1000 nodes in <3 minutes)', () => {
   it('should document actual vs theoretical clone performance', () => {
     // NFR-002 target: 1000 nodes in 180 seconds
     // Bottlenecks:
-    // 1. Network transfer (API call to get workspace data)
+    // 1. Network transfer (API call to get space data)
     // 2. File I/O (creating 1000 files + directories)
     // 3. Metadata embedding (HTML comment injection)
     // 4. Git initialization

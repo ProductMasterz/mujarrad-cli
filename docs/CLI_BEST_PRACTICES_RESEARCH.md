@@ -43,7 +43,7 @@ mujarrad-cli/
 │   │   ├── sync/
 │   │   │   ├── detector.ts
 │   │   │   └── applier.ts
-│   │   └── workspace/
+│   │   └── space/
 │   │       ├── manager.ts
 │   │       └── validator.ts
 │   ├── utils/                      # Utilities
@@ -155,20 +155,20 @@ Each command in its own file provides better organization and maintainability fo
 import { Command } from 'commander';
 import { logger } from '../utils/logger.js';
 import { createProgressBar } from '../utils/progress.js';
-import { WorkspaceUploader } from '../core/workspace/uploader.js';
+import { SpaceUploader } from '../core/space/uploader.js';
 import { CLIError } from '../utils/errors.js';
 
 export function uploadCommand(): Command {
   return new Command('upload')
-    .description('Upload Obsidian vault to Mujarrad workspace')
+    .description('Upload Obsidian vault to Mujarrad space')
     .argument('<path>', 'Path to Obsidian vault')
-    .option('-w, --workspace <id>', 'Workspace ID')
+    .option('-w, --space <id>', 'Space ID')
     .option('--no-progress', 'Disable progress indicator')
     .action(async (vaultPath: string, options) => {
       try {
-        logger.info('Starting vault upload', { vaultPath, workspace: options.workspace });
+        logger.info('Starting vault upload', { vaultPath, space: options.space });
 
-        const uploader = new WorkspaceUploader();
+        const uploader = new SpaceUploader();
         const progress = createProgressBar({
           total: 100,
           format: 'Uploading [{bar}] {percentage}% | ETA: {eta}s | {value}/{total} files'
@@ -179,7 +179,7 @@ export function uploadCommand(): Command {
         }
 
         await uploader.upload(vaultPath, {
-          workspaceId: options.workspace,
+          spaceId: options.space,
           onProgress: (current, total) => {
             if (options.progress) {
               progress.update(current);
@@ -217,7 +217,7 @@ import { Command } from 'commander';
 
 export function templatesCommand(): Command {
   const templates = new Command('templates')
-    .description('Manage workspace templates');
+    .description('Manage space templates');
 
   templates
     .command('list')
@@ -236,10 +236,10 @@ export function templatesCommand(): Command {
 
   templates
     .command('apply')
-    .description('Apply template to workspace')
+    .description('Apply template to space')
     .argument('<template-id>', 'Template ID')
-    .argument('<workspace-id>', 'Workspace ID')
-    .action(async (templateId: string, workspaceId: string) => {
+    .argument('<space-id>', 'Space ID')
+    .action(async (templateId: string, spaceId: string) => {
       // Implementation
     });
 
@@ -366,10 +366,10 @@ export async function withProgress<T>(
 ```typescript
 import { withSpinner } from '../utils/progress.js';
 
-const workspaces = await withSpinner(
-  'Fetching workspaces...',
-  () => api.workspaces.list(),
-  { successText: 'Workspaces loaded' }
+const spaces = await withSpinner(
+  'Fetching spaces...',
+  () => api.spaces.list(),
+  { successText: 'Spaces loaded' }
 );
 ```
 
@@ -396,9 +396,9 @@ console.log('✅ Upload complete');
 **Combined approach for clone (3-minute operation):**
 ```typescript
 // Phase 1: Preparing (spinner)
-const spinner = createSpinner({ text: 'Analyzing workspace...' });
+const spinner = createSpinner({ text: 'Analyzing space...' });
 spinner.start();
-const manifest = await api.workspace.getManifest(workspaceId);
+const manifest = await api.space.getManifest(spaceId);
 spinner.succeed(`Found ${manifest.files.length} files`);
 
 // Phase 2: Downloading (progress bar)
@@ -680,12 +680,12 @@ export class FileSystemError extends CLIError {
 }
 
 /**
- * Workspace errors
+ * Space errors
  */
-export class WorkspaceError extends CLIError {
+export class SpaceError extends CLIError {
   constructor(message: string, remediation?: string) {
-    super(message, 'WORKSPACE_ERROR', 1, remediation);
-    this.name = 'WorkspaceError';
+    super(message, 'SPACE_ERROR', 1, remediation);
+    this.name = 'SpaceError';
   }
 }
 ```
@@ -788,7 +788,7 @@ Only in global error handlers for truly fatal errors.
 
 1. **Be specific about what went wrong:**
    - ❌ "Upload failed"
-   - ✅ "Upload failed: Workspace 'abc-123' not found"
+   - ✅ "Upload failed: Space 'abc-123' not found"
 
 2. **Provide actionable remediation:**
    - ❌ "Authentication error"
@@ -819,7 +819,7 @@ export async function runCLI() {
 
   program
     .name('mujarrad')
-    .description('Obsidian Knowledge Graph Integration CLI - Sync your vaults with Mujarrad workspaces')
+    .description('Obsidian Knowledge Graph Integration CLI - Sync your vaults with Mujarrad spaces')
     .version('1.0.0', '-v, --version', 'Display version number')
     .helpOption('-h, --help', 'Display help information')
     .addHelpText('before', `
@@ -827,7 +827,7 @@ ${chalk.cyan.bold('Mujarrad CLI')} - Obsidian Vault Synchronization
     `)
     .addHelpText('after', `
 ${chalk.bold('Examples:')}
-  ${chalk.gray('$')} mujarrad upload ./my-vault --workspace abc-123
+  ${chalk.gray('$')} mujarrad upload ./my-vault --space abc-123
   ${chalk.gray('$')} mujarrad clone abc-123 ./cloned-vault
   ${chalk.gray('$')} mujarrad sync ./my-vault
   ${chalk.gray('$')} mujarrad templates list
@@ -849,7 +849,7 @@ ${chalk.bold('Issues:')}
   // Group commands by category
   program.addHelpText('after', `
 ${chalk.bold('Command Categories:')}
-  ${chalk.cyan('Workspace Operations:')} upload, clone, pull, sync
+  ${chalk.cyan('Space Operations:')} upload, clone, pull, sync
   ${chalk.cyan('Template Management:')} templates
   ${chalk.cyan('Collaboration:')} share
   ${chalk.cyan('Version Control:')} history
@@ -867,16 +867,16 @@ ${chalk.bold('Command Categories:')}
 ```typescript
 export function uploadCommand(): Command {
   return new Command('upload')
-    .description('Upload Obsidian vault to Mujarrad workspace')
+    .description('Upload Obsidian vault to Mujarrad space')
     .argument('<path>', 'Path to Obsidian vault directory')
-    .option('-w, --workspace <id>', 'Target workspace ID (required)')
+    .option('-w, --space <id>', 'Target space ID (required)')
     .option('--no-progress', 'Disable progress indicator')
     .option('--dry-run', 'Simulate upload without making changes')
     .option('--exclude <patterns...>', 'File patterns to exclude (e.g., "*.tmp" ".obsidian/cache")')
     .addHelpText('after', `
 ${chalk.bold('Examples:')}
-  ${chalk.gray('$')} mujarrad upload ./my-vault --workspace abc-123
-  ${chalk.gray('$')} mujarrad upload ./notes --workspace abc-123 --exclude "*.tmp" ".trash"
+  ${chalk.gray('$')} mujarrad upload ./my-vault --space abc-123
+  ${chalk.gray('$')} mujarrad upload ./notes --space abc-123 --exclude "*.tmp" ".trash"
   ${chalk.gray('$')} mujarrad upload ./vault --dry-run
 
 ${chalk.bold('Notes:')}
@@ -896,17 +896,17 @@ ${chalk.bold('Notes:')}
 ```typescript
 export function templatesCommand(): Command {
   const templates = new Command('templates')
-    .description('Manage workspace templates')
+    .description('Manage space templates')
     .addHelpText('after', `
 ${chalk.bold('Examples:')}
   ${chalk.gray('$')} mujarrad templates list
   ${chalk.gray('$')} mujarrad templates create "My Template"
-  ${chalk.gray('$')} mujarrad templates apply tmpl-123 workspace-456
+  ${chalk.gray('$')} mujarrad templates apply tmpl-123 space-456
 
 ${chalk.bold('Template Use Cases:')}
   - Create reusable vault structures
   - Share organizational patterns with teams
-  - Quickly bootstrap new workspaces
+  - Quickly bootstrap new spaces
     `);
 
   templates
@@ -919,9 +919,9 @@ ${chalk.bold('Template Use Cases:')}
 
   templates
     .command('create')
-    .description('Create a new template from a workspace')
+    .description('Create a new template from a space')
     .argument('<name>', 'Template name')
-    .option('-w, --workspace <id>', 'Source workspace ID')
+    .option('-w, --space <id>', 'Source space ID')
     .option('-d, --description <text>', 'Template description')
     .action(async (name: string, options) => {
       // Implementation
@@ -929,11 +929,11 @@ ${chalk.bold('Template Use Cases:')}
 
   templates
     .command('apply')
-    .description('Apply template to a workspace')
+    .description('Apply template to a space')
     .argument('<template-id>', 'Template ID')
-    .argument('<workspace-id>', 'Target workspace ID')
+    .argument('<space-id>', 'Target space ID')
     .option('--overwrite', 'Overwrite existing files')
-    .action(async (templateId: string, workspaceId: string, options) => {
+    .action(async (templateId: string, spaceId: string, options) => {
       // Implementation
     });
 
@@ -962,7 +962,7 @@ program.action(() => {
 ```
 
 3. **Use consistent terminology:**
-   - "workspace" not "workspace/project/space"
+   - "space" not "space/project/space"
    - "vault" not "vault/folder/directory"
 
 4. **Group related commands:**
@@ -996,14 +996,14 @@ program.action(() => {
 
 **Focus:** Test core logic in isolation (60% of tests)
 
-**src/core/workspace/validator.test.ts:**
+**src/core/space/validator.test.ts:**
 ```typescript
 import { describe, it, expect } from '@jest/globals';
-import { WorkspaceValidator } from './validator';
+import { SpaceValidator } from './validator';
 import { ValidationError } from '../../utils/errors';
 
-describe('WorkspaceValidator', () => {
-  const validator = new WorkspaceValidator();
+describe('SpaceValidator', () => {
+  const validator = new SpaceValidator();
 
   describe('validateVaultPath', () => {
     it('should accept valid Obsidian vault path', () => {
@@ -1025,16 +1025,16 @@ describe('WorkspaceValidator', () => {
     });
   });
 
-  describe('validateWorkspaceId', () => {
-    it('should accept valid workspace ID format', () => {
+  describe('validateSpaceId', () => {
+    it('should accept valid space ID format', () => {
       expect(() => {
-        validator.validateWorkspaceId('ws-abc123def456');
+        validator.validateSpaceId('ws-abc123def456');
       }).not.toThrow();
     });
 
     it('should reject invalid ID format', () => {
       expect(() => {
-        validator.validateWorkspaceId('invalid-id');
+        validator.validateSpaceId('invalid-id');
       }).toThrow(ValidationError);
     });
   });
@@ -1049,14 +1049,14 @@ describe('WorkspaceValidator', () => {
 ```typescript
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { uploadCommand } from '../../src/commands/upload';
-import { WorkspaceUploader } from '../../src/core/workspace/uploader';
+import { SpaceUploader } from '../../src/core/space/uploader';
 import fs from 'fs/promises';
 
 // Mock the API
 jest.mock('../../src/api/generated');
 
 describe('Upload Command Integration', () => {
-  let mockUploader: jest.Mocked<WorkspaceUploader>;
+  let mockUploader: jest.Mocked<SpaceUploader>;
 
   beforeEach(() => {
     mockUploader = {
@@ -1073,24 +1073,24 @@ describe('Upload Command Integration', () => {
       'cli',
       'upload',
       './fixtures/test-vault',
-      '--workspace',
+      '--space',
       'ws-test123'
     ]);
 
     expect(mockUploader.upload).toHaveBeenCalledWith(
       './fixtures/test-vault',
       expect.objectContaining({
-        workspaceId: 'ws-test123'
+        spaceId: 'ws-test123'
       })
     );
   });
 
-  it('should handle missing workspace ID', async () => {
+  it('should handle missing space ID', async () => {
     const command = uploadCommand();
 
     await expect(
       command.parseAsync(['node', 'cli', 'upload', './fixtures/test-vault'])
-    ).rejects.toThrow('Missing required option: --workspace');
+    ).rejects.toThrow('Missing required option: --space');
   });
 });
 ```
@@ -1406,8 +1406,8 @@ export default async function teardown() {
    - Credentials storage with secure permissions
    - Session management
 
-2. **Implement workspace listing:**
-   - List workspaces command
+2. **Implement space listing:**
+   - List spaces command
    - Table output formatting
    - JSON output option
 
@@ -1420,7 +1420,7 @@ export default async function teardown() {
    - Error handling with retry
 
 2. **Implement clone command:**
-   - Workspace manifest retrieval
+   - Space manifest retrieval
    - File download with progress
    - Local vault creation
    - Conflict detection
@@ -1435,12 +1435,12 @@ export default async function teardown() {
 
 1. **Implement templates:**
    - List templates
-   - Create from workspace
-   - Apply to workspace
+   - Create from space
+   - Apply to space
    - Template validation
 
 2. **Implement sharing:**
-   - Share workspace with users
+   - Share space with users
    - Permission management
    - Share link generation
 
@@ -1534,8 +1534,8 @@ export const logger = await createLogger();
 import { Command } from 'commander';
 import { logger } from '../utils/logger.js';
 import { createProgressBar, createSpinner } from '../utils/progress.js';
-import { WorkspaceUploader } from '../core/workspace/uploader.js';
-import { WorkspaceValidator } from '../core/workspace/validator.js';
+import { SpaceUploader } from '../core/space/uploader.js';
+import { SpaceValidator } from '../core/space/validator.js';
 import { CLIError, ValidationError, AuthenticationError } from '../utils/errors.js';
 import { loadCredentials } from '../core/auth/credentials.js';
 import chalk from 'chalk';
@@ -1543,16 +1543,16 @@ import fs from 'fs/promises';
 
 export function uploadCommand(): Command {
   return new Command('upload')
-    .description('Upload Obsidian vault to Mujarrad workspace')
+    .description('Upload Obsidian vault to Mujarrad space')
     .argument('<path>', 'Path to Obsidian vault directory')
-    .option('-w, --workspace <id>', 'Target workspace ID (required)')
+    .option('-w, --space <id>', 'Target space ID (required)')
     .option('--no-progress', 'Disable progress indicator')
     .option('--dry-run', 'Simulate upload without making changes')
     .option('--exclude <patterns...>', 'File patterns to exclude')
     .addHelpText('after', `
 ${chalk.bold('Examples:')}
-  ${chalk.gray('$')} mujarrad upload ./my-vault --workspace abc-123
-  ${chalk.gray('$')} mujarrad upload ./notes --workspace abc-123 --exclude "*.tmp" ".trash"
+  ${chalk.gray('$')} mujarrad upload ./my-vault --space abc-123
+  ${chalk.gray('$')} mujarrad upload ./notes --space abc-123 --exclude "*.tmp" ".trash"
   ${chalk.gray('$')} mujarrad upload ./vault --dry-run
     `)
     .action(async (vaultPath: string, options) => {
@@ -1569,14 +1569,14 @@ ${chalk.bold('Examples:')}
         }
 
         // 2. Validate inputs
-        if (!options.workspace) {
+        if (!options.space) {
           throw new ValidationError(
-            'Missing required option: --workspace <id>',
-            'Specify the target workspace ID with --workspace'
+            'Missing required option: --space <id>',
+            'Specify the target space ID with --space'
           );
         }
 
-        const validator = new WorkspaceValidator();
+        const validator = new SpaceValidator();
 
         const spinner = createSpinner({
           text: 'Validating vault...'
@@ -1584,7 +1584,7 @@ ${chalk.bold('Examples:')}
         spinner.start();
 
         await validator.validateVaultPath(vaultPath);
-        await validator.validateWorkspaceId(options.workspace);
+        await validator.validateSpaceId(options.space);
 
         spinner.succeed('Vault validated');
 
@@ -1592,7 +1592,7 @@ ${chalk.bold('Examples:')}
         spinner.text = 'Scanning files...';
         spinner.start();
 
-        const uploader = new WorkspaceUploader();
+        const uploader = new SpaceUploader();
         const files = await uploader.scanFiles(vaultPath, {
           exclude: options.exclude || []
         });
@@ -1611,7 +1611,7 @@ ${chalk.bold('Examples:')}
         if (!options.progress) {
           // No progress - just upload
           await uploader.upload(vaultPath, {
-            workspaceId: options.workspace,
+            spaceId: options.space,
             files
           });
         } else {
@@ -1624,7 +1624,7 @@ ${chalk.bold('Examples:')}
           progress.start(files.length, 0);
 
           await uploader.upload(vaultPath, {
-            workspaceId: options.workspace,
+            spaceId: options.space,
             files,
             onProgress: (current) => {
               progress.update(current);
@@ -1637,19 +1637,19 @@ ${chalk.bold('Examples:')}
         // 6. Success
         const duration = ((Date.now() - startTime) / 1000).toFixed(1);
         logger.info('Upload completed', {
-          workspace: options.workspace,
+          space: options.space,
           fileCount: files.length,
           duration
         });
 
         console.log(chalk.green(`\n✅ Successfully uploaded ${files.length} files in ${duration}s`));
-        console.log(chalk.cyan(`   View at: https://app.mujarrad.com/workspace/${options.workspace}`));
+        console.log(chalk.cyan(`   View at: https://app.mujarrad.com/space/${options.space}`));
 
       } catch (error) {
         if (error instanceof CLIError) {
           logger.error(error.code, {
             message: error.message,
-            workspace: options.workspace
+            space: options.space
           });
 
           console.error(chalk.red(`\n❌ ${error.message}`));
@@ -1732,7 +1732,7 @@ ${chalk.bold('Examples:')}
 
 2. **Create project structure:**
    ```bash
-   mkdir -p src/{commands,core/{auth,sync,workspace},utils,types}
+   mkdir -p src/{commands,core/{auth,sync,space},utils,types}
    ```
 
 3. **Implement foundation:**

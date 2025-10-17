@@ -150,8 +150,8 @@ describe('template command', () => {
       const mockWorkflow = {
         execute: jest.fn().mockResolvedValue({
           success: true,
-          workspaceId: 'new-workspace-uuid',
-          workspaceSlug: 'my-startup',
+          spaceId: 'new-space-uuid',
+          spaceSlug: 'my-startup',
           totalNodes: 15,
           totalErrors: 0,
           duration: 2000
@@ -179,7 +179,7 @@ describe('template command', () => {
       expect(mockWorkflow.execute).toHaveBeenCalledWith(
         'template-uuid-001',
         expect.objectContaining({
-          workspaceName: 'My Startup',
+          spaceName: 'My Startup',
           placeholders: {}
         }),
         '/tmp/test-vault'
@@ -190,8 +190,8 @@ describe('template command', () => {
       const mockWorkflow = {
         execute: jest.fn().mockResolvedValue({
           success: true,
-          workspaceId: 'new-workspace-uuid',
-          workspaceSlug: 'my-startup',
+          spaceId: 'new-space-uuid',
+          spaceSlug: 'my-startup',
           totalNodes: 15,
           totalErrors: 0,
           duration: 2000
@@ -215,14 +215,14 @@ describe('template command', () => {
         '--name',
         'My Startup',
         '--description',
-        'My startup workspace'
+        'My startup space'
       ]);
 
       expect(mockWorkflow.execute).toHaveBeenCalledWith(
         'template-uuid-001',
         expect.objectContaining({
-          workspaceName: 'My Startup',
-          workspaceDescription: 'My startup workspace'
+          spaceName: 'My Startup',
+          spaceDescription: 'My startup space'
         }),
         '/tmp/test-vault'
       );

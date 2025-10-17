@@ -1,4 +1,4 @@
-# WorkspaceCreateRequest
+# SpaceCreateRequest
 
 
 ## Properties
@@ -13,9 +13,9 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { WorkspaceCreateRequest } from 'mujarrad-api-client';
+import { SpaceCreateRequest } from 'mujarrad-api-client';
 
-const instance: WorkspaceCreateRequest = {
+const instance: SpaceCreateRequest = {
     title,
     description,
     gitRepositoryUrl,

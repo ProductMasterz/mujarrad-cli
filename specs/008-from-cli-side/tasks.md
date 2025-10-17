@@ -1047,7 +1047,7 @@ export function logsCommand(program: Command) {
 ## Phase 9: User Story 7 - Initialize and Upload Vault [P1] (Week 3, Days 1-2)
 
 **Goal**: Enhanced init command with progress tracking
-**Independent Test**: `mujarrad init ./vault --workspace test` shows progress
+**Independent Test**: `mujarrad init ./vault --space test` shows progress
 
 ### T046 - [US7] Test: Enhanced Upload Command
 **Story**: US7
@@ -1076,7 +1076,7 @@ export function logsCommand(program: Command) {
 
 **Implementation**:
 ```typescript
-async function initCommand(vaultPath: string, workspace: string) {
+async function initCommand(vaultPath: string, space: string) {
   const logger = getSessionLogger();
   const progress = new ProgressManager();
 
@@ -1162,7 +1162,7 @@ async function initCommand(vaultPath: string, workspace: string) {
 **Test Cases**:
 - ✓ Upload small vault (<10 files)
 - ✓ Upload large vault (100+ files)
-- ✓ Upload with invalid workspace fails
+- ✓ Upload with invalid space fails
 - ✓ Progress tracking works
 - ✓ All files uploaded successfully
 
@@ -1375,7 +1375,7 @@ specs/
 ```json
 {
   "version": "1.1.0-alpha.1",
-  "description": "⚠️ ALPHA: Obsidian Knowledge Graph Integration CLI - Sync your Obsidian vaults with Mujarrad workspaces"
+  "description": "⚠️ ALPHA: Obsidian Knowledge Graph Integration CLI - Sync your Obsidian vaults with Mujarrad spaces"
 }
 ```
 
@@ -1420,7 +1420,7 @@ specs/
 3. Run `mujarrad --version`, verify alpha warning
 4. First command triggers disclaimer
 5. Accept disclaimer
-6. Run `mujarrad init test-vault --workspace test`
+6. Run `mujarrad init test-vault --space test`
 7. Verify progress tracking works
 8. Check logs created: `ls ~/.mujarrad/logs/`
 9. Export logs: `mujarrad logs export`

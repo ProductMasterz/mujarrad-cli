@@ -15,17 +15,17 @@ import { Logger } from '../utils/Logger.js';
  * Setup clone command with Commander.js
  *
  * Provides clone commands:
- * - clone: Clone Mujarrad workspace to Obsidian vault
+ * - clone: Clone Mujarrad space to Obsidian vault
  *
  * Usage:
  * ```bash
- * mujarrad clone <target-path> --workspace <slug>
- * mujarrad clone /path/to/vault -w my-workspace
- * mujarrad clone ./my-vault -w my-workspace --no-git
+ * mujarrad clone <target-path> --space <slug>
+ * mujarrad clone /path/to/vault -w my-space
+ * mujarrad clone ./my-vault -w my-space --no-git
  * ```
  *
  * Features:
- * - Exports workspace from Mujarrad
+ * - Exports space from Mujarrad
  * - Creates local Obsidian vault
  * - Initializes Git repository (optional)
  * - Progress tracking during clone
@@ -57,15 +57,15 @@ export function cloneCommand(program: Command, cloneService?: CloneService): voi
 
   program
     .command('clone')
-    .description('Clone Mujarrad workspace to Obsidian vault')
+    .description('Clone Mujarrad space to Obsidian vault')
     .argument('<target-path>', 'Target vault directory path')
-    .requiredOption('-w, --workspace <slug>', 'Workspace slug to clone')
+    .requiredOption('-w, --space <slug>', 'Space slug to clone')
     .option('--no-git', 'Skip Git repository initialization')
     .option('--include-history', 'Include version history in export')
     .addHelpText('after', `
 Examples:
-  $ mujarrad clone ./my-vault --workspace my-workspace
-    Clone workspace to local directory
+  $ mujarrad clone ./my-vault --space my-space
+    Clone space to local directory
 
   $ mujarrad clone ~/Documents/Obsidian/MyClone -w work-notes
     Clone to absolute path
@@ -123,7 +123,7 @@ Notes:
         const service = await getCloneService();
 
         // Start clone
-        console.log(chalk.blue(`\nCloning workspace: ${options.workspace}`));
+        console.log(chalk.blue(`\nCloning space: ${options.space}`));
         if (options.includeHistory) {
           console.log(chalk.gray('Including version history'));
         }
@@ -131,8 +131,8 @@ Notes:
 
         spinner.start('Initiating export...');
 
-        const summary = await service.cloneWorkspace(
-          options.workspace,
+        const summary = await service.cloneSpace(
+          options.space,
           absoluteTargetPath,
           options.includeHistory || false
         );
@@ -157,11 +157,11 @@ Notes:
             const git = simpleGit(absoluteTargetPath);
             await git.init();
             await git.add('./*');
-            await git.commit('Initial commit from Mujarrad clone\n\nCloned from workspace: ' + options.workspace);
+            await git.commit('Initial commit from Mujarrad clone\n\nCloned from space: ' + options.space);
 
             spinner.succeed('Git repository initialized');
             logger.info('Git repository initialized', {
-              workspaceSlug: options.workspace,
+              spaceSlug: options.space,
               targetPath: absoluteTargetPath
             });
           } catch (gitError: any) {
@@ -176,7 +176,7 @@ Notes:
         console.log(chalk.gray('You can now open this folder in Obsidian\n'));
 
         logger.info('Clone completed', {
-          workspaceSlug: options.workspace,
+          spaceSlug: options.space,
           targetPath: absoluteTargetPath,
           nodesCloned: summary.totalNodes,
           duration
@@ -199,9 +199,9 @@ Notes:
           if (status === 401) {
             console.log(chalk.gray('\nAuthentication expired. Run "mujarrad auth login" to re-authenticate'));
           } else if (status === 404) {
-            console.log(chalk.gray(`\nWorkspace "${options.workspace}" not found. Check the workspace slug.`));
+            console.log(chalk.gray(`\nSpace "${options.space}" not found. Check the space slug.`));
           } else if (status === 403) {
-            console.log(chalk.gray('\nAccess denied. You may not have permission to clone this workspace.'));
+            console.log(chalk.gray('\nAccess denied. You may not have permission to clone this space.'));
           } else if (status >= 500) {
             console.log(chalk.gray('\nServer error. Please try again later.'));
           }

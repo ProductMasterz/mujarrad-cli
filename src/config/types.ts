@@ -34,10 +34,10 @@ export interface Config {
   apiBaseUrl: string;
 
   /**
-   * Default workspace slug to use for operations
-   * Can be overridden with MUJARRAD_DEFAULT_WORKSPACE environment variable
+   * Default space slug to use for operations
+   * Can be overridden with MUJARRAD_DEFAULT_SPACE environment variable
    */
-  defaultWorkspace?: string;
+  defaultSpace?: string;
 
   /**
    * Enable automatic synchronization when files change
@@ -73,7 +73,7 @@ export const DEFAULT_CONFIG: Config = {
  */
 export const ENV_VAR_MAPPING: Partial<Record<keyof Config, string>> = {
   apiBaseUrl: 'MUJARRAD_API_BASE_URL',
-  defaultWorkspace: 'MUJARRAD_DEFAULT_WORKSPACE',
+  defaultSpace: 'MUJARRAD_DEFAULT_SPACE',
   autoSync: 'MUJARRAD_AUTO_SYNC',
   logLevel: 'MUJARRAD_LOG_LEVEL'
 };

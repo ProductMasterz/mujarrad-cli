@@ -1,6 +1,6 @@
 import { TemplateService } from '../../src/services/TemplateService.js';
 import { CloneService } from '../../src/services/CloneService.js';
-import { TemplateApi, WorkspaceApi } from '../../src/api/generated/api.js';
+import { TemplateApi, SpaceApi } from '../../src/api/generated/api.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -10,7 +10,7 @@ import * as path from 'path';
  * Validates FR-054 to FR-071 (Template System) with full end-to-end flow
  *
  * Based on /analyze report recommendation (MEDIUM-1)
- * Tests complete flow: template listing → cloning → workspace creation →
+ * Tests complete flow: template listing → cloning → space creation →
  * local vault generation → template config file → AI contextual mapping
  */
 
@@ -21,7 +21,7 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
   let templateService: TemplateService;
   let cloneService: CloneService;
   let mockTemplateApi: jest.Mocked<TemplateApi>;
-  let mockWorkspaceApi: jest.Mocked<WorkspaceApi>;
+  let mockSpaceApi: jest.Mocked<SpaceApi>;
 
   const testVaultPath = path.join(process.cwd(), 'test-template-clone');
 
@@ -34,17 +34,17 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
       cloneFromTemplate: jest.fn()
     } as any;
 
-    mockWorkspaceApi = {
-      exportWorkspace: jest.fn(),
-      getWorkspace: jest.fn(),
-      createWorkspace: jest.fn()
+    mockSpaceApi = {
+      exportSpace: jest.fn(),
+      getSpace: jest.fn(),
+      createSpace: jest.fn()
     } as any;
 
     (TemplateApi as jest.Mock).mockImplementation(() => mockTemplateApi);
-    (WorkspaceApi as jest.Mock).mockImplementation(() => mockWorkspaceApi);
+    (SpaceApi as jest.Mock).mockImplementation(() => mockSpaceApi);
 
     templateService = new TemplateService(mockTemplateApi);
-    cloneService = new CloneService(mockWorkspaceApi);
+    cloneService = new CloneService(mockSpaceApi);
   });
 
   afterEach(() => {
@@ -88,9 +88,9 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
     expect(bmcTemplate).toBeDefined();
     expect(bmcTemplate?.componentsCount).toBe(9);
 
-    // Step 2: Clone template to new workspace (FR-056, FR-057, FR-058)
-    const mockWorkspace = {
-      id: 'workspace-uuid',
+    // Step 2: Clone template to new space (FR-056, FR-057, FR-058)
+    const mockSpace = {
+      id: 'space-uuid',
       name: 'My Startup',
       slug: 'my-startup',
       templateId: bmcTemplate!.id,
@@ -99,24 +99,24 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
     };
 
     mockTemplateApi.cloneFromTemplate.mockResolvedValue({
-      data: mockWorkspace
+      data: mockSpace
     } as any);
 
-    const workspace = await templateService.cloneTemplate(
+    const space = await templateService.cloneTemplate(
       bmcTemplate!.id,
       'My Startup',
       'my-startup'
     );
 
-    expect(workspace.templateId).toBe(bmcTemplate!.id);
-    expect(workspace.slug).toBe('my-startup');
+    expect(space.templateId).toBe(bmcTemplate!.id);
+    expect(space.slug).toBe('my-startup');
 
     // Verify template reference metadata preserved (FR-062, FR-065)
-    expect(workspace.templateId).toBeTruthy();
+    expect(space.templateId).toBeTruthy();
 
-    // Step 3: Export workspace structure with template data (FR-057 to FR-060)
-    const mockWorkspaceExport = {
-      workspace: mockWorkspace,
+    // Step 3: Export space structure with template data (FR-057 to FR-060)
+    const mockSpaceExport = {
+      space: mockSpace,
       nodes: [
         {
           id: 'context-canvas-uuid',
@@ -260,12 +260,12 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
       ]
     };
 
-    mockWorkspaceApi.exportWorkspace.mockResolvedValue({
-      data: mockWorkspaceExport
+    mockSpaceApi.exportSpace.mockResolvedValue({
+      data: mockSpaceExport
     } as any);
 
-    // Step 4: Clone workspace to local Obsidian vault (FR-061, FR-063)
-    // This step would normally call cloneService.cloneWorkspace()
+    // Step 4: Clone space to local Obsidian vault (FR-061, FR-063)
+    // This step would normally call cloneService.cloneSpace()
     // For this test, we simulate the key aspects
 
     if (!fs.existsSync(testVaultPath)) {
@@ -279,8 +279,8 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
       templateSlug: bmcTemplate!.slug,
       templateVersion: bmcTemplate!.version,
       clonedAt: new Date().toISOString(),
-      workspaceId: workspace.id,
-      workspaceSlug: workspace.slug,
+      spaceId: space.id,
+      spaceSlug: space.slug,
       contextTemplates: [
         {
           name: 'Business Model Canvas',
@@ -303,25 +303,25 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
           }
         }
       ],
-      structureReference: 'This workspace follows the Business Model Canvas template structure'
+      structureReference: 'This space follows the Business Model Canvas template structure'
     };
 
     const configPath = path.join(testVaultPath, 'template.config.json');
     fs.writeFileSync(configPath, JSON.stringify(templateConfig, null, 2), 'utf-8');
 
     // Create placeholder notes from template
-    for (const node of mockWorkspaceExport.nodes) {
+    for (const node of mockSpaceExport.nodes) {
       if (node.nodeType === 'REGULAR') {
         const filePath = path.join(testVaultPath, `${node.slug}.md`);
-        const content = `<!-- mujarrad-node-id: ${node.id} -->\n<!-- mujarrad-workspace-id: ${workspace.id} -->\n${node.content}`;
+        const content = `<!-- mujarrad-node-id: ${node.id} -->\n<!-- mujarrad-space-id: ${space.id} -->\n${node.content}`;
         fs.writeFileSync(filePath, content, 'utf-8');
       }
     }
 
     // Create canvas file with visual configuration (FR-060)
     const canvasData = {
-      nodes: mockWorkspaceExport.nodeMappings.map(nm => {
-        const node = mockWorkspaceExport.nodes.find(n => n.id === nm.containedNodeId);
+      nodes: mockSpaceExport.nodeMappings.map(nm => {
+        const node = mockSpaceExport.nodes.find(n => n.id === nm.containedNodeId);
         return {
           id: nm.containedNodeId,
           type: 'file',
@@ -360,7 +360,7 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
     expect(aiContextualMap.components).toContain('Value Propositions');
     expect(aiContextualMap.components).toContain('Customer Segments');
 
-    // AI can now understand that this workspace follows BMC structure
+    // AI can now understand that this space follows BMC structure
     // and can map user queries to appropriate components
     const aiMapping = {
       query: 'Who are our customers?',
@@ -391,7 +391,7 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
     console.log('\n✅ Template System Integration Test Complete');
     console.log('📊 Verified FR-054 to FR-064:');
     console.log('   ✓ FR-055: Template listing');
-    console.log('   ✓ FR-056: Template cloning to workspace');
+    console.log('   ✓ FR-056: Template cloning to space');
     console.log('   ✓ FR-057: CONTEXT node copying');
     console.log('   ✓ FR-058: Placeholder node creation with guidance');
     console.log('   ✓ FR-059: Relationship preservation');
@@ -402,21 +402,21 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
     console.log('   ✓ FR-064: AI contextual mapping\n');
   });
 
-  it('should preserve template reference when user modifies workspace (FR-065, FR-066)', async () => {
+  it('should preserve template reference when user modifies space (FR-065, FR-066)', async () => {
     // FR-066: Users can freely deviate from template structure
     // FR-065: Template reference persists during sync
 
     const templateId = 'template-bmc-uuid';
-    const workspaceId = 'workspace-uuid';
+    const spaceId = 'space-uuid';
 
-    // Create initial workspace from template
+    // Create initial space from template
     const templateConfig = {
       templateId: templateId,
       templateName: 'Business Model Canvas',
       templateSlug: 'business-model-canvas',
       templateVersion: '1.0.0',
-      workspaceId: workspaceId,
-      workspaceSlug: 'my-startup',
+      spaceId: spaceId,
+      spaceSlug: 'my-startup',
       contextTemplates: [
         {
           name: 'Business Model Canvas',
@@ -451,7 +451,7 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
     expect(persistedConfig.templateId).toBe(templateId);
 
     // AI can still use original template structure as contextual map
-    // even though workspace content has evolved (FR-066)
+    // even though space content has evolved (FR-066)
     const aiContext = {
       originalTemplate: persistedConfig.contextTemplates[0],
       recognizesDeviation: true,
@@ -495,7 +495,7 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
     });
 
     await expect(
-      templateService.cloneTemplate(invalidTemplate.id, 'Test Workspace', 'test-workspace')
+      templateService.cloneTemplate(invalidTemplate.id, 'Test Space', 'test-space')
     ).rejects.toThrow();
 
     console.log('\n✅ Template Validation Test Complete');
@@ -506,7 +506,7 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
 
   it('should support semantic versioning for templates (FR-071)', () => {
     // FR-071: Template versions follow semantic versioning
-    // MVP: Templates immutable after workspace creation
+    // MVP: Templates immutable after space creation
 
     const templateVersions = [
       { version: '1.0.0', changes: 'Initial release' },
@@ -522,10 +522,10 @@ describe('Template System Integration (FR-054 to FR-071)', () => {
     }
 
     // MVP: No automatic update notifications (FR-071 clarification)
-    const workspaceTemplateVersion = '1.0.0';
+    const spaceTemplateVersion = '1.0.0';
     const latestTemplateVersion = '2.0.0';
 
-    // Users must manually create new workspace for latest template
+    // Users must manually create new space for latest template
     const updateStrategy = 'manual-migration'; // MVP approach
 
     expect(updateStrategy).toBe('manual-migration');

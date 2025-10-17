@@ -61,7 +61,7 @@ describe('VaultValidator', () => {
 
     it('should exclude .obsidian folder files from count', async () => {
       await fs.mkdir(path.join(tempDir, '.obsidian'));
-      await fs.writeFile(path.join(tempDir, '.obsidian', 'workspace.md'), '# Workspace');
+      await fs.writeFile(path.join(tempDir, '.obsidian', 'space.md'), '# Space');
       await fs.writeFile(path.join(tempDir, 'note.md'), '# Note');
 
       const result = await validator.validateVault(tempDir);

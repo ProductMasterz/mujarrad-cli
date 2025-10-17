@@ -2,7 +2,7 @@
  * TypeScript interfaces for Init Command Enhancement (009-init-command-enhancement)
  *
  * This file defines all entities used in bidirectional sync operations:
- * - Workspace Metadata (FR-001, FR-004, FR-005)
+ * - Space Metadata (FR-001, FR-004, FR-005)
  * - Remote Node (FR-007, FR-014, FR-019)
  * - Local File (FR-021, FR-022)
  * - Comparison Result (FR-021, FR-022, FR-023, FR-024)
@@ -11,13 +11,13 @@
  * These interfaces provide type safety for the sync feature implementation.
  */
 
-import type { WorkspaceMetadata as ApiWorkspaceMetadata, RemoteNode as ApiRemoteNode } from '../api/generated/index.js';
+import type { SpaceMetadata as ApiSpaceMetadata, RemoteNode as ApiRemoteNode } from '../api/generated/index.js';
 
 /**
- * Workspace metadata for pre-flight verification
+ * Space metadata for pre-flight verification
  * Re-export from API client with additional CLI-specific methods
  */
-export type WorkspaceMetadata = ApiWorkspaceMetadata;
+export type SpaceMetadata = ApiSpaceMetadata;
 
 /**
  * Remote node representation
@@ -88,7 +88,7 @@ export enum ComparisonStatus {
     IDENTICAL = 'IDENTICAL',
 
     /**
-     * File only exists locally, not in remote workspace
+     * File only exists locally, not in remote space
      * Action: Upload to remote
      */
     LOCAL_ONLY = 'LOCAL_ONLY',
@@ -290,10 +290,10 @@ export interface SyncSession {
     sessionId: string;
 
     /**
-     * Workspace slug being synced
+     * Space slug being synced
      * @type {string}
      */
-    workspaceSlug: string;
+    spaceSlug: string;
 
     /**
      * Local vault absolute path

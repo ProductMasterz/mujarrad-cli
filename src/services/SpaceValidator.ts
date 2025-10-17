@@ -1,47 +1,47 @@
 /**
- * WorkspaceValidator service
+ * SpaceValidator service
  * Feature: 009-init-command-enhancement
- * Task: T014 - Implement WorkspaceValidator service
+ * Task: T014 - Implement SpaceValidator service
  *
- * Validates workspace existence and user permissions before vault upload.
+ * Validates space existence and user permissions before vault upload.
  * Implements pre-flight validation (FR-001, FR-002, FR-003, FR-004, FR-005)
  */
 
-import { SyncWorkspacesApi, type WorkspaceMetadata } from '../api/generated/index.js';
-import { WorkspaceNotFoundError, AccessDeniedError, WorkspaceValidationError } from '../errors/WorkspaceErrors.js';
+import { SyncSpacesApi, type SpaceMetadata } from '../api/generated/index.js';
+import { SpaceNotFoundError, AccessDeniedError, SpaceValidationError } from '../errors/SpaceErrors.js';
 import { Logger } from '../utils/Logger.js';
 
 /**
- * WorkspaceValidator validates workspace before vault upload
- * @class WorkspaceValidator
+ * SpaceValidator validates space before vault upload
+ * @class SpaceValidator
  */
-export class WorkspaceValidator {
-    private readonly workspaceApi: SyncWorkspacesApi;
+export class SpaceValidator {
+    private readonly spaceApi: SyncSpacesApi;
     private readonly logger: Logger;
     private readonly maxRetries: number = 3;
-    private readonly retryableErrorCodes: string[] = ['ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND', 'ECONNREFUSED'];
+    private readonly retryableErrorCodes: string[] = ['ETIMEDOUT', 'ECONNRESET', 'ECONNREFUSED'];
 
-    constructor(workspaceApi: SyncWorkspacesApi, logger: Logger) {
-        this.workspaceApi = workspaceApi;
+    constructor(spaceApi: SyncSpacesApi, logger: Logger) {
+        this.spaceApi = spaceApi;
         this.logger = logger;
     }
 
     /**
-     * Validate workspace exists and user has write permissions
+     * Validate space exists and user has write permissions
      * Implements FR-001, FR-002, FR-003, FR-004
      *
-     * @param slug - Workspace slug (URL-safe identifier)
-     * @returns Promise<WorkspaceMetadata> - Workspace metadata if validation succeeds
-     * @throws WorkspaceNotFoundError - If workspace doesn't exist (404)
+     * @param slug - Space slug (URL-safe identifier)
+     * @returns Promise<SpaceMetadata> - Space metadata if validation succeeds
+     * @throws SpaceNotFoundError - If space doesn't exist (404)
      * @throws AccessDeniedError - If user lacks write permissions (403)
-     * @throws WorkspaceValidationError - For other validation failures
+     * @throws SpaceValidationError - For other validation failures
      */
-    async validateWorkspace(slug: string): Promise<WorkspaceMetadata> {
+    async validateSpace(slug: string): Promise<SpaceMetadata> {
         // Validate slug format first (client-side validation)
         this.validateSlugFormat(slug);
 
         // Log validation start (FR-005)
-        this.logger.logWorkspaceValidationStart(slug);
+        this.logger.logSpaceValidationStart(slug);
 
         let lastError: any;
         let attempt = 0;
@@ -49,26 +49,33 @@ export class WorkspaceValidator {
         // Retry loop for network errors (FR-002 - handle timeouts)
         while (attempt < this.maxRetries) {
             try {
-                // Call workspace metadata API
-                const response = await this.workspaceApi.getWorkspaceMetadata(slug);
-                const workspace = response.data;
+                // Call space metadata API
+                const response = await this.spaceApi.getSpaceMetadata(slug);
+                const spaceData = response.data as SpaceMetadata;
 
                 // Verify user has write permissions (FR-004)
-                if (!workspace.userPermissions.canWrite) {
+                if (!spaceData.userPermissions.canWrite) {
                     const error = new AccessDeniedError(
                         slug,
-                        `You do not have write access to this workspace. Current permissions: ${JSON.stringify(workspace.userPermissions)}`
+                        'You do not have write access to this space'
                     );
-                    this.logger.logWorkspaceValidationFailure(slug, error.message);
+                    this.logger.logSpaceValidationFailure(slug, error.message);
                     throw error;
                 }
 
                 // Log successful validation (FR-005)
-                this.logger.logWorkspaceValidationSuccess(slug, workspace.nodeCount);
+                this.logger.logSpaceValidationSuccess(slug, spaceData.nodeCount);
 
-                return workspace;
+                return spaceData;
             } catch (error: any) {
                 lastError = error;
+
+                // Re-throw our custom errors immediately (don't wrap them)
+                if (error instanceof AccessDeniedError ||
+                    error instanceof SpaceNotFoundError ||
+                    error instanceof SpaceValidationError) {
+                    throw error;
+                }
 
                 // Handle HTTP error responses
                 if (error.response) {
@@ -76,57 +83,57 @@ export class WorkspaceValidator {
                     const errorData = error.response.data;
 
                     if (status === 404) {
-                        // Workspace not found (FR-003)
-                        const notFoundError = new WorkspaceNotFoundError(slug);
-                        this.logger.logWorkspaceValidationFailure(slug, notFoundError.message);
+                        // Space not found (FR-003)
+                        const notFoundError = new SpaceNotFoundError(slug);
+                        this.logger.logSpaceValidationFailure(slug, notFoundError.message);
                         throw notFoundError;
                     } else if (status === 403) {
                         // Access denied (FR-004)
                         const accessError = new AccessDeniedError(
                             slug,
-                            errorData?.error || `Access denied to workspace '${slug}'`
+                            errorData?.error || `Access denied to space '${slug}'`
                         );
-                        this.logger.logWorkspaceValidationFailure(slug, accessError.message);
+                        this.logger.logSpaceValidationFailure(slug, accessError.message);
                         throw accessError;
                     } else if (status === 401) {
                         // Unauthorized - authentication issue
-                        const authError = new WorkspaceValidationError(
+                        const authError = new SpaceValidationError(
                             errorData?.error || 'Authentication required. Please log in with \'mujarrad auth login\'',
                             'UNAUTHORIZED'
                         );
-                        this.logger.logWorkspaceValidationFailure(slug, authError.message);
+                        this.logger.logSpaceValidationFailure(slug, authError.message);
                         throw authError;
                     } else if (status >= 500) {
                         // Server error - may be retryable
                         if (attempt < this.maxRetries - 1) {
-                            this.logger.logNetworkRetry('workspace validation', attempt + 1, this.maxRetries);
+                            this.logger.logNetworkRetry('space validation', attempt + 1, this.maxRetries);
                             await this.exponentialBackoff(attempt);
                             attempt++;
                             continue;
                         }
 
-                        const serverError = new WorkspaceValidationError(
+                        const serverError = new SpaceValidationError(
                             errorData?.error || 'Internal server error occurred',
                             'SERVER_ERROR',
                             error
                         );
-                        this.logger.logWorkspaceValidationFailure(slug, serverError.message);
+                        this.logger.logSpaceValidationFailure(slug, serverError.message);
                         throw serverError;
                     }
 
                     // Other HTTP errors
-                    const httpError = new WorkspaceValidationError(
-                        errorData?.error || `Workspace validation failed with status ${status}`,
+                    const httpError = new SpaceValidationError(
+                        errorData?.error || `Space validation failed with status ${status}`,
                         'HTTP_ERROR',
                         error
                     );
-                    this.logger.logWorkspaceValidationFailure(slug, httpError.message);
+                    this.logger.logSpaceValidationFailure(slug, httpError.message);
                     throw httpError;
                 }
 
                 // Handle network errors (timeouts, connection failures)
                 if (this.isRetryableNetworkError(error) && attempt < this.maxRetries - 1) {
-                    this.logger.logNetworkRetry('workspace validation', attempt + 1, this.maxRetries);
+                    this.logger.logNetworkRetry('space validation', attempt + 1, this.maxRetries);
                     await this.exponentialBackoff(attempt);
                     attempt++;
                     continue;
@@ -139,16 +146,16 @@ export class WorkspaceValidator {
 
         // All retries exhausted
         const failureMessage = this.isRetryableNetworkError(lastError)
-            ? `Unable to verify workspace: network timeout after ${this.maxRetries} attempts`
-            : `Unable to verify workspace: ${lastError.message}`;
+            ? `Unable to verify space: network timeout after ${this.maxRetries} attempts`
+            : `Unable to verify space: ${lastError.message}`;
 
-        const validationError = new WorkspaceValidationError(
+        const validationError = new SpaceValidationError(
             failureMessage,
             'NETWORK_ERROR',
             lastError
         );
 
-        this.logger.logWorkspaceValidationFailure(slug, validationError.message);
+        this.logger.logSpaceValidationFailure(slug, validationError.message);
         throw validationError;
     }
 
@@ -156,22 +163,22 @@ export class WorkspaceValidator {
      * Validate slug format (client-side validation)
      * Slug must be 3-50 characters, lowercase alphanumeric with hyphens
      *
-     * @param slug - Workspace slug to validate
-     * @throws WorkspaceValidationError - If slug format is invalid
+     * @param slug - Space slug to validate
+     * @throws SpaceValidationError - If slug format is invalid
      */
     private validateSlugFormat(slug: string): void {
         const slugPattern = /^[a-z0-9-]{3,50}$/;
 
         if (!slug || typeof slug !== 'string') {
-            throw new WorkspaceValidationError(
-                'Workspace slug is required',
+            throw new SpaceValidationError(
+                'Space slug is required',
                 'INVALID_SLUG'
             );
         }
 
         if (!slugPattern.test(slug)) {
-            throw new WorkspaceValidationError(
-                `Invalid workspace slug format. Slug must be 3-50 characters, lowercase alphanumeric with hyphens. Got: '${slug}'`,
+            throw new SpaceValidationError(
+                `Invalid space slug format. Slug must be 3-50 characters, lowercase alphanumeric with hyphens. Got: '${slug}'`,
                 'INVALID_SLUG'
             );
         }

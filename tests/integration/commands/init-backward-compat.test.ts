@@ -8,7 +8,7 @@
  *
  * Tests:
  * - One-way upload (no pull/compare/resolve phases)
- * - All existing flags work (--workspace, --batch-size)
+ * - All existing flags work (--space, --batch-size)
  * - Exit codes remain the same
  * - Output format unchanged
  * - Performance not degraded
@@ -37,9 +37,9 @@ describe('Init Command - Backward Compatibility (Integration)', () => {
     describe('One-way upload (without --sync flag)', () => {
         it('should perform one-way upload without pull/compare/resolve phases (FR-036)', async () => {
             // Test backward compatibility:
-            // Command: mujarrad init . --workspace test
+            // Command: mujarrad init . --space test
             // Expected behavior:
-            // 1. Validate workspace (pre-flight check)
+            // 1. Validate space (pre-flight check)
             // 2. Validate vault structure
             // 3. Upload files directly (no pull, no compare, no resolve)
             // 4. Display upload progress
@@ -61,7 +61,7 @@ describe('Init Command - Backward Compatibility (Integration)', () => {
 
         it('should NOT fetch remote nodes without --sync', async () => {
             // Verify no API calls to fetch remote nodes:
-            // - No GET /api/workspaces/{slug}/nodes requests
+            // - No GET /api/spaces/{slug}/nodes requests
             // - No pagination requests
             // - No node content downloads
             // - Only upload API calls made
@@ -80,10 +80,10 @@ describe('Init Command - Backward Compatibility (Integration)', () => {
     });
 
     describe('Existing flags work correctly (FR-037)', () => {
-        it('should support --workspace flag', async () => {
+        it('should support --space flag', async () => {
             // Test required flag:
-            // Command: mujarrad init . --workspace my-workspace
-            // Expected: Upload to "my-workspace"
+            // Command: mujarrad init . --space my-space
+            // Expected: Upload to "my-space"
             // No change in behavior
 
             expect(true).toBe(true); // Placeholder
@@ -91,8 +91,8 @@ describe('Init Command - Backward Compatibility (Integration)', () => {
 
         it('should support -w shorthand', async () => {
             // Test shorthand flag:
-            // Command: mujarrad init . -w my-workspace
-            // Expected: Same behavior as --workspace
+            // Command: mujarrad init . -w my-space
+            // Expected: Same behavior as --space
             // Shorthand still works
 
             expect(true).toBe(true); // Placeholder
@@ -129,7 +129,7 @@ describe('Init Command - Backward Compatibility (Integration)', () => {
     describe('Exit codes remain the same', () => {
         it('should exit with 0 on success', async () => {
             // Test success exit code:
-            // Scenario: Valid workspace, valid vault, successful upload
+            // Scenario: Valid space, valid vault, successful upload
             // Expected: process.exit(0)
             // Exit code unchanged
 
@@ -154,9 +154,9 @@ describe('Init Command - Backward Compatibility (Integration)', () => {
             expect(true).toBe(true); // Placeholder
         });
 
-        it('should exit with 4 on workspace not found', async () => {
-            // Test workspace error exit code:
-            // Scenario: Workspace does not exist (404)
+        it('should exit with 4 on space not found', async () => {
+            // Test space error exit code:
+            // Scenario: Space does not exist (404)
             // Expected: process.exit(4)
             // Exit code unchanged (FR-036)
 
@@ -165,7 +165,7 @@ describe('Init Command - Backward Compatibility (Integration)', () => {
 
         it('should exit with 4 on access denied', async () => {
             // Test permission error exit code:
-            // Scenario: No write access to workspace (403)
+            // Scenario: No write access to space (403)
             // Expected: process.exit(4)
             // Exit code unchanged
 
@@ -195,7 +195,7 @@ describe('Init Command - Backward Compatibility (Integration)', () => {
         it('should display same error messages', async () => {
             // Verify error output:
             // Authentication: "✗ Not authenticated"
-            // Workspace: "✗ Workspace 'X' not found"
+            // Space: "✗ Space 'X' not found"
             // Vault: "✗ Vault validation failed"
             // Messages unchanged
 
@@ -250,8 +250,8 @@ describe('Init Command - Backward Compatibility (Integration)', () => {
 
         it('should maintain backward compatibility in examples', async () => {
             // Verify old examples still shown:
-            // - Basic upload: mujarrad init . -w workspace
-            // - With batch size: mujarrad init . -w workspace -b 100
+            // - Basic upload: mujarrad init . -w space
+            // - With batch size: mujarrad init . -w space -b 100
             // - Old examples unchanged
 
             expect(true).toBe(true); // Placeholder

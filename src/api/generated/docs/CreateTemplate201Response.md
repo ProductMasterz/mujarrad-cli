@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [default to undefined]
-**data** | [**WorkspaceTemplateResponse**](WorkspaceTemplateResponse.md) |  | [default to undefined]
+**data** | [**SpaceTemplateResponse**](SpaceTemplateResponse.md) |  | [default to undefined]
 **timestamp** | **string** |  | [default to undefined]
 
 ## Example

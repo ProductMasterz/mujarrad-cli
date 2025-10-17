@@ -20,63 +20,63 @@ import { DUMMY_BASE_URL, assertParamExists, setBearerAuthToObject, setSearchPara
 import type { Configuration } from './configuration.js';
 
 /**
- * Workspace metadata for pre-flight verification
+ * Space metadata for pre-flight verification
  * @export
- * @interface WorkspaceMetadata
+ * @interface SpaceMetadata
  */
-export interface WorkspaceMetadata {
+export interface SpaceMetadata {
     /**
-     * URL-safe workspace identifier
+     * URL-safe space identifier
      * @type {string}
-     * @memberof WorkspaceMetadata
+     * @memberof SpaceMetadata
      */
     slug: string;
     /**
-     * Human-readable workspace name
+     * Human-readable space name
      * @type {string}
-     * @memberof WorkspaceMetadata
+     * @memberof SpaceMetadata
      */
     name: string;
     /**
-     * Username of workspace owner
+     * Username of space owner
      * @type {string}
-     * @memberof WorkspaceMetadata
+     * @memberof SpaceMetadata
      */
     owner: string;
     /**
-     * Total number of nodes in workspace
+     * Total number of nodes in space
      * @type {number}
-     * @memberof WorkspaceMetadata
+     * @memberof SpaceMetadata
      */
     nodeCount: number;
     /**
-     * User permissions for this workspace
+     * User permissions for this space
      * @type {UserPermissions}
-     * @memberof WorkspaceMetadata
+     * @memberof SpaceMetadata
      */
     userPermissions: UserPermissions;
     /**
-     * ISO 8601 timestamp of workspace creation
+     * ISO 8601 timestamp of space creation
      * @type {string}
-     * @memberof WorkspaceMetadata
+     * @memberof SpaceMetadata
      */
     createdAt: string;
     /**
      * ISO 8601 timestamp of last content modification
      * @type {string}
-     * @memberof WorkspaceMetadata
+     * @memberof SpaceMetadata
      */
     lastModified: string;
 }
 
 /**
- * User permissions for workspace operations
+ * User permissions for space operations
  * @export
  * @interface UserPermissions
  */
 export interface UserPermissions {
     /**
-     * User can view workspace content
+     * User can view space content
      * @type {boolean}
      * @memberof UserPermissions
      */
@@ -94,7 +94,7 @@ export interface UserPermissions {
      */
     canDelete: boolean;
     /**
-     * User can invite others to workspace
+     * User can invite others to space
      * @type {boolean}
      * @memberof UserPermissions
      */
@@ -184,7 +184,7 @@ export interface NodeMetadata {
 }
 
 /**
- * Paginated response for listing workspace nodes
+ * Paginated response for listing space nodes
  * @export
  * @interface PaginatedNodesResponse
  */
@@ -326,36 +326,36 @@ export interface ApiErrorResponse {
 }
 
 /**
- * SyncWorkspacesApi - API class for sync endpoints
+ * SyncSpacesApi - API class for sync endpoints
  * @export
- * @class SyncWorkspacesApi
+ * @class SyncSpacesApi
  * @extends {BaseAPI}
  */
-export class SyncWorkspacesApi extends BaseAPI {
+export class SyncSpacesApi extends BaseAPI {
     /**
-     * Get workspace metadata for pre-flight verification
-     * @summary Get workspace metadata
-     * @param {string} slug URL-safe workspace identifier
+     * Get space metadata for pre-flight verification
+     * @summary Get space metadata
+     * @param {string} slug URL-safe space identifier
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof SyncWorkspacesApi
+     * @memberof SyncSpacesApi
      */
-    public getWorkspaceMetadata(slug: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkspaceMetadata> {
-        return SyncWorkspacesApiFp(this.configuration).getWorkspaceMetadata(slug, options).then((request) => request(this.axios, this.basePath));
+    public getSpaceMetadata(slug: string, options?: RawAxiosRequestConfig): AxiosPromise<SpaceMetadata> {
+        return SyncSpacesApiFp(this.configuration).getSpaceMetadata(slug, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * List all workspace nodes with cursor-based pagination
-     * @summary List all workspace nodes with pagination
-     * @param {string} slug Workspace identifier
+     * List all space nodes with cursor-based pagination
+     * @summary List all space nodes with pagination
+     * @param {string} slug Space identifier
      * @param {string} [cursor] Opaque pagination cursor from previous response
      * @param {number} [limit] Number of nodes per page (default 100, max 500)
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof SyncWorkspacesApi
+     * @memberof SyncSpacesApi
      */
-    public listWorkspaceNodes(slug: string, cursor?: string, limit?: number, options?: RawAxiosRequestConfig): AxiosPromise<PaginatedNodesResponse> {
-        return SyncWorkspacesApiFp(this.configuration).listWorkspaceNodes(slug, cursor, limit, options).then((request) => request(this.axios, this.basePath));
+    public listSpaceNodes(slug: string, cursor?: string, limit?: number, options?: RawAxiosRequestConfig): AxiosPromise<PaginatedNodesResponse> {
+        return SyncSpacesApiFp(this.configuration).listSpaceNodes(slug, cursor, limit, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -369,7 +369,7 @@ export class SyncNodesApi extends BaseAPI {
     /**
      * Compare node versions for divergence detection
      * @summary Compare node versions for divergence detection
-     * @param {string} uuid Node UUID (must exist in workspace user has access to)
+     * @param {string} uuid Node UUID (must exist in space user has access to)
      * @param {string} localHash SHA-256 hash of local file content (lowercase hex)
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -393,21 +393,21 @@ export class SyncNodesApi extends BaseAPI {
 }
 
 /**
- * SyncWorkspacesApiAxiosParamCreator - parameter creator
+ * SyncSpacesApiAxiosParamCreator - parameter creator
  * @export
  */
-export const SyncWorkspacesApiAxiosParamCreator = function (configuration?: Configuration) {
+export const SyncSpacesApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Get workspace metadata
+         * Get space metadata
          * @param {string} slug
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getWorkspaceMetadata: async (slug: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getSpaceMetadata: async (slug: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'slug' is not null or undefined
-            assertParamExists('getWorkspaceMetadata', 'slug', slug);
-            const localVarPath = `/api/workspaces/{slug}`
+            assertParamExists('getSpaceMetadata', 'slug', slug);
+            const localVarPath = `/api/spaces/slug/{slug}`
                 .replace(`{${"slug"}}`, encodeURIComponent(String(slug)));
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -431,17 +431,17 @@ export const SyncWorkspacesApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * List workspace nodes
+         * List space nodes
          * @param {string} slug
          * @param {string} [cursor]
          * @param {number} [limit]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listWorkspaceNodes: async (slug: string, cursor?: string, limit?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        listSpaceNodes: async (slug: string, cursor?: string, limit?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'slug' is not null or undefined
-            assertParamExists('listWorkspaceNodes', 'slug', slug);
-            const localVarPath = `/api/workspaces/{slug}/nodes`
+            assertParamExists('listSpaceNodes', 'slug', slug);
+            const localVarPath = `/api/spaces/{slug}/nodes`
                 .replace(`{${"slug"}}`, encodeURIComponent(String(slug)));
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -476,34 +476,34 @@ export const SyncWorkspacesApiAxiosParamCreator = function (configuration?: Conf
 };
 
 /**
- * SyncWorkspacesApi - functional programming interface
+ * SyncSpacesApi - functional programming interface
  * @export
  */
-export const SyncWorkspacesApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = SyncWorkspacesApiAxiosParamCreator(configuration);
+export const SyncSpacesApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = SyncSpacesApiAxiosParamCreator(configuration);
     return {
         /**
-         * Get workspace metadata
+         * Get space metadata
          * @param {string} slug
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getWorkspaceMetadata(slug: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkspaceMetadata>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getWorkspaceMetadata(slug, options);
+        async getSpaceMetadata(slug: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SpaceMetadata>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSpaceMetadata(slug, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
                 return axios.request(axiosRequestArgs);
             };
         },
         /**
-         * List workspace nodes
+         * List space nodes
          * @param {string} [cursor]
          * @param {number} [limit]
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listWorkspaceNodes(slug: string, cursor?: string, limit?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PaginatedNodesResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listWorkspaceNodes(slug, cursor, limit, options);
+        async listSpaceNodes(slug: string, cursor?: string, limit?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PaginatedNodesResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listSpaceNodes(slug, cursor, limit, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
                 return axios.request(axiosRequestArgs);

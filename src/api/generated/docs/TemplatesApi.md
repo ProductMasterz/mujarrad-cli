@@ -4,16 +4,16 @@ All URIs are relative to *https://api.example.com*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**createTemplate**](#createtemplate) | **POST** /api/templates | Create template from workspace|
+|[**createTemplate**](#createtemplate) | **POST** /api/templates | Create template from space|
 |[**deleteTemplate**](#deletetemplate) | **DELETE** /api/templates/{templateId} | Delete template|
 |[**getTemplate**](#gettemplate) | **GET** /api/templates/{templateId} | Get template details|
-|[**instantiateTemplate**](#instantiatetemplate) | **POST** /api/workspaces/{workspaceId}/instantiate | Instantiate workspace from template|
-|[**listTemplates**](#listtemplates) | **GET** /api/templates | List workspace templates|
+|[**instantiateTemplate**](#instantiatetemplate) | **POST** /api/spaces/{spaceId}/instantiate | Instantiate space from template|
+|[**listTemplates**](#listtemplates) | **GET** /api/templates | List space templates|
 
 # **createTemplate**
 > CreateTemplate201Response createTemplate(templateCreateRequest)
 
-Convert existing workspace into reusable template with placeholders.
+Convert existing space into reusable template with placeholders.
 
 ### Example
 
@@ -68,7 +68,7 @@ const { status, data } = await apiInstance.createTemplate(
 # **deleteTemplate**
 > deleteTemplate()
 
-Delete workspace template (does not affect workspaces created from it).
+Delete space template (does not affect spaces created from it).
 
 ### Example
 
@@ -175,7 +175,7 @@ const { status, data } = await apiInstance.getTemplate(
 # **instantiateTemplate**
 > InstantiateTemplate200Response instantiateTemplate(templateInstantiateRequest)
 
-Clone template into existing workspace, replacing placeholders with values.
+Clone template into existing space, replacing placeholders with values.
 
 ### Example
 
@@ -189,11 +189,11 @@ import {
 const configuration = new Configuration();
 const apiInstance = new TemplatesApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 let templateInstantiateRequest: TemplateInstantiateRequest; //
 
 const { status, data } = await apiInstance.instantiateTemplate(
-    workspaceId,
+    spaceId,
     templateInstantiateRequest
 );
 ```
@@ -203,7 +203,7 @@ const { status, data } = await apiInstance.instantiateTemplate(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **templateInstantiateRequest** | **TemplateInstantiateRequest**|  | |
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type

@@ -1,4 +1,4 @@
-# WorkspaceTemplateResponse
+# SpaceTemplateResponse
 
 
 ## Properties
@@ -19,9 +19,9 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { WorkspaceTemplateResponse } from 'mujarrad-api-client';
+import { SpaceTemplateResponse } from 'mujarrad-api-client';
 
-const instance: WorkspaceTemplateResponse = {
+const instance: SpaceTemplateResponse = {
     id,
     creatorId,
     name,

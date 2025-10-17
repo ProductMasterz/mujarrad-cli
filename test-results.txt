@@ -7,7 +7,7 @@ PASS unit tests/unit/commands/init.test.ts
     Command structure
       ✓ should register init command (29 ms)
       ✓ should have vault-path argument (3 ms)
-      ✓ should require --workspace option (1 ms)
+      ✓ should require --space option (1 ms)
       ✓ should have optional --batch-size option (1 ms)
     Help documentation
       ✓ should have clear examples in help text (1 ms)
@@ -82,8 +82,8 @@ PASS unit tests/unit/commands/template.test.ts
         ✓ should resolve relative paths
       Clone workflow
         ✓ should call TemplateCloneWorkflow.execute
-        ✓ should pass workspace name to workflow (1 ms)
-        ✓ should pass workspace description to workflow
+        ✓ should pass space name to workflow (1 ms)
+        ✓ should pass space description to workflow
         ✓ should pass empty placeholders object
         ✓ should display progress during clone
         ✓ should display clone summary on completion
@@ -107,14 +107,14 @@ PASS unit tests/unit/commands/template.test.ts
       ✓ should handle templates with no tags (1 ms)
       ✓ should handle templates with no description
       ✓ should handle very long template names
-      ✓ should handle special characters in workspace name
+      ✓ should handle special characters in space name
 
 PASS unit tests/unit/commands/clone.test.ts
   Clone Command
     Command structure
       ✓ should register clone command (5 ms)
       ✓ should have target-path argument (1 ms)
-      ✓ should require --workspace option (1 ms)
+      ✓ should require --space option (1 ms)
       ✓ should have optional --no-git flag
       ✓ should have optional --include-history flag (1 ms)
     Help documentation
@@ -130,20 +130,20 @@ PASS unit tests/unit/commands/clone.test.ts
       ✓ should check authentication before cloning
       ✓ should fail with helpful message if not authenticated
     Cloning workflow
-      ✓ should call cloneWorkspace with correct parameters
+      ✓ should call cloneSpace with correct parameters
       ✓ should display progress during clone (1 ms)
       ✓ should display clone summary on completion
     Git initialization
       ✓ should initialize git repository by default
       ✓ should skip git initialization with --no-git flag
-      ✓ should create initial commit with workspace reference
+      ✓ should create initial commit with space reference
       ✓ should handle git initialization failures gracefully
     Version history
       ✓ should exclude history by default (1 ms)
       ✓ should include history with --include-history flag
     Error handling
       ✓ should handle 401 authentication errors
-      ✓ should handle 404 workspace not found
+      ✓ should handle 404 space not found
       ✓ should handle 403 permission denied
       ✓ should handle 500 server errors
       ✓ should handle network errors (1 ms)
@@ -154,9 +154,9 @@ PASS unit tests/unit/commands/clone.test.ts
       ✓ should log git initialization (1 ms)
       ✓ should log errors with full details (1 ms)
     Edge cases
-      ✓ should handle empty workspace
-      ✓ should handle very large workspaces (2 ms)
-      ✓ should handle special characters in workspace slug (1 ms)
+      ✓ should handle empty space
+      ✓ should handle very large spaces (2 ms)
+      ✓ should handle special characters in space slug (1 ms)
       ✓ should handle spaces in target path
 
 FAIL unit tests/unit/commands/upload.test.ts
@@ -179,7 +179,7 @@ PASS unit tests/unit/commands/sync.test.ts
   Sync Command
     Command structure
       ✓ should register sync command (6 ms)
-      ✓ should have optional --workspace option (1 ms)
+      ✓ should have optional --space option (1 ms)
       ✓ should use current directory as vault path
     Help documentation
       ✓ should have clear examples in help text
@@ -188,10 +188,10 @@ PASS unit tests/unit/commands/sync.test.ts
     Authentication
       ✓ should check authentication before syncing
       ✓ should fail with helpful message if not authenticated (1 ms)
-    Workspace resolution
-      ✓ should use --workspace flag if provided
-      ✓ should use default workspace from config if not provided
-      ✓ should fail if no workspace specified
+    Space resolution
+      ✓ should use --space flag if provided
+      ✓ should use default space from config if not provided
+      ✓ should fail if no space specified
     Change detection
       ✓ should detect local changes using git diff
       ✓ should display count of changes detected
@@ -216,7 +216,7 @@ PASS unit tests/unit/commands/sync.test.ts
       ✓ should display sync statistics (1 ms)
     Error handling
       ✓ should handle 401 authentication errors
-      ✓ should handle 404 workspace not found
+      ✓ should handle 404 space not found
       ✓ should handle 500 server errors
       ✓ should handle network errors
       ✓ should stop spinner on error

@@ -157,7 +157,7 @@ describe('TemplateService', () => {
         data: {
           id: 'template-uuid-001',
           creatorId: 'user-uuid',
-          sourceWorkspaceId: 'workspace-uuid',
+          sourceSpaceId: 'space-uuid',
           name: 'Business Model Canvas',
           description: '9-block business model framework',
           tags: ['business', 'strategy'],
@@ -193,7 +193,7 @@ describe('TemplateService', () => {
         data: {
           id: 'template-uuid-minimal',
           creatorId: 'user-uuid',
-          sourceWorkspaceId: 'workspace-uuid',
+          sourceSpaceId: 'space-uuid',
           name: 'Minimal Template',
           description: 'Simple template',
           tags: ['test'],

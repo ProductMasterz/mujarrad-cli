@@ -10,8 +10,8 @@ info:
     follows Mujarrad Backend Constitution (Principle I: API-First Design with OpenAPI contracts).
 
     **New Endpoints Required**:
-    1. GET `/api/workspaces/{slug}` - Workspace metadata retrieval (FR-001)
-    2. GET `/api/workspaces/{slug}/nodes` - List all workspace nodes with pagination (FR-007)
+    1. GET `/api/spaces/{slug}` - Space metadata retrieval (FR-001)
+    2. GET `/api/spaces/{slug}/nodes` - List all space nodes with pagination (FR-007)
     3. GET `/api/nodes/{uuid}/versions/compare` - Node version history for ancestor detection (FR-008)
     4. GET `/api/nodes/{uuid}/content` - Download individual node content
 
@@ -31,33 +31,33 @@ security:
   - bearerAuth: []
 
 paths:
-  /api/workspaces/{slug}:
+  /api/spaces/{slug}:
     get:
-      summary: Get workspace metadata
+      summary: Get space metadata
       description: |
-        Retrieve workspace metadata for pre-flight verification. Used by CLI to verify workspace
+        Retrieve space metadata for pre-flight verification. Used by CLI to verify space
         exists and user has write permissions before scanning local vault (FR-001, FR-004, FR-005).
 
         **Performance**: MUST respond within 2 seconds (NFR-001 requires <5s total verification).
-      operationId: getWorkspaceMetadata
+      operationId: getSpaceMetadata
       tags:
-        - Workspaces
+        - Spaces
       parameters:
         - name: slug
           in: path
           required: true
-          description: URL-safe workspace identifier (lowercase alphanumeric with hyphens)
+          description: URL-safe space identifier (lowercase alphanumeric with hyphens)
           schema:
             type: string
             pattern: '^[a-z0-9-]{3,50}$'
             example: my-knowledge-base
       responses:
         '200':
-          description: Workspace metadata retrieved successfully
+          description: Space metadata retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkspaceMetadata'
+                $ref: '#/components/schemas/SpaceMetadata'
               examples:
                 typical:
                   value:
@@ -75,48 +75,48 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: User does not have access to this workspace
+          description: User does not have access to this space
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: Access denied to workspace 'my-knowledge-base'. Contact the workspace owner for permissions.
-                code: WORKSPACE_ACCESS_DENIED
+                error: Access denied to space 'my-knowledge-base'. Contact the space owner for permissions.
+                code: SPACE_ACCESS_DENIED
                 timestamp: '2025-10-12T15:30:00Z'
         '404':
-          description: Workspace not found
+          description: Space not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: Workspace 'invalid-workspace' not found
-                code: WORKSPACE_NOT_FOUND
+                error: Space 'invalid-space' not found
+                code: SPACE_NOT_FOUND
                 timestamp: '2025-10-12T15:30:00Z'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /api/workspaces/{slug}/nodes:
+  /api/spaces/{slug}/nodes:
     get:
-      summary: List all workspace nodes with pagination
+      summary: List all space nodes with pagination
       description: |
-        Retrieve all nodes in a workspace with cursor-based pagination for memory-efficient streaming.
+        Retrieve all nodes in a space with cursor-based pagination for memory-efficient streaming.
         Used by CLI during remote content pull phase (FR-007, FR-019).
 
-        **Pagination**: Uses opaque cursor tokens for efficient streaming of large workspaces (NFR-004
+        **Pagination**: Uses opaque cursor tokens for efficient streaming of large spaces (NFR-004
         requires handling 10,000+ nodes). Client should fetch pages until `nextCursor` is null.
 
         **Performance**: MUST return at least 100 nodes per page. Recommended page size: 100-500 nodes.
-      operationId: listWorkspaceNodes
+      operationId: listSpaceNodes
       tags:
-        - Workspaces
+        - Spaces
         - Nodes
       parameters:
         - name: slug
           in: path
           required: true
-          description: Workspace identifier
+          description: Space identifier
           schema:
             type: string
             pattern: '^[a-z0-9-]{3,50}$'
@@ -139,7 +139,7 @@ paths:
             default: 100
       responses:
         '200':
-          description: Paginated list of workspace nodes
+          description: Paginated list of space nodes
           content:
             application/json:
               schema:
@@ -173,7 +173,7 @@ paths:
                     pagination:
                       nextCursor: eyJsYXN0SWQiOjEwMH0=
                       hasMore: true
-                emptyWorkspace:
+                emptySpace:
                   value:
                     data: []
                     pagination:
@@ -184,7 +184,7 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          description: Workspace not found
+          description: Space not found
           content:
             application/json:
               schema:
@@ -212,7 +212,7 @@ paths:
         - name: uuid
           in: path
           required: true
-          description: Node UUID (must exist in workspace user has access to)
+          description: Node UUID (must exist in space user has access to)
           schema:
             type: string
             format: uuid
@@ -379,7 +379,7 @@ components:
         via @napi-rs/keyring. Include in Authorization header as `Bearer <token>`.
 
   schemas:
-    WorkspaceMetadata:
+    SpaceMetadata:
       type: object
       required:
         - slug
@@ -393,22 +393,22 @@ components:
         slug:
           type: string
           pattern: '^[a-z0-9-]{3,50}$'
-          description: URL-safe workspace identifier
+          description: URL-safe space identifier
           example: my-knowledge-base
         name:
           type: string
           minLength: 1
           maxLength: 100
-          description: Human-readable workspace name
+          description: Human-readable space name
           example: My Knowledge Base
         owner:
           type: string
-          description: Username of workspace owner
+          description: Username of space owner
           example: john-doe
         nodeCount:
           type: integer
           minimum: 0
-          description: Total number of nodes in workspace
+          description: Total number of nodes in space
           example: 42
         userPermissions:
           type: object
@@ -420,7 +420,7 @@ components:
           properties:
             canRead:
               type: boolean
-              description: User can view workspace content
+              description: User can view space content
             canWrite:
               type: boolean
               description: User can create/modify nodes (REQUIRED for init operation)
@@ -429,11 +429,11 @@ components:
               description: User can delete nodes
             canShare:
               type: boolean
-              description: User can invite others to workspace
+              description: User can invite others to space
         createdAt:
           type: string
           format: date-time
-          description: ISO 8601 timestamp of workspace creation
+          description: ISO 8601 timestamp of space creation
           example: '2025-01-15T10:30:00Z'
         lastModified:
           type: string
@@ -595,11 +595,11 @@ components:
         error:
           type: string
           description: Human-readable error message
-          example: Workspace 'invalid-workspace' not found
+          example: Space 'invalid-space' not found
         code:
           type: string
           description: Machine-readable error code
-          example: WORKSPACE_NOT_FOUND
+          example: SPACE_NOT_FOUND
         timestamp:
           type: string
           format: date-time
@@ -629,7 +629,7 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           example:
-            error: You do not have write access to this workspace
+            error: You do not have write access to this space
             code: FORBIDDEN
             timestamp: '2025-10-12T15:30:00Z'
 
@@ -645,8 +645,8 @@ components:
             timestamp: '2025-10-12T15:30:00Z'
 
 tags:
-  - name: Workspaces
-    description: Workspace metadata and operations
+  - name: Spaces
+    description: Space metadata and operations
   - name: Nodes
     description: Node content and version management
   - name: Versions

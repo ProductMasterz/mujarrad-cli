@@ -152,7 +152,7 @@ describe('Init Workflow Integration (US7)', () => {
       await fs.mkdir(path.join(tempDir, '.obsidian', 'plugins'));
 
       // Files in .obsidian should not be counted
-      await fs.writeFile(path.join(tempDir, '.obsidian', 'workspace.md'), '# Workspace');
+      await fs.writeFile(path.join(tempDir, '.obsidian', 'space.md'), '# Space');
       await fs.writeFile(path.join(tempDir, '.obsidian', 'plugins', 'readme.md'), '# Plugin');
 
       // Files in root should be counted

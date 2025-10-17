@@ -75,7 +75,7 @@ describe('Sync Command Integration Tests', () => {
 
   skipIfNoToken('Change detection', () => {
     it('should detect new files', async () => {
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
       // Create new file
       await fs.writeFile(
@@ -86,14 +86,14 @@ describe('Sync Command Integration Tests', () => {
       await git.commit('Add new note');
 
       // Detect changes
-      const changes = await syncService.detectChanges(testDir, workspaceSlug);
+      const changes = await syncService.detectChanges(testDir, spaceSlug);
 
       expect(changes.length).toBeGreaterThan(0);
       expect(changes.some(c => c.filePath.includes('new-note.md'))).toBe(true);
     }, 15000);
 
     it('should detect modified files', async () => {
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
       // Modify existing file
       const readmePath = path.join(testDir, 'README.md');
@@ -103,14 +103,14 @@ describe('Sync Command Integration Tests', () => {
       await git.commit('Update README');
 
       // Detect changes
-      const changes = await syncService.detectChanges(testDir, workspaceSlug);
+      const changes = await syncService.detectChanges(testDir, spaceSlug);
 
       expect(changes.length).toBeGreaterThan(0);
       expect(changes.some(c => c.filePath.includes('README.md'))).toBe(true);
     }, 15000);
 
     it('should detect deleted files', async () => {
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
       // Delete file
       await fs.unlink(path.join(testDir, 'README.md'));
@@ -118,17 +118,17 @@ describe('Sync Command Integration Tests', () => {
       await git.commit('Delete README');
 
       // Detect changes
-      const changes = await syncService.detectChanges(testDir, workspaceSlug);
+      const changes = await syncService.detectChanges(testDir, spaceSlug);
 
       expect(changes.length).toBeGreaterThan(0);
       expect(changes.some(c => c.filePath.includes('README.md'))).toBe(true);
     }, 15000);
 
     it('should return empty array when no changes', async () => {
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
       // No changes made
-      const changes = await syncService.detectChanges(testDir, workspaceSlug);
+      const changes = await syncService.detectChanges(testDir, spaceSlug);
 
       expect(changes).toEqual([]);
     }, 15000);
@@ -136,7 +136,7 @@ describe('Sync Command Integration Tests', () => {
 
   skipIfNoToken('Push changes', () => {
     it('should push local changes to remote', async () => {
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
       // Create and commit change
       await fs.writeFile(
@@ -147,17 +147,17 @@ describe('Sync Command Integration Tests', () => {
       await git.commit('Add sync test note');
 
       // Detect changes
-      const changes = await syncService.detectChanges(testDir, workspaceSlug);
+      const changes = await syncService.detectChanges(testDir, spaceSlug);
 
       // Push changes
-      const pushResult = await syncService.pushChanges(workspaceSlug, changes);
+      const pushResult = await syncService.pushChanges(spaceSlug, changes);
 
       expect(pushResult.versionsCreated).toBeGreaterThan(0);
       expect(pushResult.conflicts).toHaveLength(0);
     }, 20000);
 
     it('should create version for each change', async () => {
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
       // Create multiple files
       await fs.writeFile(path.join(testDir, 'note1.md'), '# Note 1');
@@ -167,8 +167,8 @@ describe('Sync Command Integration Tests', () => {
       await git.commit('Add multiple notes');
 
       // Detect and push changes
-      const changes = await syncService.detectChanges(testDir, workspaceSlug);
-      const pushResult = await syncService.pushChanges(workspaceSlug, changes);
+      const changes = await syncService.detectChanges(testDir, spaceSlug);
+      const pushResult = await syncService.pushChanges(spaceSlug, changes);
 
       expect(pushResult.versionsCreated).toBe(changes.length);
     }, 20000);
@@ -191,10 +191,10 @@ describe('Sync Command Integration Tests', () => {
 
   skipIfNoToken('Sync completion', () => {
     it('should update sync timestamp', async () => {
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
       const timestamp = new Date().toISOString();
-      await syncService.completeSync(workspaceSlug, timestamp);
+      await syncService.completeSync(spaceSlug, timestamp);
 
       // Validate timestamp was recorded
       // (Validation depends on backend implementation)
@@ -203,12 +203,12 @@ describe('Sync Command Integration Tests', () => {
   });
 
   skipIfNoToken('Error handling', () => {
-    it('should handle non-existent workspace', async () => {
-      const invalidSlug = 'non-existent-workspace-12345';
+    it('should handle non-existent space', async () => {
+      const invalidSlug = 'non-existent-space-12345';
 
       try {
         await syncService.detectChanges(testDir, invalidSlug);
-        fail('Should have thrown error for non-existent workspace');
+        fail('Should have thrown error for non-existent space');
       } catch (error: any) {
         expect(error.response?.status).toBe(404);
       }
@@ -220,8 +220,8 @@ describe('Sync Command Integration Tests', () => {
       await fs.mkdir(nonGitDir, { recursive: true });
 
       try {
-        const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
-        await syncService.detectChanges(nonGitDir, workspaceSlug);
+        const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
+        await syncService.detectChanges(nonGitDir, spaceSlug);
         fail('Should have thrown error for non-git directory');
       } catch (error: any) {
         expect(error.message).toContain('git');
@@ -275,7 +275,7 @@ describe('Sync Command Integration Tests', () => {
 
   skipIfNoToken('Performance', () => {
     it('should handle large number of changes efficiently', async () => {
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
       // Create many files
       const fileCount = 100;
@@ -291,7 +291,7 @@ describe('Sync Command Integration Tests', () => {
       const startTime = Date.now();
 
       // Detect changes
-      const changes = await syncService.detectChanges(testDir, workspaceSlug);
+      const changes = await syncService.detectChanges(testDir, spaceSlug);
       expect(changes.length).toBe(fileCount);
 
       const duration = Date.now() - startTime;

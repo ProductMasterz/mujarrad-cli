@@ -28,10 +28,10 @@ export interface ConflictLogEntry extends ConflictResolution {
     sessionId: string;
 
     /**
-     * Workspace slug
+     * Space slug
      * @type {string}
      */
-    workspaceSlug: string;
+    spaceSlug: string;
 
     /**
      * Local file hash at time of resolution
@@ -107,7 +107,7 @@ export class ConflictLogger {
      * @example
      * await conflictLogger.logConflict({
      *   sessionId: 'abc-123',
-     *   workspaceSlug: 'my-workspace',
+     *   spaceSlug: 'my-space',
      *   filePath: 'notes/meeting.md',
      *   strategy: ConflictStrategy.KEEP_LOCAL,
      *   timestamp: new Date().toISOString(),

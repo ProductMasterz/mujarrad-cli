@@ -1,11 +1,11 @@
-# ListWorkspaces200ResponseAllOfData
+# ListSpaces200ResponseAllOfData
 
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**workspaces** | [**Array&lt;WorkspaceResponse&gt;**](WorkspaceResponse.md) |  | [optional] [default to undefined]
+**spaces** | [**Array&lt;SpaceResponse&gt;**](SpaceResponse.md) |  | [optional] [default to undefined]
 **totalElements** | **number** |  | [optional] [default to undefined]
 **totalPages** | **number** |  | [optional] [default to undefined]
 **currentPage** | **number** |  | [optional] [default to undefined]
@@ -13,10 +13,10 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ListWorkspaces200ResponseAllOfData } from 'mujarrad-api-client';
+import { ListSpaces200ResponseAllOfData } from 'mujarrad-api-client';
 
-const instance: ListWorkspaces200ResponseAllOfData = {
-    workspaces,
+const instance: ListSpaces200ResponseAllOfData = {
+    spaces,
     totalElements,
     totalPages,
     currentPage,

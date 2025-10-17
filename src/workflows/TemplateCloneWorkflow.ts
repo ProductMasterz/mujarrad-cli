@@ -1,4 +1,4 @@
-import { TemplatesApi, WorkspacesApi, TemplateInstantiateRequest, WorkspaceCreateRequest } from '../api/generated/api.js';
+import { TemplatesApi, SpacesApi, TemplateInstantiateRequest, SpaceCreateRequest } from '../api/generated/api.js';
 import { CloneService, CloneSummary } from '../services/CloneService.js';
 import { Logger } from '../utils/Logger.js';
 import * as fs from 'fs/promises';
@@ -8,10 +8,10 @@ import * as path from 'path';
  * Template clone workflow options
  */
 export interface TemplateCloneOptions {
-  /** Name for the new workspace */
-  workspaceName: string;
-  /** Optional description for the new workspace */
-  workspaceDescription?: string;
+  /** Name for the new space */
+  spaceName: string;
+  /** Optional description for the new space */
+  spaceDescription?: string;
   /** Placeholder values for template instantiation */
   placeholders?: { [key: string]: string };
 }
@@ -22,10 +22,10 @@ export interface TemplateCloneOptions {
 export interface TemplateCloneResult {
   /** Whether the clone succeeded */
   success: boolean;
-  /** New workspace ID */
-  workspaceId: string;
-  /** New workspace slug */
-  workspaceSlug?: string;
+  /** New space ID */
+  spaceId: string;
+  /** New space slug */
+  spaceSlug?: string;
   /** Total nodes cloned */
   totalNodes: number;
   /** Total errors encountered */
@@ -42,8 +42,8 @@ export interface TemplateConfig {
   templateId: string;
   /** Template name */
   templateName: string;
-  /** New workspace ID */
-  workspaceId: string;
+  /** New space ID */
+  spaceId: string;
   /** Placeholder values used */
   placeholders: { [key: string]: string };
   /** Timestamp of template clone */
@@ -51,20 +51,20 @@ export interface TemplateConfig {
 }
 
 /**
- * TemplateCloneWorkflow - Orchestrates template-based workspace creation
+ * TemplateCloneWorkflow - Orchestrates template-based space creation
  *
  * Workflow:
  * 1. Get template details
- * 2. Create new workspace
- * 3. Instantiate template structure in workspace (via API)
- * 4. Clone workspace to local vault (using CloneService)
+ * 2. Create new space
+ * 3. Instantiate template structure in space (via API)
+ * 4. Clone space to local vault (using CloneService)
  * 5. Write template.config.json to .mujarrad directory
  *
  * Implements:
- * - FR-056: Clone workspace from template
+ * - FR-056: Clone space from template
  * - FR-057: Apply clone requirements to template instantiation
  * - FR-058: Include template placeholder content
- * - FR-059: Copy template structure to new workspace
+ * - FR-059: Copy template structure to new space
  * - FR-060: Preserve canvas visual configuration
  *
  * Task 8.2: Template Clone Workflow (User Story 4)
@@ -74,7 +74,7 @@ export class TemplateCloneWorkflow {
 
   constructor(
     private templatesApi: TemplatesApi,
-    private workspacesApi: WorkspacesApi,
+    private spacesApi: SpacesApi,
     private cloneService: CloneService
   ) {
     this.logger = new Logger();
@@ -84,7 +84,7 @@ export class TemplateCloneWorkflow {
    * Execute template clone workflow
    *
    * @param templateId - Template UUID
-   * @param options - Clone options (workspace name, placeholders)
+   * @param options - Clone options (space name, placeholders)
    * @param targetPath - Target vault path
    * @returns Template clone result
    * @throws Error if template instantiation or clone fails
@@ -99,7 +99,7 @@ export class TemplateCloneWorkflow {
     try {
       this.logger.info('Starting template clone workflow', {
         templateId,
-        workspaceName: options.workspaceName,
+        spaceName: options.spaceName,
         targetPath
       });
 
@@ -113,32 +113,32 @@ export class TemplateCloneWorkflow {
         contextTemplatesCount: template.contextTemplatesCount
       });
 
-      // Step 2: Create new workspace
-      const workspaceRequest: WorkspaceCreateRequest = {
-        title: options.workspaceName,
-        description: options.workspaceDescription || `Workspace created from template: ${template.name}`
+      // Step 2: Create new space
+      const spaceRequest: SpaceCreateRequest = {
+        title: options.spaceName,
+        description: options.spaceDescription || `Space created from template: ${template.name}`
       };
 
-      const workspaceResponse = await this.workspacesApi.createWorkspace(workspaceRequest);
-      const workspace = (workspaceResponse.data as any).data || workspaceResponse.data;
+      const spaceResponse = await this.spacesApi.createSpace(spaceRequest);
+      const space = (spaceResponse.data as any).data || spaceResponse.data;
 
-      this.logger.info('Created new workspace', {
-        workspaceId: workspace.id,
-        workspaceName: workspace.name,
-        workspaceSlug: workspace.slug
+      this.logger.info('Created new space', {
+        spaceId: space.id,
+        spaceName: space.name,
+        spaceSlug: space.slug
       });
 
-      // Step 3: Instantiate template in workspace
+      // Step 3: Instantiate template in space
       const instantiateRequest: TemplateInstantiateRequest = {
         templateId,
         placeholderValues: options.placeholders || {}
       };
 
       try {
-        await this.templatesApi.instantiateTemplate(workspace.id, instantiateRequest);
+        await this.templatesApi.instantiateTemplate(space.id, instantiateRequest);
 
         this.logger.info('Template instantiated successfully', {
-          workspaceId: workspace.id,
+          spaceId: space.id,
           templateId,
           placeholders: options.placeholders
         });
@@ -146,21 +146,21 @@ export class TemplateCloneWorkflow {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         this.logger.error('Failed to instantiate template', {
           templateId,
-          workspaceId: workspace.id,
+          spaceId: space.id,
           error: errorMessage
         });
         throw new Error(`Failed to instantiate template: ${errorMessage}`);
       }
 
-      // Step 4: Clone workspace to local vault
-      const cloneSummary: CloneSummary = await this.cloneService.cloneWorkspace(
-        workspace.slug,
+      // Step 4: Clone space to local vault
+      const cloneSummary: CloneSummary = await this.cloneService.cloneSpace(
+        space.slug,
         targetPath,
         false // Don't include version history for template clones
       );
 
-      this.logger.info('Workspace cloned to local vault', {
-        workspaceSlug: workspace.slug,
+      this.logger.info('Space cloned to local vault', {
+        spaceSlug: space.slug,
         targetPath,
         totalNodes: cloneSummary.totalNodes,
         success: cloneSummary.success
@@ -170,7 +170,7 @@ export class TemplateCloneWorkflow {
       await this.writeTemplateConfig(targetPath, {
         templateId,
         templateName: template.name,
-        workspaceId: workspace.id,
+        spaceId: space.id,
         placeholders: options.placeholders || {},
         clonedAt: new Date().toISOString()
       });
@@ -184,8 +184,8 @@ export class TemplateCloneWorkflow {
 
       return {
         success: cloneSummary.success,
-        workspaceId: workspace.id,
-        workspaceSlug: workspace.slug,
+        spaceId: space.id,
+        spaceSlug: space.slug,
         totalNodes: cloneSummary.totalNodes,
         totalErrors: cloneSummary.totalErrors,
         duration

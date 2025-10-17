@@ -153,6 +153,35 @@ Given that feature description, do this:
 - Written for business stakeholders, not developers.
 - DO NOT create any checklists that are embedded in the spec. That will be a separate command.
 
+## Conversation Continuity
+
+When continuing from a previous conversation (e.g., after context window exhaustion):
+
+1. **Check for Conversation Summary**: If the session includes a conversation summary from a previous context, review it carefully for:
+   - Previous work completed
+   - Current state of files and implementations
+   - Pending tasks or issues
+   - User's last explicit requests
+   - Technical context (test results, error messages, version numbers)
+
+2. **Resume from Last State**: Do not repeat completed work. Use the summary to:
+   - Understand what has already been implemented
+   - Identify what remains to be done
+   - Preserve technical decisions and patterns established
+   - Continue with the exact next step requested
+
+3. **Respect Previous Decisions**: Technical approaches, file structures, and implementation patterns documented in the summary should be maintained unless explicitly asked to change them.
+
+4. **Key Summary Elements to Preserve**:
+   - File paths and line numbers of changes
+   - Error messages and their resolutions
+   - Test results and passing/failing counts
+   - Version numbers and package details
+   - User's explicit requests and their exact wording
+   - Current branch and git state
+
+**Example**: If a summary shows "781/817 tests passing after migration from space to space terminology", do not re-run the migration. Instead, focus on the next requested task.
+
 ### Section Requirements
 
 - **Mandatory sections**: Must be completed for every feature

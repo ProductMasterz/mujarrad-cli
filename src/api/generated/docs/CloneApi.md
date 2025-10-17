@@ -4,14 +4,14 @@ All URIs are relative to *https://api.example.com*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**downloadExport**](#downloadexport) | **GET** /api/workspaces/{workspaceId}/export/download | Download exported files|
-|[**exportWorkspace**](#exportworkspace) | **POST** /api/workspaces/{workspaceId}/export | Export workspace to Obsidian format|
-|[**getExportStatus**](#getexportstatus) | **GET** /api/workspaces/{workspaceId}/export/status | Check export progress|
+|[**downloadExport**](#downloadexport) | **GET** /api/spaces/{spaceId}/export/download | Download exported files|
+|[**exportSpace**](#exportspace) | **POST** /api/spaces/{spaceId}/export | Export space to Obsidian format|
+|[**getExportStatus**](#getexportstatus) | **GET** /api/spaces/{spaceId}/export/status | Check export progress|
 
 # **downloadExport**
 > File downloadExport()
 
-Download workspace exported as ZIP archive.
+Download space exported as ZIP archive.
 
 ### Example
 
@@ -24,11 +24,11 @@ import {
 const configuration = new Configuration();
 const apiInstance = new CloneApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 let exportJobId: string; // (default to undefined)
 
 const { status, data } = await apiInstance.downloadExport(
-    workspaceId,
+    spaceId,
     exportJobId
 );
 ```
@@ -37,7 +37,7 @@ const { status, data } = await apiInstance.downloadExport(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 | **exportJobId** | [**string**] |  | defaults to undefined|
 
 
@@ -66,10 +66,10 @@ const { status, data } = await apiInstance.downloadExport(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **exportWorkspace**
-> ExportWorkspace202Response exportWorkspace(exportWorkspaceRequest)
+# **exportSpace**
+> ExportSpace202Response exportSpace(exportSpaceRequest)
 
-Clone Mujarrad workspace to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
+Clone Mujarrad space to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
 
 ### Example
 
@@ -77,18 +77,18 @@ Clone Mujarrad workspace to Obsidian vault format.  **Process**: 1. Client reque
 import {
     CloneApi,
     Configuration,
-    ExportWorkspaceRequest
+    ExportSpaceRequest
 } from 'mujarrad-api-client';
 
 const configuration = new Configuration();
 const apiInstance = new CloneApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
-let exportWorkspaceRequest: ExportWorkspaceRequest; //
+let spaceId: string; //Space UUID (default to undefined)
+let exportSpaceRequest: ExportSpaceRequest; //
 
-const { status, data } = await apiInstance.exportWorkspace(
-    workspaceId,
-    exportWorkspaceRequest
+const { status, data } = await apiInstance.exportSpace(
+    spaceId,
+    exportSpaceRequest
 );
 ```
 
@@ -96,13 +96,13 @@ const { status, data } = await apiInstance.exportWorkspace(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **exportWorkspaceRequest** | **ExportWorkspaceRequest**|  | |
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **exportSpaceRequest** | **ExportSpaceRequest**|  | |
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type
 
-**ExportWorkspace202Response**
+**ExportSpace202Response**
 
 ### Authorization
 
@@ -140,11 +140,11 @@ import {
 const configuration = new Configuration();
 const apiInstance = new CloneApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 let exportJobId: string; // (default to undefined)
 
 const { status, data } = await apiInstance.getExportStatus(
-    workspaceId,
+    spaceId,
     exportJobId
 );
 ```
@@ -153,7 +153,7 @@ const { status, data } = await apiInstance.getExportStatus(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 | **exportJobId** | [**string**] |  | defaults to undefined|
 
 

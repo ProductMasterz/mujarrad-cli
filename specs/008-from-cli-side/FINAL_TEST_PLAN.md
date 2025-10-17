@@ -145,7 +145,7 @@ cat ~/.mujarrad/config.json | grep disclaimerAcknowledgment
 
 **Command** (for future testing):
 ```bash
-mujarrad init ./test-vault --workspace test
+mujarrad init ./test-vault --space test
 ```
 
 **Expected**:

@@ -16,7 +16,7 @@ export interface SessionMetadata {
   workingDirectory: string;
   environment: 'development' | 'production' | 'ci';
   userId?: string;
-  workspaceSlug?: string;
+  spaceSlug?: string;
 }
 
 /**

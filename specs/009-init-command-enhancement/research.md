@@ -424,7 +424,7 @@ Migrate to `@inquirer/prompts` package in future for native `AbortSignal.timeout
 ## Decision 5: Backend API Pagination Strategy
 
 ### Problem Statement
-How to efficiently handle workspaces with potentially 10,000+ nodes during sync without exceeding memory limits (NFR-004)?
+How to efficiently handle spaces with potentially 10,000+ nodes during sync without exceeding memory limits (NFR-004)?
 
 ### Options Evaluated
 - **Cursor-Based Pagination**: Use opaque cursor/token for pagination
@@ -442,7 +442,7 @@ How to efficiently handle workspaces with potentially 10,000+ nodes during sync 
 5. **Memory Efficiency**: CLI processes nodes as they arrive (streaming)
 
 ### API Design
-**Endpoint**: `GET /api/workspaces/{slug}/nodes?cursor={token}&limit={size}`
+**Endpoint**: `GET /api/spaces/{slug}/nodes?cursor={token}&limit={size}`
 
 **Response Format**:
 ```json
@@ -486,13 +486,13 @@ How to efficiently handle workspaces with potentially 10,000+ nodes during sync 
 ### CLI Implementation (Streaming)
 ```typescript
 async function* fetchAllNodesStreaming(
-  workspaceSlug: string
+  spaceSlug: string
 ): AsyncGenerator<RemoteNode> {
   let cursor: string | null = null;
   const pageSize = 100; // Configurable batch size
 
   do {
-    const response = await workspaceApi.listNodes(workspaceSlug, cursor, pageSize);
+    const response = await spaceApi.listNodes(spaceSlug, cursor, pageSize);
 
     // Yield nodes one by one for processing
     for (const node of response.data.nodes) {
@@ -504,10 +504,10 @@ async function* fetchAllNodesStreaming(
 }
 
 // Usage
-async function syncWorkspace(workspaceSlug: string) {
+async function syncSpace(spaceSlug: string) {
   let processedCount = 0;
 
-  for await (const remoteNode of fetchAllNodesStreaming(workspaceSlug)) {
+  for await (const remoteNode of fetchAllNodesStreaming(spaceSlug)) {
     await processNode(remoteNode);
     processedCount++;
 
@@ -572,7 +572,7 @@ How to store skipped conflicts (due to timeout or user choice) for later manual 
 **Summary Cache**: `~/.mujarrad/cache/pending-conflicts.json`
 ```json
 {
-  "workspaceSlug": "my-workspace",
+  "spaceSlug": "my-space",
   "lastUpdated": "2025-10-12T10:15:32.000Z",
   "conflicts": [
     {
@@ -636,8 +636,8 @@ How to ensure existing `mujarrad init` behavior (without --sync flag) remains un
   // Step 1: Validate authentication (always)
   await validateAuth();
 
-  // Step 2: Validate workspace (always - new requirement)
-  await validateWorkspace(options.workspace);
+  // Step 2: Validate space (always - new requirement)
+  await validateSpace(options.space);
 
   // Step 3: Validate vault structure (always)
   await validateVault(vaultPath);
@@ -645,12 +645,12 @@ How to ensure existing `mujarrad init` behavior (without --sync flag) remains un
   // Step 4: Conditional sync behavior (NEW)
   if (options.sync) {
     // NEW SYNC WORKFLOW
-    await pullRemoteNodes(options.workspace);
-    await compareAndResolveConflicts(vaultPath, options.workspace);
-    await uploadLocalAheadFiles(vaultPath, options.workspace);
+    await pullRemoteNodes(options.space);
+    await compareAndResolveConflicts(vaultPath, options.space);
+    await uploadLocalAheadFiles(vaultPath, options.space);
   } else {
     // EXISTING ONE-WAY UPLOAD (unchanged)
-    await uploadVault(vaultPath, options.workspace, options.batchSize);
+    await uploadVault(vaultPath, options.space, options.batchSize);
   }
 });
 ```
@@ -661,10 +661,10 @@ How to ensure existing `mujarrad init` behavior (without --sync flag) remains un
 describe('init command - backward compatibility', () => {
   it('should perform one-way upload when --sync flag omitted', async () => {
     // No --sync flag
-    await runCommand('init', [vaultPath, '--workspace', 'test']);
+    await runCommand('init', [vaultPath, '--space', 'test']);
 
     // Verify: no pull, no conflict resolution
-    expect(mockWorkspaceApi.listNodes).not.toHaveBeenCalled();
+    expect(mockSpaceApi.listNodes).not.toHaveBeenCalled();
     expect(mockConflictResolver.resolveInteractive).not.toHaveBeenCalled();
 
     // Verify: upload called
@@ -678,7 +678,7 @@ describe('init command - backward compatibility', () => {
   it('should support all existing flags', async () => {
     await runCommand('init', [
       vaultPath,
-      '--workspace', 'test',
+      '--space', 'test',
       '--batch-size', '100'
     ]);
 
@@ -695,10 +695,10 @@ describe('init command - backward compatibility', () => {
 ```typescript
 describe('init command - sync mode', () => {
   it('should pull remote nodes when --sync flag provided', async () => {
-    await runCommand('init', [vaultPath, '--workspace', 'test', '--sync']);
+    await runCommand('init', [vaultPath, '--space', 'test', '--sync']);
 
     // Verify: pull called
-    expect(mockWorkspaceApi.listNodes).toHaveBeenCalled();
+    expect(mockSpaceApi.listNodes).toHaveBeenCalled();
     expect(mockSyncService.pullRemoteNodes).toHaveBeenCalled();
   });
 
@@ -707,7 +707,7 @@ describe('init command - sync mode', () => {
       { filePath: 'file.md', status: 'CONFLICTED' }
     ]);
 
-    await runCommand('init', [vaultPath, '--workspace', 'test', '--sync']);
+    await runCommand('init', [vaultPath, '--space', 'test', '--sync']);
 
     expect(mockConflictResolver.resolveInteractive).toHaveBeenCalled();
   });
@@ -791,9 +791,9 @@ export class VersionComparator {
 ### User Experience
 **With Git**:
 ```bash
-$ mujarrad init . --workspace myworkspace --sync
+$ mujarrad init . --space myspace --sync
 ✓ Authenticated
-✓ Workspace verified: myworkspace
+✓ Space verified: myspace
 ✓ Git detected - using enhanced change detection
 ↓ Pulling remote nodes (250 nodes)...
 ✓ Pulled 250 nodes
@@ -807,9 +807,9 @@ $ mujarrad init . --workspace myworkspace --sync
 
 **Without Git**:
 ```bash
-$ mujarrad init . --workspace myworkspace --sync
+$ mujarrad init . --space myspace --sync
 ✓ Authenticated
-✓ Workspace verified: myworkspace
+✓ Space verified: myspace
 ⚠ Git not detected - using hash-based change detection
 ↓ Pulling remote nodes (250 nodes)...
 ✓ Pulled 250 nodes
@@ -832,9 +832,9 @@ $ mujarrad init . --workspace myworkspace --sync
 
 ### Edge Case: Git Repository Not Initialized
 ```bash
-$ mujarrad init . --workspace myworkspace --sync
+$ mujarrad init . --space myspace --sync
 ✓ Authenticated
-✓ Workspace verified: myworkspace
+✓ Space verified: myspace
 ⚠ Git repository not initialized in vault
 ⚠ Falling back to full hash-based comparison
 ℹ️  Tip: Initialize Git (git init) for faster sync operations

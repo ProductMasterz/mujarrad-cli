@@ -7,7 +7,7 @@
 
 ## Summary
 
-Transform the `mujarrad init` command from one-way vault upload into a comprehensive bidirectional synchronization tool. The enhancement adds pre-flight workspace validation, remote content pull with version history tracking, three-way merge detection using backend-provided common ancestor information, interactive conflict resolution with timeout handling, and transactional download operations with rollback on failure. This addresses critical production issues where users waste time uploading to non-existent workspaces, lose remote edits during initialization, and face confusion about conflict handling.
+Transform the `mujarrad init` command from one-way vault upload into a comprehensive bidirectional synchronization tool. The enhancement adds pre-flight space validation, remote content pull with version history tracking, three-way merge detection using backend-provided common ancestor information, interactive conflict resolution with timeout handling, and transactional download operations with rollback on failure. This addresses critical production issues where users waste time uploading to non-existent spaces, lose remote edits during initialization, and face confusion about conflict handling.
 
 **Technical Approach**: Extend existing CLI TypeScript codebase with new synchronization logic that queries backend version history API to detect divergence between local and remote states. Implement transactional staging directory pattern for atomic downloads with rollback capability. Reuse existing UploadService, SyncService, and ConflictResolver classes where possible. Backend development required for version history API endpoint.
 
@@ -19,7 +19,7 @@ Transform the `mujarrad init` command from one-way vault upload into a comprehen
 **Testing**: Jest (unit + integration tests), nock (HTTP mocking)
 **Target Platform**: Node.js CLI (macOS, Linux, Windows)
 **Project Type**: Single project (CLI tool)
-**Performance Goals**: Workspace verification <2 seconds, pull 500 nodes in <60 seconds, handle 10,000 remote nodes without memory issues
+**Performance Goals**: Space verification <2 seconds, pull 500 nodes in <60 seconds, handle 10,000 remote nodes without memory issues
 **Constraints**: Must maintain backward compatibility (one-way upload when --sync omitted), atomic file operations (no partial writes), rollback on any download failure
 **Scale/Scope**: 37 functional requirements, 5 non-functional requirements, 4 new backend API dependencies
 
@@ -33,12 +33,12 @@ Transform the `mujarrad init` command from one-way vault upload into a comprehen
 
 **✅ API-First Design (Principle I - Adapted)**:
 - CLI consumes existing backend REST APIs
-- New backend endpoints required: GET `/api/workspaces/{slug}`, GET `/api/workspaces/{slug}/nodes`, GET `/api/nodes/{uuid}/versions/compare`
+- New backend endpoints required: GET `/api/spaces/{slug}`, GET `/api/spaces/{slug}/nodes`, GET `/api/nodes/{uuid}/versions/compare`
 - Backend team must provide OpenAPI contracts for new endpoints before CLI integration
 - **Status**: DEPENDENT - Backend API contracts required (see Dependencies section)
 
 **✅ Test-Driven Development (Principle III - Applies)**:
-- Unit tests required for all service methods (workspace verification, version comparison, conflict resolution)
+- Unit tests required for all service methods (space verification, version comparison, conflict resolution)
 - Integration tests required for file system operations (transactional download, rollback)
 - Contract tests required to validate API client behavior against backend OpenAPI specs
 - **Status**: PASS - Jest test framework already in place, TDD workflow will be followed
@@ -52,7 +52,7 @@ Transform the `mujarrad init` command from one-way vault upload into a comprehen
 **✅ Security by Default (Principle V - Applies)**:
 - Authentication tokens stored securely in system keychain via @napi-rs/keyring
 - All API requests include authentication token
-- Workspace access verified by backend before operations
+- Space access verified by backend before operations
 - **Status**: PASS - Existing authentication infrastructure in place
 
 **❌ Database Schema as Code (Principle II - Not Applicable)**:
@@ -67,8 +67,8 @@ Transform the `mujarrad init` command from one-way vault upload into a comprehen
 
 The following backend API endpoints are REQUIRED but do not yet exist. Backend development must be completed in parallel or before CLI implementation:
 
-1. **GET `/api/workspaces/{slug}`** - Workspace metadata retrieval (FR-001)
-2. **GET `/api/workspaces/{slug}/nodes`** - List all workspace nodes with pagination (FR-007)
+1. **GET `/api/spaces/{slug}`** - Space metadata retrieval (FR-001)
+2. **GET `/api/spaces/{slug}/nodes`** - List all space nodes with pagination (FR-007)
 3. **GET `/api/nodes/{uuid}/versions/compare`** - Node version comparison for common ancestor detection (FR-008)
 4. **GET `/api/nodes/{uuid}/content`** - Download individual node content (dependency from spec)
 
@@ -114,7 +114,7 @@ src/
 │   ├── UploadService.ts           # EXISTING - Upload orchestration (to be extended)
 │   ├── SyncService.ts             # EXISTING - Sync logic (to be reused)
 │   ├── ConflictResolver.ts        # EXISTING - Conflict resolution (to be reused)
-│   ├── WorkspaceValidator.ts      # NEW - Pre-flight workspace verification
+│   ├── SpaceValidator.ts      # NEW - Pre-flight space verification
 │   ├── VersionComparator.ts       # NEW - Three-way merge detection
 │   └── TransactionalDownloader.ts # NEW - Atomic download with rollback
 ├── filesystem/
@@ -139,7 +139,7 @@ tests/
 │   ├── commands/
 │   │   └── init.test.ts           # EXISTING - Init command tests (to be extended)
 │   ├── services/
-│   │   ├── WorkspaceValidator.test.ts      # NEW
+│   │   ├── SpaceValidator.test.ts      # NEW
 │   │   ├── VersionComparator.test.ts       # NEW
 │   │   └── TransactionalDownloader.test.ts # NEW
 │   └── ...
@@ -151,7 +151,7 @@ tests/
     └── backend-api.test.ts        # NEW - Validate CLI against backend OpenAPI spec
 ```
 
-**Structure Decision**: Single project structure maintained. This is a CLI enhancement within existing TypeScript/Node.js codebase. Three new service classes added for workspace validation, version comparison, and transactional downloads. Existing services (UploadService, SyncService, ConflictResolver) will be extended/reused. Backend API client will be regenerated from updated OpenAPI specification once backend endpoints are available.
+**Structure Decision**: Single project structure maintained. This is a CLI enhancement within existing TypeScript/Node.js codebase. Three new service classes added for space validation, version comparison, and transactional downloads. Existing services (UploadService, SyncService, ConflictResolver) will be extended/reused. Backend API client will be regenerated from updated OpenAPI specification once backend endpoints are available.
 
 ## Complexity Tracking
 
@@ -188,9 +188,9 @@ tests/
    - **Alternatives**: Set timeout on prompt vs. wrap prompt in Promise.race vs. use custom Inquirer plugin
 
 5. **Backend API Pagination Strategy**
-   - **Unknown**: Expected pagination format for GET `/api/workspaces/{slug}/nodes` (potentially 10,000+ nodes)
+   - **Unknown**: Expected pagination format for GET `/api/spaces/{slug}/nodes` (potentially 10,000+ nodes)
    - **Research**: Cursor-based vs. offset-based pagination, streaming downloads, memory-efficient processing
-   - **Decision Required**: How to handle workspaces exceeding memory limits (NFR-004: handle 10,000 nodes)
+   - **Decision Required**: How to handle spaces exceeding memory limits (NFR-004: handle 10,000 nodes)
 
 6. **Conflict Resolution Storage**
    - **Unknown**: Format for logging skipped conflicts for later manual resolution
@@ -220,19 +220,19 @@ tests/
 ### Deliverables
 
 1. **data-model.md**
-   - Entity: WorkspaceMetadata (slug, name, owner, nodeCount, userPermissions)
+   - Entity: SpaceMetadata (slug, name, owner, nodeCount, userPermissions)
    - Entity: RemoteNode (uuid, title, content, filePath, hash, lastModified, ancestorHash)
    - Entity: LocalFile (absolutePath, relativePath, content, hash, modificationTimestamp)
    - Entity: ComparisonResult (filePath, classification: IDENTICAL | LOCAL_ONLY | REMOTE_ONLY | LOCAL_AHEAD | REMOTE_AHEAD | CONFLICTED, localRef, remoteRef, ancestorHash)
    - Entity: ConflictResolution (filePath, strategy: KEEP_LOCAL | KEEP_REMOTE | SKIP, timestamp, reason)
-   - Entity: SyncSession (sessionId, workspaceSlug, startTime, downloadedNodes, uploadedNodes, skippedConflicts, status: IN_PROGRESS | COMPLETED | FAILED)
-   - State Machine: Sync Operation States (VALIDATING_WORKSPACE → PULLING_REMOTE → COMPARING → RESOLVING_CONFLICTS → UPLOADING_LOCAL → COMPLETED/FAILED)
+   - Entity: SyncSession (sessionId, spaceSlug, startTime, downloadedNodes, uploadedNodes, skippedConflicts, status: IN_PROGRESS | COMPLETED | FAILED)
+   - State Machine: Sync Operation States (VALIDATING_SPACE → PULLING_REMOTE → COMPARING → RESOLVING_CONFLICTS → UPLOADING_LOCAL → COMPLETED/FAILED)
    - Validation Rules: From FR-001 to FR-037 and NFR-001 to NFR-005
 
 2. **contracts/backend-api.yaml**
    - OpenAPI 3.0 specification for 4 required backend endpoints:
-     - GET `/api/workspaces/{slug}` (workspace metadata)
-     - GET `/api/workspaces/{slug}/nodes` (list nodes with pagination)
+     - GET `/api/spaces/{slug}` (space metadata)
+     - GET `/api/spaces/{slug}/nodes` (list nodes with pagination)
      - GET `/api/nodes/{uuid}/versions` (version history)
      - GET `/api/nodes/{uuid}/content` (download content)
    - Request/response schemas with examples
@@ -243,11 +243,11 @@ tests/
 3. **quickstart.md**
    - Installation: `npm install -g mujarrad-cli@latest`
    - Authentication: `mujarrad auth login`
-   - Workspace setup: Create workspace via web UI
-   - One-way upload (backward compatible): `mujarrad init . --workspace my-workspace`
-   - Bidirectional sync (new): `mujarrad init . --workspace my-workspace --sync`
+   - Space setup: Create space via web UI
+   - One-way upload (backward compatible): `mujarrad init . --space my-space`
+   - Bidirectional sync (new): `mujarrad init . --space my-space --sync`
    - Conflict resolution strategies: `--strategy KEEP_LOCAL | KEEP_REMOTE | SKIP`
-   - Troubleshooting: Common errors (workspace not found, network failures, timeout)
+   - Troubleshooting: Common errors (space not found, network failures, timeout)
    - Examples: Real-world scenarios with expected output
 
 **Output**: data-model.md, contracts/backend-api.yaml, quickstart.md

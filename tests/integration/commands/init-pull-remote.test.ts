@@ -3,7 +3,7 @@
  * Feature: 009-init-command-enhancement
  * Task: T022 - Integration test for full pull operation
  *
- * Purpose: Test complete pull flow from workspace with remote nodes
+ * Purpose: Test complete pull flow from space with remote nodes
  * Tests FR-007 (pull remote content), FR-016 (rollback), FR-036 (backward compat)
  *
  * TDD approach: This test is written BEFORE implementation and should FAIL initially
@@ -42,14 +42,14 @@ describe('Init Command - Remote Pull Integration', () => {
         nock.cleanAll();
     });
 
-    describe('Pull from Workspace with Remote Nodes', () => {
+    describe('Pull from Space with Remote Nodes', () => {
         it('should pull 10 remote nodes to local vault with --sync flag', () => {
-            // Mock workspace validation
+            // Mock space validation
             nock(baseURL)
-                .get('/api/workspaces/existing-workspace')
+                .get('/api/spaces/existing-space')
                 .reply(200, {
-                    slug: 'existing-workspace',
-                    name: 'Existing Workspace',
+                    slug: 'existing-space',
+                    name: 'Existing Space',
                     owner: 'test-user',
                     nodeCount: 10,
                     userPermissions: {
@@ -62,7 +62,7 @@ describe('Init Command - Remote Pull Integration', () => {
                     lastModified: '2025-10-12T14:22:33Z'
                 });
 
-            // Mock workspace nodes list (first 10 nodes)
+            // Mock space nodes list (first 10 nodes)
             const mockNodes = Array.from({ length: 10 }, (_, i) => ({
                 uuid: `node-${i}-uuid`,
                 title: `Note ${i}`,
@@ -75,7 +75,7 @@ describe('Init Command - Remote Pull Integration', () => {
             }));
 
             nock(baseURL)
-                .get('/api/workspaces/existing-workspace/nodes')
+                .get('/api/spaces/existing-space/nodes')
                 .reply(200, {
                     data: mockNodes,
                     pagination: {
@@ -87,7 +87,7 @@ describe('Init Command - Remote Pull Integration', () => {
             try {
                 // Execute init with --sync flag
                 const output = execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace existing-workspace --sync`,
+                    `node dist/index.js init ${testVaultDir} --space existing-space --sync`,
                     { encoding: 'utf8', timeout: 15000 }
                 );
 
@@ -122,13 +122,13 @@ describe('Init Command - Remote Pull Integration', () => {
             }
         });
 
-        it('should pull from empty workspace (no-op)', () => {
-            // Mock workspace validation
+        it('should pull from empty space (no-op)', () => {
+            // Mock space validation
             nock(baseURL)
-                .get('/api/workspaces/empty-workspace')
+                .get('/api/spaces/empty-space')
                 .reply(200, {
-                    slug: 'empty-workspace',
-                    name: 'Empty Workspace',
+                    slug: 'empty-space',
+                    name: 'Empty Space',
                     owner: 'test-user',
                     nodeCount: 0,
                     userPermissions: {
@@ -141,9 +141,9 @@ describe('Init Command - Remote Pull Integration', () => {
                     lastModified: '2025-10-12T14:22:33Z'
                 });
 
-            // Mock empty workspace nodes list
+            // Mock empty space nodes list
             nock(baseURL)
-                .get('/api/workspaces/empty-workspace/nodes')
+                .get('/api/spaces/empty-space/nodes')
                 .reply(200, {
                     data: [],
                     pagination: {
@@ -154,7 +154,7 @@ describe('Init Command - Remote Pull Integration', () => {
 
             try {
                 const output = execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace empty-workspace --sync`,
+                    `node dist/index.js init ${testVaultDir} --space empty-space --sync`,
                     { encoding: 'utf8', timeout: 10000 }
                 );
 
@@ -171,13 +171,13 @@ describe('Init Command - Remote Pull Integration', () => {
             }
         });
 
-        it('should handle pagination when workspace has >100 nodes', () => {
-            // Mock workspace validation
+        it('should handle pagination when space has >100 nodes', () => {
+            // Mock space validation
             nock(baseURL)
-                .get('/api/workspaces/large-workspace')
+                .get('/api/spaces/large-space')
                 .reply(200, {
-                    slug: 'large-workspace',
-                    name: 'Large Workspace',
+                    slug: 'large-space',
+                    name: 'Large Space',
                     owner: 'test-user',
                     nodeCount: 250,
                     userPermissions: {
@@ -203,7 +203,7 @@ describe('Init Command - Remote Pull Integration', () => {
             }));
 
             nock(baseURL)
-                .get('/api/workspaces/large-workspace/nodes')
+                .get('/api/spaces/large-space/nodes')
                 .reply(200, {
                     data: firstPageNodes,
                     pagination: {
@@ -225,7 +225,7 @@ describe('Init Command - Remote Pull Integration', () => {
             }));
 
             nock(baseURL)
-                .get('/api/workspaces/large-workspace/nodes')
+                .get('/api/spaces/large-space/nodes')
                 .query({ cursor: 'eyJsYXN0SWQiOjEwMH0=' })
                 .reply(200, {
                     data: secondPageNodes,
@@ -248,7 +248,7 @@ describe('Init Command - Remote Pull Integration', () => {
             }));
 
             nock(baseURL)
-                .get('/api/workspaces/large-workspace/nodes')
+                .get('/api/spaces/large-space/nodes')
                 .query({ cursor: 'eyJsYXN0SWQiOjIwMH0=' })
                 .reply(200, {
                     data: thirdPageNodes,
@@ -260,7 +260,7 @@ describe('Init Command - Remote Pull Integration', () => {
 
             try {
                 const output = execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace large-workspace --sync`,
+                    `node dist/index.js init ${testVaultDir} --space large-space --sync`,
                     { encoding: 'utf8', timeout: 30000 }
                 );
 
@@ -277,12 +277,12 @@ describe('Init Command - Remote Pull Integration', () => {
 
     describe('Rollback on Download Failure (FR-016)', () => {
         it('should rollback when download fails mid-operation', () => {
-            // Mock workspace validation
+            // Mock space validation
             nock(baseURL)
-                .get('/api/workspaces/fail-workspace')
+                .get('/api/spaces/fail-space')
                 .reply(200, {
-                    slug: 'fail-workspace',
-                    name: 'Fail Workspace',
+                    slug: 'fail-space',
+                    name: 'Fail Space',
                     owner: 'test-user',
                     nodeCount: 5,
                     userPermissions: {
@@ -308,7 +308,7 @@ describe('Init Command - Remote Pull Integration', () => {
             }));
 
             nock(baseURL)
-                .get('/api/workspaces/fail-workspace/nodes')
+                .get('/api/spaces/fail-space/nodes')
                 .reply(200, {
                     data: mockNodes,
                     pagination: {
@@ -328,7 +328,7 @@ describe('Init Command - Remote Pull Integration', () => {
 
             try {
                 execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace fail-workspace --sync`,
+                    `node dist/index.js init ${testVaultDir} --space fail-space --sync`,
                     { encoding: 'utf8', timeout: 15000 }
                 );
 
@@ -356,12 +356,12 @@ describe('Init Command - Remote Pull Integration', () => {
 
     describe('Backward Compatibility (FR-036)', () => {
         it('should skip pull phase when --sync flag is NOT provided', () => {
-            // Mock workspace validation
+            // Mock space validation
             nock(baseURL)
-                .get('/api/workspaces/compat-workspace')
+                .get('/api/spaces/compat-space')
                 .reply(200, {
-                    slug: 'compat-workspace',
-                    name: 'Compat Workspace',
+                    slug: 'compat-space',
+                    name: 'Compat Space',
                     owner: 'test-user',
                     nodeCount: 5,
                     userPermissions: {
@@ -377,7 +377,7 @@ describe('Init Command - Remote Pull Integration', () => {
             try {
                 // Execute init WITHOUT --sync flag (backward compatible one-way upload)
                 const output = execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace compat-workspace`,
+                    `node dist/index.js init ${testVaultDir} --space compat-space`,
                     { encoding: 'utf8', timeout: 10000 }
                 );
 
@@ -385,7 +385,7 @@ describe('Init Command - Remote Pull Integration', () => {
                 expect(output).not.toContain('Pulling remote content');
 
                 // Verify nodes API was NOT called
-                expect(nock.pendingMocks()).not.toContain('GET https://mujarrad.onrender.com/api/workspaces/compat-workspace/nodes');
+                expect(nock.pendingMocks()).not.toContain('GET https://mujarrad.onrender.com/api/spaces/compat-space/nodes');
 
             } catch (error: any) {
                 if (!error.message.includes('Authentication required')) {
@@ -394,10 +394,10 @@ describe('Init Command - Remote Pull Integration', () => {
             }
         });
 
-        it('should maintain existing flags compatibility (--workspace, --batch-size)', () => {
-            // Mock workspace validation
+        it('should maintain existing flags compatibility (--space, --batch-size)', () => {
+            // Mock space validation
             nock(baseURL)
-                .get('/api/workspaces/flag-test')
+                .get('/api/spaces/flag-test')
                 .reply(200, {
                     slug: 'flag-test',
                     name: 'Flag Test',
@@ -416,11 +416,11 @@ describe('Init Command - Remote Pull Integration', () => {
             try {
                 // Test existing flags still work
                 const output = execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace flag-test --batch-size 100`,
+                    `node dist/index.js init ${testVaultDir} --space flag-test --batch-size 100`,
                     { encoding: 'utf8', timeout: 10000 }
                 );
 
-                // Verify workspace flag works
+                // Verify space flag works
                 expect(output).toContain('flag-test');
 
                 // Verify batch-size flag works
@@ -436,12 +436,12 @@ describe('Init Command - Remote Pull Integration', () => {
 
     describe('Error Handling', () => {
         it('should handle network timeout during pull', () => {
-            // Mock workspace validation
+            // Mock space validation
             nock(baseURL)
-                .get('/api/workspaces/timeout-workspace')
+                .get('/api/spaces/timeout-space')
                 .reply(200, {
-                    slug: 'timeout-workspace',
-                    name: 'Timeout Workspace',
+                    slug: 'timeout-space',
+                    name: 'Timeout Space',
                     owner: 'test-user',
                     nodeCount: 1,
                     userPermissions: {
@@ -456,12 +456,12 @@ describe('Init Command - Remote Pull Integration', () => {
 
             // Mock timeout during nodes list
             nock(baseURL)
-                .get('/api/workspaces/timeout-workspace/nodes')
+                .get('/api/spaces/timeout-space/nodes')
                 .replyWithError({ code: 'ETIMEDOUT', message: 'Request timeout' });
 
             try {
                 execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace timeout-workspace --sync`,
+                    `node dist/index.js init ${testVaultDir} --space timeout-space --sync`,
                     { encoding: 'utf8', timeout: 15000 }
                 );
 

@@ -4,7 +4,7 @@
 
 ## Overview
 
-This document records technical decisions for the Mujarrad CLI tool that enables bidirectional synchronization between Obsidian vaults and Mujarrad workspaces. All architectural decisions are based on CLI requirements and backend API analysis.
+This document records technical decisions for the Mujarrad CLI tool that enables bidirectional synchronization between Obsidian vaults and Mujarrad spaces. All architectural decisions are based on CLI requirements and backend API analysis.
 
 **Key Insight**: The backend API already exists and is consumed as an external service. The CLI is a desktop tool that orchestrates file operations and API calls.
 
@@ -33,7 +33,7 @@ This document records technical decisions for the Mujarrad CLI tool that enables
 - Most popular Node.js CLI framework (28k+ GitHub stars)
 - Excellent documentation and community support
 - Built-in help generation
-- Subcommand support (auth, workspace, upload, etc.)
+- Subcommand support (auth, space, upload, etc.)
 - Git-style command syntax
 
 **Alternatives Considered**:
@@ -170,7 +170,7 @@ unified()
 ```yaml
 # ~/.mujarrad/config.yml
 apiUrl: https://api.example.com
-defaultWorkspace: workspace-uuid
+defaultSpace: space-uuid
 conflictResolution: last-write-wins  # or 'local-wins', 'remote-wins', 'interactive'
 batchSize: 100
 logLevel: info
@@ -292,8 +292,8 @@ CLI (Desktop)                Backend (External Service)
      |-- POST /api/auth/login ------->|
      |<-- 200 OK (JWT token) ---------|
      |                                |
-     |-- POST /api/workspaces ------->|
-     |<-- 201 Created (workspace) ----|
+     |-- POST /api/spaces ------->|
+     |<-- 201 Created (space) ----|
      |                                |
      |-- POST /upload/batch --------->|
      |<-- 202 Accepted (session) -----|
@@ -317,8 +317,8 @@ CLI (Desktop)                Backend (External Service)
 2. Split into batches of 100 files
 3. For each batch:
    - Parse files (extract wikilinks, canvas nodes)
-   - Upload via `POST /api/workspaces/{id}/upload/batch`
-   - Poll `GET /api/workspaces/{id}/upload/status` until processed
+   - Upload via `POST /api/spaces/{id}/upload/batch`
+   - Poll `GET /api/spaces/{id}/upload/status` until processed
    - Log progress to `~/.mujarrad/logs/upload-{session-id}.log`
 4. On failure: Store session ID, allow `mujarrad upload resume <session-id>`
 
@@ -338,7 +338,7 @@ CLI (Desktop)                Backend (External Service)
 
 **Process**:
 1. Calculate SHA-256 hash for each local file
-2. Send hashes to `POST /api/workspaces/{id}/sync/detect`
+2. Send hashes to `POST /api/spaces/{id}/sync/detect`
 3. Backend compares with NodeVersion timestamps
 4. Backend returns 3 arrays:
    - `localChanges`: Files modified locally since last sync
@@ -437,7 +437,7 @@ async function atomicWrite(filePath: string, content: string): Promise<void> {
 ```json
 {
   "version": "1.0",
-  "workspaceId": "workspace-uuid",
+  "spaceId": "space-uuid",
   "mappings": {
     "Projects/Mujarrad/spec.md": "node-uuid-1",
     "Projects/Mujarrad/plan.md": "node-uuid-2",
@@ -561,7 +561,7 @@ npx mujarrad-cli upload /path/to/vault
 - Compress file content before upload (gzip)
 - Use HTTP/2 multiplexing (multiple requests over single connection)
 
-### NFR-002: 1000-node workspace clone in <3 minutes
+### NFR-002: 1000-node space clone in <3 minutes
 
 **Strategy**:
 - Stream download: Write files as received (don't buffer entire ZIP in memory)
@@ -634,7 +634,7 @@ const apiClient = axios.create({
 
 **Validations**:
 - Vault paths: Must exist, must be directory, must be readable
-- Workspace IDs: Must be valid UUID
+- Space IDs: Must be valid UUID
 - Email: Must be valid email format
 - Session IDs: Must be valid UUID
 
@@ -690,7 +690,7 @@ function validateVaultPath(vaultPath: string, baseDir: string): void {
 
 **Performance Tests**:
 - Upload 1000-file vault → assert <5 minutes (NFR-001)
-- Clone 1000-node workspace → assert <3 minutes (NFR-002)
+- Clone 1000-node space → assert <3 minutes (NFR-002)
 
 ## Conclusion
 

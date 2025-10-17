@@ -76,14 +76,14 @@ describe('ErrorHandler', () => {
       const error = {
         response: {
           status: 404,
-          data: { error: 'Workspace not found' }
+          data: { error: 'Space not found' }
         }
       };
 
       const result = errorHandler.handleApiError(error);
 
       expect(result.statusCode).toBe(404);
-      expect(result.message).toBe('Not found: Workspace not found');
+      expect(result.message).toBe('Not found: Space not found');
       expect(result.userMessage).toContain('requested resource was not found');
       expect(result.canRetry).toBe(false);
     });

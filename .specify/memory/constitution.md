@@ -66,14 +66,14 @@ All operations that modify multiple entities MUST execute within database transa
 
 ### V. Security by Default
 
-Authentication MUST be enforced on all endpoints except health checks. API tokens MUST be stored hashed. Workspace access MUST be verified before any operation. User-provided data MUST be validated and sanitized before database operations.
+Authentication MUST be enforced on all endpoints except health checks. API tokens MUST be stored hashed. Space access MUST be verified before any operation. User-provided data MUST be validated and sanitized before database operations.
 
-**Rationale**: NFR-017, NFR-018, NFR-020 require HTTPS, no plaintext credentials, and workspace-level access control.
+**Rationale**: NFR-017, NFR-018, NFR-020 require HTTPS, no plaintext credentials, and space-level access control.
 
 **Non-Negotiable Requirements**:
 - Spring Security MUST protect all `/api/**` endpoints
 - Passwords/tokens MUST use BCrypt or Argon2
-- Workspace ownership MUST be verified in service layer (not just controller)
+- Space ownership MUST be verified in service layer (not just controller)
 - SQL injection prevention via JPA prepared statements
 
 ### VI. Sample Data & Live Reference
@@ -107,7 +107,7 @@ void shouldUploadRealWorldBusinessModelCanvasVault() {
         .map(Path::toFile)
         .collect(Collectors.toList());
 
-    UploadSessionResponse response = uploadService.uploadBatch(workspaceId, files);
+    UploadSessionResponse response = uploadService.uploadBatch(spaceId, files);
 
     // Verify realistic performance with actual business content
     assertThat(response.getProcessedFiles()).isGreaterThan(50);
@@ -119,14 +119,14 @@ void shouldUploadRealWorldBusinessModelCanvasVault() {
 
 ### REST Conventions
 
-- Resource naming: plural nouns (`/workspaces`, `/nodes`, not `/workspace`, `/node`)
+- Resource naming: plural nouns (`/spaces`, `/nodes`, not `/space`, `/node`)
 - HTTP verbs: GET (read), POST (create), PUT (replace), PATCH (update), DELETE (remove)
 - Status codes: 200 (success), 201 (created), 204 (no content), 400 (bad request), 401 (unauthorized), 403 (forbidden), 404 (not found), 409 (conflict), 500 (server error)
 - Error responses MUST include `code`, `message`, `timestamp` fields per spec (lines 911-921)
 
 ### Versioning Strategy
 
-- URI versioning: `/api/v1/workspaces`, `/api/v2/workspaces`
+- URI versioning: `/api/v1/spaces`, `/api/v2/spaces`
 - Version increments:
   - v1 → v2: Breaking change (field removed, type changed, endpoint removed)
   - v1.1: Non-breaking addition (new optional field, new endpoint)

@@ -10,7 +10,7 @@
 
 | Obsidian Concept | Obsidian Type | Mujarrad Entity | Mujarrad Type | Key Details |
 |---|---|---|---|---|
-| **Vault** | Directory | `Workspace` | Workspace | Root container for all content |
+| **Vault** | Directory | `Space` | Space | Root container for all content |
 | **Note File** | `.md` file | `Node` | nodeType=REGULAR | Content stored in `Node.content` |
 | **Folder** | Directory | `Node` | nodeType=CONTEXT | Organizational container (no content) |
 | **Canvas File** | `.canvas` file | `Node` + `Mapping` + `NodeMapping` | nodeType=CONTEXT | **Normalized storage**: canvas config, visual layout, mappings |
@@ -20,8 +20,8 @@
 | **Markdown Link** | `[text](url)` | `Attribute` | Relationship | Similar to wikilink |
 | **Folder Hierarchy** | Nested dirs | `Attribute` chain | CONTAINS type | Parent-child relationships |
 | **Git Commit** | Version control | `NodeVersion` | Version history | Tracks changes over time |
-| **Template Config File** | JSON/YAML file | `WorkspaceTemplate` metadata | Template reference | Links workspace to template |
-| **Workspace Template** | Blueprint structure | `WorkspaceTemplate` | Entity | Pre-defined knowledge graph |
+| **Template Config File** | JSON/YAML file | `SpaceTemplate` metadata | Template reference | Links space to template |
+| **Space Template** | Blueprint structure | `SpaceTemplate` | Entity | Pre-defined knowledge graph |
 | **Context Template** | Framework pattern | `ContextTemplate` | Entity or Node | Reusable structure (e.g., BMC) |
 
 ---
@@ -235,14 +235,14 @@ Canvas File (.canvas)         →    Node (CONTEXT)
 │  │  │  4. Manage authentication tokens                      │  │ │
 │  │  │  5. Build HTTP API requests                           │  │ │
 │  │  │  6. Handle API responses                              │  │ │
-│  │  │  7. Cache workspace structure                         │  │ │
+│  │  │  7. Cache space structure                         │  │ │
 │  │  │  8. Reconstruct Obsidian files from API data          │  │ │
 │  │  └──────────────────────────────────────────────────────┘  │ │
 │  │  ┌──────────────────────────────────────────────────────┐  │ │
 │  │  │  Local Storage:                                       │  │ │
 │  │  │  ~/.mujarrad/                                         │  │ │
 │  │  │    ├─ credentials.json (tokens, perms 600)            │  │ │
-│  │  │    ├─ cache/{workspace-slug}/structure.json           │  │ │
+│  │  │    ├─ cache/{space-slug}/structure.json           │  │ │
 │  │  │    └─ logs/cli.log (debug info)                       │  │ │
 │  │  └──────────────────────────────────────────────────────┘  │ │
 │  └────────────────────────────────────────────────────────────┘ │
@@ -264,43 +264,43 @@ Canvas File (.canvas)         →    Node (CONTEXT)
 │  │    POST /api/auth/login                                     │ │
 │  │    POST /api/auth/refresh                                   │ │
 │  │                                                             │ │
-│  │  Workspaces:                                                │ │
-│  │    GET  /api/workspaces                                     │ │
-│  │    POST /api/workspaces                                     │ │
-│  │    GET  /api/workspaces/{id}                                │ │
+│  │  Spaces:                                                │ │
+│  │    GET  /api/spaces                                     │ │
+│  │    POST /api/spaces                                     │ │
+│  │    GET  /api/spaces/{id}                                │ │
 │  │                                                             │ │
 │  │  Templates:                                                 │ │
 │  │    GET  /api/templates                                      │ │
-│  │    POST /api/workspaces/clone-from-template                 │ │
+│  │    POST /api/spaces/clone-from-template                 │ │
 │  │                                                             │ │
 │  │  Upload (Session-Based):                                    │ │
-│  │    POST /api/workspaces/{id}/upload/init                    │ │
-│  │    POST /api/workspaces/{id}/upload/nodes                   │ │
-│  │    POST /api/workspaces/{id}/upload/canvas                  │ │
-│  │    POST /api/workspaces/{id}/upload/attributes              │ │
-│  │    POST /api/workspaces/{id}/upload/complete                │ │
+│  │    POST /api/spaces/{id}/upload/init                    │ │
+│  │    POST /api/spaces/{id}/upload/nodes                   │ │
+│  │    POST /api/spaces/{id}/upload/canvas                  │ │
+│  │    POST /api/spaces/{id}/upload/attributes              │ │
+│  │    POST /api/spaces/{id}/upload/complete                │ │
 │  │                                                             │ │
 │  │  Clone/Export:                                              │ │
-│  │    GET  /api/workspaces/{id}/export                         │ │
-│  │    GET  /api/workspaces/{id}/export/incremental             │ │
+│  │    GET  /api/spaces/{id}/export                         │ │
+│  │    GET  /api/spaces/{id}/export/incremental             │ │
 │  │                                                             │ │
 │  │  Sync (Session-Based):                                      │ │
-│  │    POST /api/workspaces/{id}/sync/init                      │ │
-│  │    POST /api/workspaces/{id}/sync/push                      │ │
-│  │    GET  /api/workspaces/{id}/sync/pull                      │ │
-│  │    POST /api/workspaces/{id}/sync/complete                  │ │
+│  │    POST /api/spaces/{id}/sync/init                      │ │
+│  │    POST /api/spaces/{id}/sync/push                      │ │
+│  │    GET  /api/spaces/{id}/sync/pull                      │ │
+│  │    POST /api/spaces/{id}/sync/complete                  │ │
 │  │                                                             │ │
 │  │  Version History:                                           │ │
 │  │    GET  /api/nodes/{id}/versions                            │ │
 │  │                                                             │ │
 │  │  Sharing:                                                   │ │
-│  │    POST /api/workspaces/{id}/share                          │ │
-│  │    GET  /api/workspaces/{id}/members                        │ │
+│  │    POST /api/spaces/{id}/share                          │ │
+│  │    GET  /api/spaces/{id}/members                        │ │
 │  └────────────────────────────────────────────────────────────┘ │
 │                              ↕                                   │
 │  ┌────────────────────────────────────────────────────────────┐ │
 │  │                 Service Layer (Business Logic)              │ │
-│  │  • WorkspaceService                                         │ │
+│  │  • SpaceService                                         │ │
 │  │  • NodeService                                              │ │
 │  │  • MappingService (canvas visual data)                      │ │
 │  │  • SyncService                                              │ │
@@ -311,8 +311,8 @@ Canvas File (.canvas)         →    Node (CONTEXT)
 │  │                    PostgreSQL Database                      │ │
 │  │                                                             │ │
 │  │  Tables (Normalized Storage):                               │ │
-│  │    • WORKSPACES                                             │ │
-│  │    • USERS, WORKSPACE_USERS                                 │ │
+│  │    • SPACES                                             │ │
+│  │    • USERS, SPACE_USERS                                 │ │
 │  │    • NODES (nodeType: REGULAR, CONTEXT)                     │ │
 │  │    • NODE_VERSIONS (git commit history)                     │ │
 │  │    • ATTRIBUTES (relationships, edges)                      │ │
@@ -418,17 +418,17 @@ Canvas File (.canvas)         →    Node (CONTEXT)
 │              │ Business Model Canvas  │                          │                     │
 │              │ (9 components)         │                          │                     │
 │              │                        │                          │                     │
-│              │ POST /workspaces/      ────>  Create workspace───────> INSERT nodes     │
+│              │ POST /spaces/      ────>  Create space───────> INSERT nodes     │
 │              │   clone-from-template  │      from template       │     (9 placeholders)│
 │              │ {templateId: "uuid",   │                          │     INSERT mappings │
-│              │  workspaceName: "...") │                          │     INSERT node_    │
+│              │  spaceName: "...") │                          │     INSERT node_    │
 │              │                        │                          │       mappings      │
-│              │                  <───────────  {workspaceId,      │     INSERT attrs    │
+│              │                  <───────────  {spaceId,      │     INSERT attrs    │
 │              │                        │       nodes: [...]}      │                     │
 │              │                        │                          │                     │
-│              │ GET /workspaces/       ────>  Export full     ───────> SELECT nodes,    │
+│              │ GET /spaces/       ────>  Export full     ───────> SELECT nodes,    │
 │              │   {id}/export          │      structure           │     mappings,       │
-│              │                  <───────────  {workspace,        │     node_mappings,  │
+│              │                  <───────────  {space,        │     node_mappings,  │
 │              │                        │       nodes,             │     attributes      │
 │              │                        │       mappings,          │                     │
 │              │                        │       nodeMappings,      │                     │
@@ -455,7 +455,7 @@ Canvas File (.canvas)         →    Node (CONTEXT)
 │              │ git add .              │                          │                     │
 │              │ git commit -m "..."    │                          │                     │
 │              │                        │                          │                     │
-│ Workspace    │                        │                          │                     │
+│ Space    │                        │                          │                     │
 │ cloned! ✓    │                        │                          │                     │
 │ Open in      │                        │                          │                     │
 │ Obsidian     │                        │                          │                     │
@@ -651,7 +651,7 @@ This section shows how canvas data flows from Obsidian through the CLI to the AP
 
 ---
 
-## 👤 User Journey: From Template to AI-Powered Workspace
+## 👤 User Journey: From Template to AI-Powered Space
 
 This section illustrates the complete user experience across different scenarios.
 
@@ -690,16 +690,16 @@ Sarah selects: "Business Model Canvas"
 
 ──────────────────────────────────────────────────────────────────
 
-STEP 2: Clone Template to Create Workspace
+STEP 2: Clone Template to Create Space
 ──────────────────────────────────────────────────────────────────
 Sarah's Terminal:
 $ mujarrad clone --template "business-model-canvas" \
-                 --workspace "my-saas-startup" \
+                 --space "my-saas-startup" \
                  --local-path ~/Documents/MyStartup
 
 Mujarrad Backend Processing:
 ✓ Retrieved template: Business Model Canvas
-✓ Created workspace: "my-saas-startup"
+✓ Created space: "my-saas-startup"
 ✓ Cloned 9 placeholder nodes (Key Partners, Value Props, etc.)
 ✓ Cloned canvas layout with visual configuration
 ✓ Generated template.config.json
@@ -707,7 +707,7 @@ Mujarrad Backend Processing:
 ✓ Created Obsidian vault at ~/Documents/MyStartup
 
 Result:
-Workspace ready! Open in Obsidian to start filling in your business model.
+Space ready! Open in Obsidian to start filling in your business model.
 
 ──────────────────────────────────────────────────────────────────
 
@@ -805,7 +805,7 @@ Mujarrad Backend Processing:
 ✓ Preserved template reference metadata
 ✓ Maintained canvas structure
 
-Sync complete! All changes saved to Mujarrad workspace.
+Sync complete! All changes saved to Mujarrad space.
 
 ──────────────────────────────────────────────────────────────────
 
@@ -817,7 +817,7 @@ Sarah's Request (via Mujarrad web interface):
 "Analyze my business model and suggest improvements for customer acquisition"
 
 Mujarrad AI Processing:
-1. Identifies workspace template: Business Model Canvas
+1. Identifies space template: Business Model Canvas
 2. Fetches template.config.json as contextual map
 3. AI now understands:
    - "Value Propositions" = what startup offers
@@ -859,14 +859,14 @@ because the template acted as a contextual map!
 
 STEP 7: Iterate and Collaborate
 ──────────────────────────────────────────────────────────────────
-Sarah shares workspace with her co-founder:
+Sarah shares space with her co-founder:
 
-$ mujarrad share --workspace "my-saas-startup" \
+$ mujarrad share --space "my-saas-startup" \
                  --user "john@startup.com" \
                  --permission "edit"
 
-John clones the workspace:
-$ mujarrad clone --workspace "my-saas-startup" \
+John clones the space:
+$ mujarrad clone --space "my-saas-startup" \
                  --local-path ~/Documents/OurStartup
 
 Both Sarah and John can:
@@ -919,7 +919,7 @@ STEP 2: Upload to Mujarrad
 ──────────────────────────────────────────────────────────────────
 Marcus's Terminal:
 $ cd ~/Documents/ProductVault
-$ mujarrad upload --workspace "product-management" \
+$ mujarrad upload --space "product-management" \
                   --create
 
 Mujarrad Backend Processing:
@@ -934,7 +934,7 @@ Uploading...
 [████████████████████] 100%
 
 Results:
-✓ Created workspace: "product-management"
+✓ Created space: "product-management"
 ✓ Created 147 REGULAR nodes (notes)
 ✓ Created 4 CONTEXT nodes (folders)
 ✓ Created 1 CONTEXT node (canvas)
@@ -952,7 +952,7 @@ STEP 3: Marcus Checks Embedded Metadata
 Marcus opens Features.md in Obsidian:
 
 <!-- mujarrad-node-id: aaa111bb-2222-3333-4444-555566667777 -->
-<!-- mujarrad-workspace-id: bbb222cc-3333-4444-5555-666677778888 -->
+<!-- mujarrad-space-id: bbb222cc-3333-4444-5555-666677778888 -->
 
 # Mobile App Features
 
@@ -965,16 +965,16 @@ The metadata is hidden (HTML comments don't show in reading mode)
 
 ──────────────────────────────────────────────────────────────────
 
-STEP 4: Team Member Clones Workspace
+STEP 4: Team Member Clones Space
 ──────────────────────────────────────────────────────────────────
 Marcus's designer, Elena, joins:
 
 Elena's Terminal:
-$ mujarrad clone --workspace "product-management" \
+$ mujarrad clone --space "product-management" \
                  --local-path ~/Documents/ProductWork
 
 Mujarrad Backend Processing:
-✓ Retrieved workspace structure
+✓ Retrieved space structure
 ✓ Recreating folder hierarchy...
   - Projects/Mobile App/
   - Projects/Web Platform/
@@ -1047,7 +1047,7 @@ STEP 1: Clone Research Template
 ──────────────────────────────────────────────────────────────────
 Lisa's Terminal:
 $ mujarrad clone --template "research-methodology" \
-                 --workspace "ml-research-2025" \
+                 --space "ml-research-2025" \
                  --local-path ~/Research/ML2025
 
 Template includes:
@@ -1160,9 +1160,9 @@ she missed across 3 months of research!
 
 STEP 5: Collaboration with Advisor
 ──────────────────────────────────────────────────────────────────
-Lisa shares workspace with her PhD advisor:
+Lisa shares space with her PhD advisor:
 
-$ mujarrad share --workspace "ml-research-2025" \
+$ mujarrad share --space "ml-research-2025" \
                  --user "advisor@university.edu" \
                  --permission "view"
 
@@ -1193,7 +1193,7 @@ KNOWLEDGE: Expert in both business strategy and Obsidian
 STEP 1: Clone Standard Template
 ──────────────────────────────────────────────────────────────────
 $ mujarrad clone --template "business-model-canvas" \
-                 --workspace "client-acme-corp" \
+                 --space "client-acme-corp" \
                  --local-path ~/Clients/AcmeCorp
 
 Standard BMC template cloned with 9 building blocks.
@@ -1222,7 +1222,7 @@ Mujarrad Backend Processing:
 ✓ Created new REGULAR nodes (Risk Analysis, etc.)
 ✓ Updated canvas CONTEXT node content (modified layout)
 ✓ PRESERVED template reference (templateId maintained)
-✓ Marked workspace as "evolved from template"
+✓ Marked space as "evolved from template"
 
 ──────────────────────────────────────────────────────────────────
 
@@ -1269,7 +1269,7 @@ Alex receives notification:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Template Update Available
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Your workspace "client-acme-corp" was created from:
+Your space "client-acme-corp" was created from:
   Business Model Canvas v1.0
 
 A new version is available:
@@ -1280,7 +1280,7 @@ Changes:
   + Updated: Visual layout improved
   + Updated: Guidance text for all sections
 
-Your workspace has custom modifications. Options:
+Your space has custom modifications. Options:
   1. View changes only (keep current version)
   2. Merge new components (add Sustainability, keep customs)
   3. Full upgrade (lose customizations, not recommended)
@@ -1288,7 +1288,7 @@ Your workspace has custom modifications. Options:
 Alex chooses: Option 2 (Merge)
 
 Mujarrad Backend Processing:
-✓ Added "Sustainability Impact.md" to workspace
+✓ Added "Sustainability Impact.md" to space
 ✓ Preserved custom nodes (Risk Analysis, etc.)
 ✓ Updated guidance text where no conflicts
 ✓ Kept custom canvas layout
@@ -1460,12 +1460,12 @@ Attribute Table (Canvas Edges):
 
 ---
 
-### Example 3: Clone Workspace to Obsidian
+### Example 3: Clone Space to Obsidian
 
 ```
 MUJARRAD:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Workspace: "My Business"
+Space: "My Business"
 
 Nodes:
 1. CONTEXT: "Projects" (folder)
@@ -1482,7 +1482,7 @@ Attributes:
 
 ```
 Step 1: Create Vault Directory
-  └─ Directory: "My Business/" (from Workspace.slug)
+  └─ Directory: "My Business/" (from Space.slug)
 
 Step 2: Process CONTEXT Node "Projects"
   └─ Create folder: "My Business/Projects/"
@@ -1540,7 +1540,7 @@ My Business/
 
 ```markdown
 <!-- mujarrad-node-id: 550e8400-e29b-41d4-a716-446655440000 -->
-<!-- mujarrad-workspace-id: 123e4567-e89b-12d3-a456-426614174000 -->
+<!-- mujarrad-space-id: 123e4567-e89b-12d3-a456-426614174000 -->
 
 # Project Plan
 
@@ -1549,7 +1549,7 @@ This is the content of the note...
 
 **Mapping:**
 - `mujarrad-node-id` → Links to `Node.id` in database
-- `mujarrad-workspace-id` → Links to `Workspace.id` in database
+- `mujarrad-space-id` → Links to `Space.id` in database
 - Hidden via HTML comments (invisible in Obsidian reading mode)
 
 ---
@@ -1766,7 +1766,7 @@ Use this checklist to verify correct mapping implementation:
 
 ### Upload (Obsidian → Mujarrad)
 
-- [ ] Vault directory maps to Workspace
+- [ ] Vault directory maps to Space
 - [ ] Each .md file creates REGULAR Node
 - [ ] Each folder creates CONTEXT Node
 - [ ] Each .canvas file creates CONTEXT Node with JSON in content
@@ -1779,7 +1779,7 @@ Use this checklist to verify correct mapping implementation:
 
 ### Clone (Mujarrad → Obsidian)
 
-- [ ] Workspace maps to vault directory
+- [ ] Space maps to vault directory
 - [ ] REGULAR Nodes generate .md files
 - [ ] CONTEXT Nodes (folders) generate directories
 - [ ] CONTEXT Nodes (canvases) generate .canvas files
@@ -1807,13 +1807,13 @@ Use this checklist to verify correct mapping implementation:
 ### Template Concepts
 
 The template system enables users to:
-1. **Clone pre-structured workspaces** from templates (boilerplate functionality)
+1. **Clone pre-structured spaces** from templates (boilerplate functionality)
 2. **Indicate knowledge graph structure** for AI contextual mapping
 
 ### Template Entity Relationships
 
 ```
-WorkspaceTemplate (e.g., "Business Model Canvas")
+SpaceTemplate (e.g., "Business Model Canvas")
 ├── Contains multiple ContextTemplate entities
 │   ├── ContextTemplate 1: "Business Model Canvas"
 │   ├── ContextTemplate 2: "Value Proposition Canvas"
@@ -1826,27 +1826,27 @@ WorkspaceTemplate (e.g., "Business Model Canvas")
 │
 └── Generates:
     ├── Template config file (JSON/YAML)
-    └── Template reference metadata in Workspace
+    └── Template reference metadata in Space
 ```
 
 ### Template Clone Flow
 
 ```
 USER ACTION:
-CLI command: mujarrad clone --template "business-model-canvas" --workspace "my-startup"
+CLI command: mujarrad clone --template "business-model-canvas" --space "my-startup"
 
 MUJARRAD BACKEND:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step 1: Retrieve WorkspaceTemplate
+Step 1: Retrieve SpaceTemplate
   └─ Find template: "Business Model Canvas"
 
-Step 2: Create new Workspace
+Step 2: Create new Space
   ├─ name: "My Startup"
   ├─ slug: "my-startup"
-  └─ templateId: <WorkspaceTemplate.id>
+  └─ templateId: <SpaceTemplate.id>
 
 Step 3: Clone template structure
-  For each ContextTemplate in WorkspaceTemplate:
+  For each ContextTemplate in SpaceTemplate:
     ├─ Clone CONTEXT Node (canvas)
     │   └─ Copy canvas JSON to Node.content
     │
@@ -1931,7 +1931,7 @@ my-startup/
 
 ### Template for AI Contextual Mapping
 
-When an AI model operates on a workspace cloned from a template:
+When an AI model operates on a space cloned from a template:
 
 ```
 AI REQUEST:
@@ -1939,15 +1939,15 @@ AI REQUEST:
 
 MUJARRAD BACKEND:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Step 1: Identify workspace template
-  └─ Workspace.templateId → "Business Model Canvas"
+Step 1: Identify space template
+  └─ Space.templateId → "Business Model Canvas"
 
 Step 2: Fetch template structure
   └─ Load template.config.json as contextual map
 
 Step 3: Provide context to AI
   AI now understands:
-  ├─ Workspace follows BMC framework
+  ├─ Space follows BMC framework
   ├─ "Key Partners" node represents partnerships
   ├─ "Value Propositions" node represents value delivery
   ├─ Relationships indicate value flow
@@ -1960,14 +1960,14 @@ Step 4: AI operates autonomously
   └─ Suggests improvements aligned with framework
 ```
 
-**Key Benefit**: The template acts as a "mirror" showing the AI what knowledge structure the workspace follows, enabling autonomous operation without requiring explicit user instructions about workspace organization.
+**Key Benefit**: The template acts as a "mirror" showing the AI what knowledge structure the space follows, enabling autonomous operation without requiring explicit user instructions about space organization.
 
 ### Template Update Scenarios
 
 | Scenario | Behavior |
 |---|---|
 | **User fills in template placeholders** | Content updates, structure preserved, template reference maintained |
-| **User adds new nodes to template-based workspace** | Additional nodes created, template reference preserved, structure extended |
+| **User adds new nodes to template-based space** | Additional nodes created, template reference preserved, structure extended |
 | **User modifies canvas layout** | Visual changes saved, template reference maintained, deviation tracked |
 | **User modifies template config file** | [NEEDS CLARIFICATION: Sync behavior?] |
 | **Template version updated by admin** | [NEEDS CLARIFICATION: Migration strategy?] |
@@ -1979,7 +1979,7 @@ Step 4: AI operates autonomously
 TEMPLATE STRUCTURE:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-WorkspaceTemplate: "Business Model Canvas"
+SpaceTemplate: "Business Model Canvas"
 │
 ├── ContextTemplate: "Business Model Canvas"
 │   │
@@ -2008,11 +2008,11 @@ WorkspaceTemplate: "Business Model Canvas"
     ├─ category: "business-strategy"
     └─ framework: "Osterwalder BMC"
 
-CLONED WORKSPACE:
+CLONED SPACE:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Workspace: "My Startup"
-├─ templateId: <WorkspaceTemplate.id>
+Space: "My Startup"
+├─ templateId: <SpaceTemplate.id>
 ├─ All 9 REGULAR Nodes created (empty/guidance text)
 ├─ Canvas CONTEXT Node with layout
 ├─ All Attributes preserved
@@ -2036,10 +2036,10 @@ Workspace: "My Startup"
 6. **Canvas nodes create NodeMapping entries** (not Attributes) with visual layout in metadata
 7. **Git commits map to NodeVersions** for history tracking
 8. **Hidden metadata embeds UUIDs** to maintain mappings
-9. **Templates enable workspace cloning** from pre-defined knowledge graph structures
+9. **Templates enable space cloning** from pre-defined knowledge graph structures
 10. **Template config files act as mirrors** for AI contextual mapping
-11. **WorkspaceTemplate entities contain ContextTemplates** representing frameworks
-12. **Template references persist** even when workspace content deviates from structure
+11. **SpaceTemplate entities contain ContextTemplates** representing frameworks
+12. **Template references persist** even when space content deviates from structure
 13. **Normalized storage enables SQL queries** on visual properties directly
 14. **Foreign key constraints ensure** canvas nodes reference valid notes
 
@@ -2048,7 +2048,7 @@ Workspace: "My Startup"
 ```
 OBSIDIAN                 MUJARRAD
 ════════                 ════════
-Vault        ──────────→ Workspace
+Vault        ──────────→ Space
 Note (.md)   ──────────→ Node (REGULAR)
 Folder       ──────────→ Node (CONTEXT)
 Canvas       ──────────→ Node (CONTEXT) with JSON
@@ -2056,16 +2056,16 @@ Canvas Node  ──────────→ Attribute to Note
 Canvas Edge  ──────────→ Attribute between Nodes
 Wikilink     ──────────→ Attribute
 Git Commit   ──────────→ NodeVersion
-Template     ──────────→ WorkspaceTemplate
+Template     ──────────→ SpaceTemplate
 Config File  ──────────→ Template metadata
 ```
 
 ### Template Flow Principles
 
 ```
-TEMPLATE SYSTEM          WORKSPACE CREATION
+TEMPLATE SYSTEM          SPACE CREATION
 ═══════════════          ══════════════════
-WorkspaceTemplate ─────→ New Workspace (with templateId)
+SpaceTemplate ─────→ New Space (with templateId)
 ContextTemplate   ─────→ Cloned CONTEXT Nodes
 Placeholder Nodes ─────→ Cloned REGULAR Nodes
 Template Config   ─────→ template.config.json in vault

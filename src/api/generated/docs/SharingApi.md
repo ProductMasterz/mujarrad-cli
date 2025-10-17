@@ -4,12 +4,12 @@ All URIs are relative to *https://api.example.com*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**shareWorkspace**](#shareworkspace) | **POST** /api/workspaces/{workspaceId}/share | Share workspace (Future)|
+|[**shareSpace**](#sharespace) | **POST** /api/spaces/{spaceId}/share | Share space (Future)|
 
-# **shareWorkspace**
-> shareWorkspace()
+# **shareSpace**
+> shareSpace()
 
-Share workspace with another user (not implemented in first release).
+Share space with another user (not implemented in first release).
 
 ### Example
 
@@ -17,18 +17,18 @@ Share workspace with another user (not implemented in first release).
 import {
     SharingApi,
     Configuration,
-    ShareWorkspaceRequest
+    ShareSpaceRequest
 } from 'mujarrad-api-client';
 
 const configuration = new Configuration();
 const apiInstance = new SharingApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
-let shareWorkspaceRequest: ShareWorkspaceRequest; // (optional)
+let spaceId: string; //Space UUID (default to undefined)
+let shareSpaceRequest: ShareSpaceRequest; // (optional)
 
-const { status, data } = await apiInstance.shareWorkspace(
-    workspaceId,
-    shareWorkspaceRequest
+const { status, data } = await apiInstance.shareSpace(
+    spaceId,
+    shareSpaceRequest
 );
 ```
 
@@ -36,8 +36,8 @@ const { status, data } = await apiInstance.shareWorkspace(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **shareWorkspaceRequest** | **ShareWorkspaceRequest**|  | |
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **shareSpaceRequest** | **ShareSpaceRequest**|  | |
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type

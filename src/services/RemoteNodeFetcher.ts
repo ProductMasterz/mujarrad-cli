@@ -7,80 +7,80 @@
  * using cursor-based pagination (FR-007, NFR-004)
  */
 
-import type { SyncWorkspacesApi } from '../api/generated/index.js';
+import type { SyncSpacesApi } from '../api/generated/index.js';
 import type { RemoteNode } from '../types/sync.js';
 import { Logger } from '../utils/Logger.js';
 
 /**
- * RemoteNodeFetcher - Streams remote nodes from workspace with pagination
+ * RemoteNodeFetcher - Streams remote nodes from space with pagination
  *
  * Uses async generator pattern for memory efficiency (NFR-004):
  * - Yields nodes one-by-one instead of loading all into memory
  * - Fetches next page only when current page is consumed
- * - Supports 10,000+ node workspaces without memory issues
+ * - Supports 10,000+ node spaces without memory issues
  *
  * @class RemoteNodeFetcher
  */
 export class RemoteNodeFetcher {
-    private readonly workspaceApi: SyncWorkspacesApi;
+    private readonly spaceApi: SyncSpacesApi;
     private readonly logger: Logger;
     private readonly pageSize: number;
 
     /**
      * Create RemoteNodeFetcher instance
      *
-     * @param workspaceApi - API client for workspace operations
+     * @param spaceApi - API client for space operations
      * @param logger - Logger instance for tracking pagination
      * @param pageSize - Number of nodes per page (default 100, max 500)
      */
-    constructor(workspaceApi: SyncWorkspacesApi, logger: Logger, pageSize: number = 100) {
-        this.workspaceApi = workspaceApi;
+    constructor(spaceApi: SyncSpacesApi, logger: Logger, pageSize: number = 100) {
+        this.spaceApi = spaceApi;
         this.logger = logger;
         this.pageSize = Math.min(Math.max(pageSize, 1), 500); // Clamp between 1-500
     }
 
     /**
-     * Fetch all nodes from workspace using cursor-based pagination
+     * Fetch all nodes from space using cursor-based pagination
      *
      * Async generator that yields nodes one-by-one for memory efficiency.
      * Implements cursor-based pagination as specified in backend API contract.
      *
      * Usage:
      * ```typescript
-     * const fetcher = new RemoteNodeFetcher(workspaceApi, logger);
-     * for await (const node of fetcher.fetchAllNodes('my-workspace')) {
+     * const fetcher = new RemoteNodeFetcher(spaceApi, logger);
+     * for await (const node of fetcher.fetchAllNodes('my-space')) {
      *     console.log(`Processing node: ${node.title}`);
      *     // Process node immediately without buffering
      * }
      * ```
      *
-     * @param workspaceSlug - Workspace identifier
-     * @yields {RemoteNode} - Individual nodes from workspace
+     * @param spaceSlug - Space identifier
+     * @yields {RemoteNode} - Individual nodes from space
      * @throws {Error} - Network errors, API errors (401, 403, 404, 500)
      */
-    async *fetchAllNodes(workspaceSlug: string): AsyncGenerator<RemoteNode, void, undefined> {
+    async *fetchAllNodes(spaceSlug: string): AsyncGenerator<RemoteNode, void, undefined> {
         let cursor: string | undefined = undefined;
         let hasMore = true;
         let pageNumber = 1;
         let totalNodesFetched = 0;
 
         this.logger.info('Starting remote node fetch', {
-            workspaceSlug,
+            spaceSlug,
             pageSize: this.pageSize
         });
 
         try {
             while (hasMore) {
                 this.logger.debug('Fetching page', {
-                    workspaceSlug,
+                    spaceSlug,
                     pageNumber,
                     cursor: cursor || 'initial',
                     pageSize: this.pageSize
                 });
 
                 // Fetch page from API
-                const response = await this.workspaceApi.listWorkspaceNodes(
-                    workspaceSlug,
+                const response = await this.spaceApi.listSpaceNodes(
+                    spaceSlug,
                     cursor,
                     this.pageSize
                 );
@@ -88,7 +88,7 @@ export class RemoteNodeFetcher {
                 const { data: nodes, pagination } = response.data;
 
                 this.logger.debug('Page fetched successfully', {
-                    workspaceSlug,
+                    spaceSlug,
                     pageNumber,
                     nodesInPage: nodes.length,
                     hasMore: pagination.hasMore,
@@ -116,7 +116,7 @@ export class RemoteNodeFetcher {
                 // Safety check: prevent infinite loop if backend returns hasMore=true but no cursor
                 if (hasMore && !cursor) {
                     this.logger.warn('Pagination inconsistency detected', {
-                        workspaceSlug,
+                        spaceSlug,
                         pageNumber,
                         message: 'hasMore is true but nextCursor is null - stopping pagination'
                     });
@@ -125,7 +125,7 @@ export class RemoteNodeFetcher {
             }
 
             this.logger.info('Remote node fetch completed', {
-                workspaceSlug,
+                spaceSlug,
                 totalNodesFetched,
                 totalPages: pageNumber - 1
             });
@@ -133,7 +133,7 @@ export class RemoteNodeFetcher {
         } catch (error: any) {
             // Log error and re-throw with context
             this.logger.error('Remote node fetch failed', {
-                workspaceSlug,
+                spaceSlug,
                 pageNumber,
                 totalNodesFetched,
                 error: error.message,
@@ -146,9 +146,9 @@ export class RemoteNodeFetcher {
                 const errorData = error.response.data;
 
                 if (status === 404) {
-                    throw new Error(`Workspace '${workspaceSlug}' not found`);
+                    throw new Error(`Space '${spaceSlug}' not found`);
                 } else if (status === 403) {
-                    throw new Error(`Access denied to workspace '${workspaceSlug}'. You may not have read permissions.`);
+                    throw new Error(`Access denied to space '${spaceSlug}'. You may not have read permissions.`);
                 } else if (status === 401) {
                     throw new Error('Authentication required. Please log in with "mujarrad auth login"');
                 } else if (status >= 500) {
@@ -169,20 +169,20 @@ export class RemoteNodeFetcher {
      * Fetch all nodes and collect into array (for non-streaming use cases)
      *
      * WARNING: This loads all nodes into memory. Use fetchAllNodes() generator
-     * for large workspaces (10,000+ nodes) to avoid memory issues.
+     * for large spaces (10,000+ nodes) to avoid memory issues.
      *
-     * @param workspaceSlug - Workspace identifier
+     * @param spaceSlug - Space identifier
      * @returns Promise<RemoteNode[]> - Array of all nodes
      */
-    async fetchAllNodesAsArray(workspaceSlug: string): Promise<RemoteNode[]> {
+    async fetchAllNodesAsArray(spaceSlug: string): Promise<RemoteNode[]> {
         const nodes: RemoteNode[] = [];
 
         this.logger.warn('Fetching all nodes as array', {
-            workspaceSlug,
-            message: 'This loads all nodes into memory. Consider using generator for large workspaces.'
+            spaceSlug,
+            message: 'This loads all nodes into memory. Consider using generator for large spaces.'
         });
 
-        for await (const node of this.fetchAllNodes(workspaceSlug)) {
+        for await (const node of this.fetchAllNodes(spaceSlug)) {
             nodes.push(node);
         }
 
@@ -190,19 +190,19 @@ export class RemoteNodeFetcher {
     }
 
     /**
-     * Count total nodes in workspace without downloading content
+     * Count total nodes in space without downloading content
      *
      * Uses pagination metadata to determine total count efficiently.
      * Fetches first page only to get metadata, then stops.
      *
-     * @param workspaceSlug - Workspace identifier
+     * @param spaceSlug - Space identifier
      * @returns Promise<number> - Total number of nodes
      */
-    async countNodes(workspaceSlug: string): Promise<number> {
+    async countNodes(spaceSlug: string): Promise<number> {
         try {
             // Fetch first page with minimal page size
-            const response = await this.workspaceApi.listWorkspaceNodes(
-                workspaceSlug,
+            const response = await this.spaceApi.listSpaceNodes(
+                spaceSlug,
                 undefined, // No cursor (first page)
                 1 // Minimal page size for counting
             );
@@ -214,15 +214,15 @@ export class RemoteNodeFetcher {
                 return nodes.length;
             }
 
-            // For large workspaces, we need to paginate to count
+            // For large spaces, we need to paginate to count
             // Alternative: backend could provide totalCount in pagination metadata
             // For now, fall back to counting via iteration
             let count = nodes.length;
             let cursor: string | null = pagination.nextCursor;
 
             while (cursor) {
-                const pageResponse = await this.workspaceApi.listWorkspaceNodes(
-                    workspaceSlug,
+                const pageResponse = await this.spaceApi.listSpaceNodes(
+                    spaceSlug,
                     cursor,
                     500 // Use max page size for faster counting
                 );
@@ -239,7 +239,7 @@ export class RemoteNodeFetcher {
 
         } catch (error: any) {
             this.logger.error('Failed to count nodes', {
-                workspaceSlug,
+                spaceSlug,
                 error: error.message
             });
             throw error;

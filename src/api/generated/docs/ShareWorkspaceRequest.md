@@ -1,4 +1,4 @@
-# ShareWorkspaceRequest
+# ShareSpaceRequest
 
 
 ## Properties
@@ -11,9 +11,9 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ShareWorkspaceRequest } from 'mujarrad-api-client';
+import { ShareSpaceRequest } from 'mujarrad-api-client';
 
-const instance: ShareWorkspaceRequest = {
+const instance: ShareSpaceRequest = {
     email,
     permission,
 };

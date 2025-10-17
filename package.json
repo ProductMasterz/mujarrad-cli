@@ -1,7 +1,7 @@
 {
   "name": "mujarrad-cli",
   "version": "1.1.0-alpha.5",
-  "description": "⚠️ ALPHA: Obsidian Knowledge Graph Integration CLI - Sync your Obsidian vaults with Mujarrad workspaces",
+  "description": "⚠️ ALPHA: Obsidian Knowledge Graph Integration CLI - Sync your Obsidian vaults with Mujarrad spaces",
   "main": "dist/index.js",
   "type": "module",
   "bin": {

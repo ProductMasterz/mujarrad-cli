@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **nodesCreated** | **number** |  | [optional] [default to undefined]
 **attributesCreated** | **number** |  | [optional] [default to undefined]
-**workspaceId** | **string** |  | [optional] [default to undefined]
+**spaceId** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -17,7 +17,7 @@ import { InstantiateTemplate200ResponseAllOfData } from 'mujarrad-api-client';
 const instance: InstantiateTemplate200ResponseAllOfData = {
     nodesCreated,
     attributesCreated,
-    workspaceId,
+    spaceId,
 };
 ```
 

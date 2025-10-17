@@ -15,7 +15,7 @@ This guide shows how to use the enhanced `mujarrad init` command with bidirectio
 6. Troubleshoot common issues
 
 **New in this version**:
-- ✅ Pre-flight workspace verification (fails fast if workspace doesn't exist)
+- ✅ Pre-flight space verification (fails fast if space doesn't exist)
 - ✅ Pull remote changes before upload (preserves remote edits)
 - ✅ Three-way merge detection (identifies conflicts accurately)
 - ✅ Interactive conflict resolution with timeout handling
@@ -29,7 +29,7 @@ This guide shows how to use the enhanced `mujarrad init` command with bidirectio
 - **Node.js**: Version 18 or higher ([download](https://nodejs.org))
 - **Obsidian vault**: An existing Obsidian vault with markdown/canvas files
 - **Mujarrad account**: Sign up at [mujarrad.onrender.com](https://mujarrad.onrender.com)
-- **Workspace**: Create a workspace via the web UI before running init
+- **Space**: Create a space via the web UI before running init
 
 **System Requirements**:
 - macOS, Linux, or Windows
@@ -65,7 +65,7 @@ npm link
 ### Option 3: Use npx (No Installation)
 
 ```bash
-npx mujarrad-cli@latest init . --workspace my-workspace
+npx mujarrad-cli@latest init . --space my-space
 ```
 
 ---
@@ -109,22 +109,22 @@ mujarrad auth logout
 
 ---
 
-## Workspace Setup
+## Space Setup
 
-Before initializing your vault, create a workspace via the Mujarrad web UI:
+Before initializing your vault, create a space via the Mujarrad web UI:
 
 1. Visit [mujarrad.onrender.com](https://mujarrad.onrender.com)
-2. Click "Create Workspace"
-3. Enter a workspace name (e.g., "My Knowledge Base")
+2. Click "Create Space"
+3. Enter a space name (e.g., "My Knowledge Base")
 4. Choose a URL-safe slug (e.g., "my-knowledge-base")
 5. Click "Create"
 
-**Workspace slug requirements**:
+**Space slug requirements**:
 - 3-50 characters
 - Lowercase letters, numbers, and hyphens only
 - Must start with a letter or number
 
-**Permissions**: You must have **write access** to the workspace. If someone else created the workspace, ask them to invite you with write permissions.
+**Permissions**: You must have **write access** to the space. If someone else created the space, ask them to invite you with write permissions.
 
 ---
 
@@ -136,21 +136,21 @@ Upload your local vault to Mujarrad without pulling remote changes. This is the 
 
 ```bash
 cd /path/to/your/obsidian/vault
-mujarrad init . --workspace my-knowledge-base
+mujarrad init . --space my-knowledge-base
 ```
 
 **What happens**:
-1. ✅ Workspace verified (new: fails fast if workspace doesn't exist)
+1. ✅ Space verified (new: fails fast if space doesn't exist)
 2. ✅ Local vault scanned for markdown/canvas files
-3. ✅ Files uploaded to workspace
+3. ✅ Files uploaded to space
 4. ✅ UUID comments embedded in local files (for future sync)
 
 **Example output**:
 ```
-$ mujarrad init . --workspace my-knowledge-base
+$ mujarrad init . --space my-knowledge-base
 
-🔍 Verifying workspace 'my-knowledge-base'...
-✓ Workspace verified: My Knowledge Base (42 existing nodes)
+🔍 Verifying space 'my-knowledge-base'...
+✓ Space verified: My Knowledge Base (42 existing nodes)
 
 📂 Scanning vault...
 ✓ Found 150 files (145 markdown, 5 canvas)
@@ -172,12 +172,12 @@ Pull remote changes BEFORE uploading local changes. This preserves remote edits 
 
 ```bash
 cd /path/to/your/obsidian/vault
-mujarrad init . --workspace my-knowledge-base --sync
+mujarrad init . --space my-knowledge-base --sync
 ```
 
 **What happens**:
-1. ✅ Workspace verified
-2. ✅ Remote nodes pulled from workspace
+1. ✅ Space verified
+2. ✅ Remote nodes pulled from space
 3. ✅ Local and remote files compared (three-way merge)
 4. ✅ Conflicts resolved (interactively or via --strategy flag)
 5. ✅ Remote-ahead files downloaded
@@ -185,10 +185,10 @@ mujarrad init . --workspace my-knowledge-base --sync
 
 **Example output (with conflicts)**:
 ```
-$ mujarrad init . --workspace my-knowledge-base --sync
+$ mujarrad init . --space my-knowledge-base --sync
 
-🔍 Verifying workspace 'my-knowledge-base'...
-✓ Workspace verified: My Knowledge Base (42 existing nodes)
+🔍 Verifying space 'my-knowledge-base'...
+✓ Space verified: My Knowledge Base (42 existing nodes)
 
 📥 Pulling remote content...
 ✓ Pulled 42 remote nodes (3.2 MB)
@@ -255,27 +255,27 @@ Use the `--strategy` flag to automatically resolve all conflicts without interac
 #### Keep All Local Versions
 
 ```bash
-mujarrad init . --workspace my-workspace --sync --strategy KEEP_LOCAL
+mujarrad init . --space my-space --sync --strategy KEEP_LOCAL
 ```
 
-**Use case**: You trust your local vault more than remote workspace (e.g., recovering from backup).
+**Use case**: You trust your local vault more than remote space (e.g., recovering from backup).
 
 **Result**: All conflicts resolved by uploading local version and overwriting remote.
 
 #### Keep All Remote Versions
 
 ```bash
-mujarrad init . --workspace my-workspace --sync --strategy KEEP_REMOTE
+mujarrad init . --space my-space --sync --strategy KEEP_REMOTE
 ```
 
-**Use case**: You want to pull latest changes from remote workspace without pushing local edits.
+**Use case**: You want to pull latest changes from remote space without pushing local edits.
 
 **Result**: All conflicts resolved by keeping remote version and discarding local changes.
 
 #### Skip All Conflicts
 
 ```bash
-mujarrad init . --workspace my-workspace --sync --strategy SKIP
+mujarrad init . --space my-space --sync --strategy SKIP
 ```
 
 **Use case**: You want to sync non-conflicted files now and resolve conflicts manually later.
@@ -286,21 +286,21 @@ mujarrad init . --workspace my-workspace --sync --strategy SKIP
 
 ## Real-World Scenarios
 
-### Scenario 1: First-Time Initialization (Empty Workspace)
+### Scenario 1: First-Time Initialization (Empty Space)
 
-**Setup**: You have a local Obsidian vault with 500 notes. You just created an empty workspace.
+**Setup**: You have a local Obsidian vault with 500 notes. You just created an empty space.
 
 **Command**:
 ```bash
-mujarrad init . --workspace my-knowledge-base
+mujarrad init . --space my-knowledge-base
 ```
 
 **Result**:
-- All 500 notes uploaded to workspace
-- No conflicts (workspace was empty)
+- All 500 notes uploaded to space
+- No conflicts (space was empty)
 - Duration: ~2-3 minutes
 
-**Pro tip**: You can use `--sync` flag even for empty workspaces - it will detect no remote content and proceed with upload.
+**Pro tip**: You can use `--sync` flag even for empty spaces - it will detect no remote content and proceed with upload.
 
 ---
 
@@ -310,12 +310,12 @@ mujarrad init . --workspace my-knowledge-base
 
 **Command**:
 ```bash
-mujarrad init . --workspace my-knowledge-base --sync
+mujarrad init . --space my-knowledge-base --sync
 ```
 
 **Result**:
 - 5 remote-edited notes downloaded to local vault (overwriting local versions because remote is ahead)
-- 10 new local notes uploaded to workspace
+- 10 new local notes uploaded to space
 - No conflicts (no overlapping edits)
 - Duration: ~30 seconds
 
@@ -327,7 +327,7 @@ mujarrad init . --workspace my-knowledge-base --sync
 
 **Command**:
 ```bash
-mujarrad init . --workspace my-knowledge-base --sync
+mujarrad init . --space my-knowledge-base --sync
 ```
 
 **Interactive prompt**:
@@ -370,7 +370,7 @@ Remote version (modified 2025-10-12 14:30):
 
 **Command**:
 ```bash
-mujarrad init . --workspace my-knowledge-base --sync --strategy KEEP_LOCAL
+mujarrad init . --space my-knowledge-base --sync --strategy KEEP_LOCAL
 ```
 
 **Result**:
@@ -399,7 +399,7 @@ Run 'mujarrad init --help' for more information.
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--workspace <slug>` | Target workspace slug (required) | - |
+| `--space <slug>` | Target space slug (required) | - |
 | `--sync` | Enable bidirectional sync (pull before upload) | `false` |
 | `--strategy <strategy>` | Auto-resolve conflicts: `KEEP_LOCAL`, `KEEP_REMOTE`, `SKIP` | Interactive |
 | `--batch-size <number>` | Upload batch size (files per request) | `100` |
@@ -419,29 +419,29 @@ Run 'mujarrad init --help' for more information.
 ```bash
 MUJARRAD_API_URL=http://localhost:8080 \
 MUJARRAD_LOG_LEVEL=debug \
-mujarrad init . --workspace test --sync --verbose
+mujarrad init . --space test --sync --verbose
 ```
 
 ---
 
 ## Troubleshooting
 
-### Error: Workspace Not Found
+### Error: Space Not Found
 
 **Symptom**:
 ```
-❌ Error: Workspace 'invalid-workspace' not found
+❌ Error: Space 'invalid-space' not found
 ```
 
 **Causes**:
-1. Workspace slug typo (check spelling)
-2. Workspace doesn't exist (create via web UI first)
-3. Workspace was deleted
+1. Space slug typo (check spelling)
+2. Space doesn't exist (create via web UI first)
+3. Space was deleted
 
 **Solution**:
-1. List your workspaces: Visit [mujarrad.onrender.com/workspaces](https://mujarrad.onrender.com/workspaces)
+1. List your spaces: Visit [mujarrad.onrender.com/spaces](https://mujarrad.onrender.com/spaces)
 2. Verify slug spelling matches exactly (lowercase, hyphens)
-3. Create workspace if it doesn't exist
+3. Create space if it doesn't exist
 
 ---
 
@@ -449,16 +449,16 @@ mujarrad init . --workspace test --sync --verbose
 
 **Symptom**:
 ```
-❌ Error: Access denied to workspace 'my-workspace'. Contact the workspace owner for permissions.
+❌ Error: Access denied to space 'my-space'. Contact the space owner for permissions.
 ```
 
 **Causes**:
-1. You don't have write access to workspace
-2. Workspace is private and you're not invited
+1. You don't have write access to space
+2. Space is private and you're not invited
 
 **Solution**:
-1. Ask workspace owner to invite you with write permissions
-2. Or create your own workspace
+1. Ask space owner to invite you with write permissions
+2. Or create your own space
 
 ---
 
@@ -566,7 +566,7 @@ All sync operations create log files for troubleshooting and audit:
 ```json
 {
   "sessionId": "abc-123-def-456",
-  "workspaceSlug": "my-workspace",
+  "spaceSlug": "my-space",
   "startTime": "2025-10-12T15:00:00Z",
   "endTime": "2025-10-12T15:02:15Z",
   "status": "COMPLETED",
@@ -605,8 +605,8 @@ All sync operations create log files for troubleshooting and audit:
 **Example**:
 ```
 2025-10-12T15:00:00.123Z [INFO] Command: init
-2025-10-12T15:00:00.456Z [INFO] Workspace: my-workspace
-2025-10-12T15:00:01.789Z [INFO] Workspace verified: My Workspace (42 nodes)
+2025-10-12T15:00:00.456Z [INFO] Space: my-space
+2025-10-12T15:00:01.789Z [INFO] Space verified: My Space (42 nodes)
 2025-10-12T15:00:05.012Z [INFO] Pulled 42 remote nodes
 2025-10-12T15:02:15.345Z [INFO] Sync complete (duration: 2m 15s)
 ```
@@ -620,7 +620,7 @@ All sync operations create log files for troubleshooting and audit:
 Preview what would happen during sync without making any changes:
 
 ```bash
-mujarrad init . --workspace my-workspace --sync --dry-run
+mujarrad init . --space my-space --sync --dry-run
 ```
 
 **Output**: Shows comparison summary without downloading or uploading any files.
@@ -632,7 +632,7 @@ mujarrad init . --workspace my-workspace --sync --dry-run
 Show detailed logs during sync:
 
 ```bash
-mujarrad init . --workspace my-workspace --sync --verbose
+mujarrad init . --space my-space --sync --verbose
 ```
 
 **Output**: Shows API requests, hash calculations, file operations, and timing information.
@@ -644,7 +644,7 @@ mujarrad init . --workspace my-workspace --sync --verbose
 Adjust upload batch size (default: 100 files per request):
 
 ```bash
-mujarrad init . --workspace my-workspace --batch-size 50
+mujarrad init . --space my-space --batch-size 50
 ```
 
 **Use case**: Reduce batch size if uploads are timing out due to slow connection.
@@ -669,8 +669,8 @@ private-notes/
 
 ## Performance Tips
 
-1. **Pre-flight verification** (new in this version) fails fast - you'll know within 2 seconds if workspace doesn't exist
-2. **Cursor-based pagination** handles workspaces with 10,000+ nodes without memory issues
+1. **Pre-flight verification** (new in this version) fails fast - you'll know within 2 seconds if space doesn't exist
+2. **Cursor-based pagination** handles spaces with 10,000+ nodes without memory issues
 3. **Hash-based comparison** is faster than timestamp comparison and works across timezones
 4. **Atomic downloads** prevent partial writes and automatically rollback on failure
 5. **Parallel uploads** (batch size 100) achieve ~100 KB/s throughput on standard broadband
@@ -679,7 +679,7 @@ private-notes/
 
 ## Next Steps
 
-1. ✅ Initialize your vault: `mujarrad init . --workspace my-workspace --sync`
+1. ✅ Initialize your vault: `mujarrad init . --space my-space --sync`
 2. ✅ Set up continuous sync: `mujarrad sync` (run periodically or via cron job)
 3. ✅ Explore web UI: [mujarrad.onrender.com](https://mujarrad.onrender.com)
 4. ✅ Join community: [GitHub Discussions](https://github.com/your-org/mujarrad-cli/discussions)

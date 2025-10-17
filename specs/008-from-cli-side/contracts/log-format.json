@@ -198,9 +198,9 @@
           "description": "Authenticated user ID (if applicable)",
           "examples": ["user-123", "abc-def-456"]
         },
-        "workspaceSlug": {
+        "spaceSlug": {
           "type": "string",
-          "description": "Workspace identifier (if operation targets a workspace)",
+          "description": "Space identifier (if operation targets a space)",
           "examples": ["personal", "work", "my-project"]
         }
       }
@@ -255,7 +255,7 @@
         "fileSize": 2048,
         "filesProcessed": 45,
         "filesTotal": 150,
-        "workspaceSlug": "personal"
+        "spaceSlug": "personal"
       }
     },
     {

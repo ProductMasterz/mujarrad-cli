@@ -37,10 +37,10 @@ $ mujarrad --help
 Commands:
   version                        Display detailed version information
   auth                           Authentication commands for Mujarrad
-  init [options] <vault-path>    Initialize Obsidian vault upload to workspace
-  clone [options] <target-path>  Clone Mujarrad workspace to Obsidian vault
-  sync [options]                 Synchronize local vault with Mujarrad workspace
-  template                       Manage workspace templates
+  init [options] <vault-path>    Initialize Obsidian vault upload to space
+  clone [options] <target-path>  Clone Mujarrad space to Obsidian vault
+  sync [options]                 Synchronize local vault with Mujarrad space
+  template                       Manage space templates
   help [command]                 display help for command
 ```
 
@@ -121,7 +121,7 @@ Additional:
 - Command structure (3 tests)
 - Help documentation (3 tests)
 - Authentication (2 tests)
-- Workspace resolution (3 tests)
+- Space resolution (3 tests)
 - Change detection (4 tests)
 - Push changes (3 tests)
 - Conflict resolution (8 tests)
@@ -185,7 +185,7 @@ const skipIfNoToken = process.env.MUJARRAD_API_TOKEN ? describe : describe.skip;
 
 These tests require:
 - `MUJARRAD_API_TOKEN` environment variable
-- `TEST_WORKSPACE_SLUG` environment variable
+- `TEST_SPACE_SLUG` environment variable
 - Live API access
 
 ---
@@ -263,7 +263,7 @@ npm test -- tests/unit/commands/init.test.ts
 ### Integration Tests (requires API token)
 ```bash
 export MUJARRAD_API_TOKEN="your-token"
-export TEST_WORKSPACE_SLUG="test-workspace"
+export TEST_SPACE_SLUG="test-space"
 npm test -- tests/integration/
 ```
 

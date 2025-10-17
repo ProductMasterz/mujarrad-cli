@@ -74,12 +74,12 @@ describe('Init Command (formerly Upload)', () => {
       expect(helpText).toContain('vault-path');
     });
 
-    it('should require --workspace option', () => {
+    it('should require --space option', () => {
       const cmd = program.commands.find(c => c.name() === 'init');
       const options = cmd!.options;
-      const workspaceOpt = options.find(opt => opt.long === '--workspace');
-      expect(workspaceOpt).toBeDefined();
-      expect(workspaceOpt!.required).toBe(true);
+      const spaceOpt = options.find(opt => opt.long === '--space');
+      expect(spaceOpt).toBeDefined();
+      expect(spaceOpt!.required).toBe(true);
     });
 
     it('should have optional --batch-size option', () => {
@@ -108,9 +108,9 @@ describe('Init Command (formerly Upload)', () => {
       const options = cmd!.options;
       expect(options.length).toBeGreaterThan(0);
 
-      // Verify workspace option exists
-      const workspaceOpt = options.find(opt => opt.long === '--workspace');
-      expect(workspaceOpt).toBeDefined();
+      // Verify space option exists
+      const spaceOpt = options.find(opt => opt.long === '--space');
+      expect(spaceOpt).toBeDefined();
     });
   });
 
@@ -166,7 +166,7 @@ describe('Init Command (formerly Upload)', () => {
 
     it('should handle 403 errors with helpful message', () => {
       // Should suggest logging in
-      // Should mention contacting workspace owner
+      // Should mention contacting space owner
       expect(true).toBe(true);
     });
 

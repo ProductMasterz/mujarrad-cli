@@ -1,4 +1,4 @@
-# ExportWorkspace202ResponseAllOfData
+# ExportSpace202ResponseAllOfData
 
 
 ## Properties
@@ -11,9 +11,9 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ExportWorkspace202ResponseAllOfData } from 'mujarrad-api-client';
+import { ExportSpace202ResponseAllOfData } from 'mujarrad-api-client';
 
-const instance: ExportWorkspace202ResponseAllOfData = {
+const instance: ExportSpace202ResponseAllOfData = {
     exportJobId,
     status,
 };

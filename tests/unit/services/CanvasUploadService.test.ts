@@ -293,7 +293,7 @@ describe('CanvasUploadService', () => {
       };
 
       const result = await canvasUploadService.uploadCanvas(
-        'workspace-123',
+        'space-123',
         'session-123',
         'canvas.canvas',
         canvasData

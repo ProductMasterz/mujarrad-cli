@@ -166,14 +166,14 @@ describe('Upload Command (US7)', () => {
       expect(helpText).toContain('vault-path');
     });
 
-    it('should require --workspace option', () => {
+    it('should require --space option', () => {
       const cmd = program.commands.find(c => c.name() === 'init');
       expect(cmd).toBeDefined();
 
       const options = cmd!.options;
-      const workspaceOpt = options.find(opt => opt.long === '--workspace');
-      expect(workspaceOpt).toBeDefined();
-      expect(workspaceOpt!.required).toBe(true);
+      const spaceOpt = options.find(opt => opt.long === '--space');
+      expect(spaceOpt).toBeDefined();
+      expect(spaceOpt!.required).toBe(true);
     });
 
     it('should accept optional --batch-size option', () => {
@@ -204,7 +204,7 @@ describe('Upload Command (US7)', () => {
 
       // Check basic structure
       expect(helpText).toContain('vault-path');
-      expect(helpText).toContain('workspace');
+      expect(helpText).toContain('space');
       expect(helpText).toContain('batch-size');
     });
 

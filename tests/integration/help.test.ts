@@ -161,12 +161,12 @@ describe('Help Workflow Integration', () => {
       expect(helpText).toContain('mujarrad sync');
     });
 
-    it('should include workspace parameter in examples', () => {
+    it('should include space parameter in examples', () => {
       const uploadCmd = program.commands.find(c => c.name() === 'upload');
       const helpText = uploadCmd!.helpInformation();
 
-      // Upload examples should show --workspace flag
-      expect(helpText.includes('--workspace') || helpText.includes('-w')).toBe(true);
+      // Upload examples should show --space flag
+      expect(helpText.includes('--space') || helpText.includes('-w')).toBe(true);
     });
   });
 });

@@ -97,7 +97,7 @@ describe('ResponseValidator', () => {
         success: true,
         data: {
           user: { id: 'uuid', email: 'test@example.com' },
-          workspace: { id: 'ws-uuid', name: 'My Workspace' }
+          space: { id: 'ws-uuid', name: 'My Space' }
         },
         timestamp: '2025-10-10T10:00:00Z'
       };

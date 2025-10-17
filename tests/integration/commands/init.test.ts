@@ -4,7 +4,7 @@
  * Tests full init workflow with mocked HTTP responses:
  * - Authentication flow
  * - Vault validation
- * - Upload to workspace
+ * - Upload to space
  * - Error handling (403, 500)
  * - Retry logic
  */
@@ -86,7 +86,7 @@ describe('Init Command Integration Tests (Mocked Backend)', () => {
   });
 
   describe('Successful upload flow', () => {
-    it('should upload vault to workspace with valid authentication', async () => {
+    it('should upload vault to space with valid authentication', async () => {
       // Mock authentication check
       nock(API_BASE_URL)
         .get('/api/auth/me')
@@ -106,7 +106,7 @@ describe('Init Command Integration Tests (Mocked Backend)', () => {
           success: true,
           data: {
             sessionId: 'session-123',
-            workspaceId: 'workspace-123'
+            spaceId: 'space-123'
           }
         });
 
@@ -143,7 +143,7 @@ describe('Init Command Integration Tests (Mocked Backend)', () => {
       // The command should:
       // 1. Show "Access denied" error
       // 2. Suggest logging in
-      // 3. Suggest contacting workspace owner
+      // 3. Suggest contacting space owner
     });
 
     it('should handle 403 on template list gracefully', async () => {
@@ -275,18 +275,18 @@ describe('Init Command Integration Tests (Mocked Backend)', () => {
     });
   });
 
-  describe('Workspace errors', () => {
-    it('should handle workspace not found (404)', async () => {
+  describe('Space errors', () => {
+    it('should handle space not found (404)', async () => {
       // Mock 404 response
       nock(API_BASE_URL)
         .post('/api/upload/session')
         .reply(404, {
           success: false,
-          error: 'Workspace not found'
+          error: 'Space not found'
         });
 
-      // Command should show workspace not found message
-      // Command should suggest checking workspace slug
+      // Command should show space not found message
+      // Command should suggest checking space slug
       expect(nock.pendingMocks()).toHaveLength(1);
     });
 

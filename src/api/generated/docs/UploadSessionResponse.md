@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **string** |  | [default to undefined]
-**workspaceId** | **string** |  | [default to undefined]
+**spaceId** | **string** |  | [default to undefined]
 **status** | **string** |  | [default to undefined]
 **totalFiles** | **number** |  | [default to undefined]
 **processedFiles** | **number** |  | [default to undefined]
@@ -24,7 +24,7 @@ import { UploadSessionResponse } from 'mujarrad-api-client';
 
 const instance: UploadSessionResponse = {
     id,
-    workspaceId,
+    spaceId,
     status,
     totalFiles,
     processedFiles,

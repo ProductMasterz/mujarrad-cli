@@ -116,7 +116,7 @@ describe('NFR-001: Logging Performance Overhead (<15%)', () => {
       authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
       password: 'SuperSecret123!',
       apiKey: 'sk_live_abc123def456ghi789',
-      workspaceSlug: 'my-workspace'
+      spaceSlug: 'my-space'
     };
 
     // Benchmark WITHOUT redaction (simple logging)

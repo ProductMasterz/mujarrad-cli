@@ -31,7 +31,7 @@ describe('CloneService', () => {
 
     // Mock CloneApi
     mockCloneApi = {
-      exportWorkspace: jest.fn(),
+      exportSpace: jest.fn(),
       getExportStatus: jest.fn(),
       downloadExport: jest.fn()
     };
@@ -44,7 +44,7 @@ describe('CloneService', () => {
     });
 
     // Mock CacheManager
-    (CacheManager.cacheWorkspace as jest.Mock) = jest.fn().mockResolvedValue(undefined);
+    (CacheManager.cacheSpace as jest.Mock) = jest.fn().mockResolvedValue(undefined);
     (CacheManager.cacheNodeMapping as jest.Mock) = jest.fn().mockResolvedValue(undefined);
     (CacheManager.setLastSyncTime as jest.Mock) = jest.fn().mockResolvedValue(undefined);
 
@@ -57,8 +57,8 @@ describe('CloneService', () => {
   });
 
   describe('initiateExport', () => {
-    it('should initiate workspace export', async () => {
-      mockCloneApi.exportWorkspace.mockResolvedValue({
+    it('should initiate space export', async () => {
+      mockCloneApi.exportSpace.mockResolvedValue({
         data: {
           data: {
             exportJobId: 'job-123',
@@ -68,25 +68,25 @@ describe('CloneService', () => {
         }
       });
 
-      const result = await cloneService.initiateExport('workspace-123');
+      const result = await cloneService.initiateExport('space-123');
 
       expect(result.exportJobId).toBe('job-123');
       expect(result.status).toBe('PENDING');
-      expect(mockCloneApi.exportWorkspace).toHaveBeenCalledWith(
-        'workspace-123',
+      expect(mockCloneApi.exportSpace).toHaveBeenCalledWith(
+        'space-123',
         { format: 'obsidian', includeVersionHistory: false }
       );
     });
 
     it('should support includeVersionHistory option', async () => {
-      mockCloneApi.exportWorkspace.mockResolvedValue({
+      mockCloneApi.exportSpace.mockResolvedValue({
         data: { data: { exportJobId: 'job-456', status: 'PENDING' } }
       });
 
-      await cloneService.initiateExport('workspace-123', true);
+      await cloneService.initiateExport('space-123', true);
 
-      expect(mockCloneApi.exportWorkspace).toHaveBeenCalledWith(
-        'workspace-123',
+      expect(mockCloneApi.exportSpace).toHaveBeenCalledWith(
+        'space-123',
         { format: 'obsidian', includeVersionHistory: true }
       );
     });
@@ -99,7 +99,7 @@ describe('CloneService', () => {
         .mockResolvedValueOnce({ data: { data: { status: 'IN_PROGRESS', progress: 75 } } })
         .mockResolvedValueOnce({ data: { data: { status: 'COMPLETED', progress: 100 } } });
 
-      const result = await cloneService.pollExportStatus('workspace-123', 'job-123', 10);
+      const result = await cloneService.pollExportStatus('space-123', 'job-123', 10);
 
       expect(result.status).toBe('COMPLETED');
       expect(mockCloneApi.getExportStatus).toHaveBeenCalledTimes(3);
@@ -111,7 +111,7 @@ describe('CloneService', () => {
       });
 
       await expect(
-        cloneService.pollExportStatus('workspace-123', 'job-123', 10)
+        cloneService.pollExportStatus('space-123', 'job-123', 10)
       ).rejects.toThrow('Export failed');
     });
 
@@ -121,7 +121,7 @@ describe('CloneService', () => {
       });
 
       await expect(
-        cloneService.pollExportStatus('workspace-123', 'job-123', 10, 3)
+        cloneService.pollExportStatus('space-123', 'job-123', 10, 3)
       ).rejects.toThrow('Export timed out');
     });
   });
@@ -133,10 +133,10 @@ describe('CloneService', () => {
         data: mockZipData
       });
 
-      const zipPath = await cloneService.downloadExport('workspace-123', 'job-123', testDir);
+      const zipPath = await cloneService.downloadExport('space-123', 'job-123', testDir);
 
       expect(zipPath).toBe(path.join(testDir, 'export.zip'));
-      expect(mockCloneApi.downloadExport).toHaveBeenCalledWith('workspace-123', 'job-123');
+      expect(mockCloneApi.downloadExport).toHaveBeenCalledWith('space-123', 'job-123');
 
       const exists = await fs.access(zipPath).then(() => true).catch(() => false);
       expect(exists).toBe(true);
@@ -252,20 +252,20 @@ describe('CloneService', () => {
         ]
       };
 
-      await cloneService.recreateVault(testDir, exportData, 'workspace-123');
+      await cloneService.recreateVault(testDir, exportData, 'space-123');
 
       expect(CacheManager.cacheNodeMapping).toHaveBeenCalledWith(
-        'workspace-123',
+        'space-123',
         'uuid-456',
         'Note.md'
       );
     });
   });
 
-  describe('cloneWorkspace', () => {
+  describe('cloneSpace', () => {
     it('should orchestrate complete clone workflow', async () => {
       // Mock export initiation
-      mockCloneApi.exportWorkspace.mockResolvedValue({
+      mockCloneApi.exportSpace.mockResolvedValue({
         data: { data: { exportJobId: 'job-789', status: 'PENDING' } }
       });
 
@@ -293,19 +293,19 @@ describe('CloneService', () => {
         ]
       });
 
-      const summary = await cloneService.cloneWorkspace('workspace-123', testDir);
+      const summary = await cloneService.cloneSpace('space-123', testDir);
 
       expect(summary.success).toBe(true);
       expect(summary.totalNodes).toBeGreaterThan(0);
-      expect(mockCloneApi.exportWorkspace).toHaveBeenCalled();
+      expect(mockCloneApi.exportSpace).toHaveBeenCalled();
       expect(mockCloneApi.getExportStatus).toHaveBeenCalled();
       expect(mockCloneApi.downloadExport).toHaveBeenCalled();
     });
 
     it('should handle export errors gracefully', async () => {
-      mockCloneApi.exportWorkspace.mockRejectedValue(new Error('Network error'));
+      mockCloneApi.exportSpace.mockRejectedValue(new Error('Network error'));
 
-      const summary = await cloneService.cloneWorkspace('workspace-123', testDir);
+      const summary = await cloneService.cloneSpace('space-123', testDir);
 
       expect(summary.success).toBe(false);
       expect(summary.totalErrors).toBe(1);
@@ -313,7 +313,7 @@ describe('CloneService', () => {
     });
 
     it('should return summary with duration', async () => {
-      mockCloneApi.exportWorkspace.mockResolvedValue({
+      mockCloneApi.exportSpace.mockResolvedValue({
         data: { data: { exportJobId: 'job-999', status: 'PENDING' } }
       });
       mockCloneApi.getExportStatus.mockResolvedValue({
@@ -325,7 +325,7 @@ describe('CloneService', () => {
 
       jest.spyOn(cloneService, 'extractZip').mockResolvedValue({ nodes: [] });
 
-      const summary = await cloneService.cloneWorkspace('workspace-123', testDir);
+      const summary = await cloneService.cloneSpace('space-123', testDir);
 
       expect(summary.duration).toBeGreaterThanOrEqual(0);
       expect(summary.success).toBe(true);

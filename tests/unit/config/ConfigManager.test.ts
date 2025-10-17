@@ -30,7 +30,7 @@ describe('ConfigManager', () => {
     // Create test config
     const testConfig = {
       apiBaseUrl: 'https://test.api.com',
-      defaultWorkspace: 'test-workspace',
+      defaultSpace: 'test-space',
       autoSync: false,
       logLevel: 'info'
     };
@@ -41,7 +41,7 @@ describe('ConfigManager', () => {
     const config = await configManager.load();
 
     expect(config.apiBaseUrl).toBe('https://test.api.com');
-    expect(config.defaultWorkspace).toBe('test-workspace');
+    expect(config.defaultSpace).toBe('test-space');
     expect(config.autoSync).toBe(false);
     expect(config.logLevel).toBe('info');
   });
@@ -96,7 +96,7 @@ describe('ConfigManager', () => {
     // Create config file
     const fileConfig = {
       apiBaseUrl: 'https://file.api.com',
-      defaultWorkspace: 'file-workspace',
+      defaultSpace: 'file-space',
       autoSync: true,
       logLevel: 'info'
     };
@@ -110,7 +110,7 @@ describe('ConfigManager', () => {
     const config = await configManager.load();
 
     expect(config.apiBaseUrl).toBe('https://env.api.com'); // From env
-    expect(config.defaultWorkspace).toBe('file-workspace'); // From file
+    expect(config.defaultSpace).toBe('file-space'); // From file
     expect(config.logLevel).toBe('info'); // From file
 
     // Clean up
@@ -122,7 +122,7 @@ describe('ConfigManager', () => {
 
     const newConfig: import('../../../src/config/types.js').Config = {
       apiBaseUrl: 'https://new.api.com',
-      defaultWorkspace: 'new-workspace',
+      defaultSpace: 'new-space',
       autoSync: true,
       logLevel: 'debug' as 'debug'
     };
@@ -134,6 +134,6 @@ describe('ConfigManager', () => {
     const savedConfig = JSON.parse(savedContent);
 
     expect(savedConfig.apiBaseUrl).toBe('https://new.api.com');
-    expect(savedConfig.defaultWorkspace).toBe('new-workspace');
+    expect(savedConfig.defaultSpace).toBe('new-space');
   });
 });

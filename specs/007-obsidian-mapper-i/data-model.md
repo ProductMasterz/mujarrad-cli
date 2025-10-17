@@ -12,9 +12,9 @@ This document defines the data entities used by the Mujarrad CLI and their backe
 
 The following entities already exist in the Mujarrad backend and are referenced by the Obsidian Mapper Integration feature:
 
-#### 1. Workspace
+#### 1. Space
 
-Represents a workspace container that holds nodes and attributes.
+Represents a space container that holds nodes and attributes.
 
 **Properties**:
 - `id` (UUID): Primary key
@@ -28,16 +28,16 @@ Represents a workspace container that holds nodes and attributes.
 - `archivedAt` (Timestamp): Archive timestamp
 
 **Relationships**:
-- `nodes` (One-to-Many → Node): Nodes contained in this workspace
-- `mappings` (One-to-Many → Mapping): Canvas mappings in this workspace
-- `uploadSessions` (One-to-Many → UploadSession): Upload sessions for this workspace
-- `syncSessions` (One-to-Many → SyncSession): Sync sessions for this workspace
+- `nodes` (One-to-Many → Node): Nodes contained in this space
+- `mappings` (One-to-Many → Mapping): Canvas mappings in this space
+- `uploadSessions` (One-to-Many → UploadSession): Upload sessions for this space
+- `syncSessions` (One-to-Many → SyncSession): Sync sessions for this space
 
 **API Endpoints**:
-- `GET /api/workspaces` - List workspaces
-- `POST /api/workspaces` - Create workspace
-- `GET /api/workspaces/{workspaceId}` - Get workspace details
-- `DELETE /api/workspaces/{workspaceId}` - Delete workspace
+- `GET /api/spaces` - List spaces
+- `POST /api/spaces` - Create space
+- `GET /api/spaces/{spaceId}` - Get space details
+- `DELETE /api/spaces/{spaceId}` - Delete space
 
 ---
 
@@ -47,10 +47,10 @@ Represents a single note, concept, or entity in the knowledge graph.
 
 **Properties**:
 - `id` (UUID): Primary key
-- `slug` (String): URL-safe identifier (unique within workspace)
+- `slug` (String): URL-safe identifier (unique within space)
 - `name` (String): Display name (extracted from filename or H1 heading)
 - `content` (Text): Markdown content
-- `workspaceId` (UUID): Foreign key to Workspace
+- `spaceId` (UUID): Foreign key to Space
 - `createdAt` (Timestamp): Creation timestamp
 - `updatedAt` (Timestamp): Last modification timestamp
 - `deleted` (Boolean): Soft delete flag
@@ -74,17 +74,17 @@ Represents a single note, concept, or entity in the knowledge graph.
 ```
 
 **Relationships**:
-- `workspace` (Many-to-One → Workspace): Parent workspace
+- `space` (Many-to-One → Space): Parent space
 - `attributes` (One-to-Many → Attribute): Attributes (relationships) from this node
 - `nodeMappings` (One-to-Many → NodeMapping): Canvas node mappings
 - `versions` (One-to-Many → NodeVersion): Version history
 
 **API Endpoints**:
-- `GET /api/workspaces/{workspaceId}/nodes` - List nodes in workspace
-- `POST /api/workspaces/{workspaceId}/nodes` - Create node
-- `GET /api/workspaces/{workspaceId}/nodes/{nodeId}` - Get node details
-- `PUT /api/workspaces/{workspaceId}/nodes/{nodeId}` - Update node
-- `DELETE /api/workspaces/{workspaceId}/nodes/{nodeId}` - Delete node
+- `GET /api/spaces/{spaceId}/nodes` - List nodes in space
+- `POST /api/spaces/{spaceId}/nodes` - Create node
+- `GET /api/spaces/{spaceId}/nodes/{nodeId}` - Get node details
+- `PUT /api/spaces/{spaceId}/nodes/{nodeId}` - Update node
+- `DELETE /api/spaces/{spaceId}/nodes/{nodeId}` - Delete node
 
 ---
 
@@ -119,8 +119,8 @@ Represents a relationship or edge between two nodes in the knowledge graph.
 - `targetNode` (Many-to-One → Node): Target node
 
 **API Endpoints**:
-- `GET /api/workspaces/{workspaceId}/attributes` - List attributes in workspace
-- `POST /api/workspaces/{workspaceId}/attributes` - Create attribute
+- `GET /api/spaces/{spaceId}/attributes` - List attributes in space
+- `POST /api/spaces/{spaceId}/attributes` - Create attribute
 
 ---
 
@@ -128,16 +128,16 @@ Represents a relationship or edge between two nodes in the knowledge graph.
 
 The following entities are NEW and required for the Template System feature (Phase 8):
 
-#### 4. WorkspaceTemplate
+#### 4. SpaceTemplate
 
-Represents a reusable workspace structure that can be instantiated to create new workspaces.
+Represents a reusable space structure that can be instantiated to create new spaces.
 
-**Purpose**: Enable users to create template workspaces from existing workspaces and instantiate them to create new workspaces with the same structure.
+**Purpose**: Enable users to create template spaces from existing spaces and instantiate them to create new spaces with the same structure.
 
 **Properties**:
 - `id` (UUID): Primary key
 - `creatorId` (UUID): Foreign key to User (template creator)
-- `sourceWorkspaceId` (UUID): Foreign key to Workspace (template source)
+- `sourceSpaceId` (UUID): Foreign key to Space (template source)
 - `name` (String): Template display name (e.g., "Business Model Canvas")
 - `description` (String): Template description
 - `tags` (String[]): Template tags for categorization (e.g., ["business", "strategy"])
@@ -149,29 +149,29 @@ Represents a reusable workspace structure that can be instantiated to create new
 
 **Relationships**:
 - `creator` (Many-to-One → User): User who created the template
-- `sourceWorkspace` (Many-to-One → Workspace): Workspace used as template source
-- `contextTemplates` (One-to-Many → ContextTemplate): Context templates within this workspace template
+- `sourceSpace` (Many-to-One → Space): Space used as template source
+- `contextTemplates` (One-to-Many → ContextTemplate): Context templates within this space template
 
 **Validation Rules**:
 - `name` must be 3-100 characters
 - `description` must be 0-1000 characters
 - `tags` array must have 0-10 tags, each 1-50 characters
-- `sourceWorkspaceId` must reference an existing, non-deleted workspace
+- `sourceSpaceId` must reference an existing, non-deleted space
 - `creatorId` must match authenticated user (security check)
 
 **API Endpoints**:
-- `GET /api/templates` - List workspace templates (filtered by tags, isPublic)
-- `POST /api/templates` - Create template from workspace
+- `GET /api/templates` - List space templates (filtered by tags, isPublic)
+- `POST /api/templates` - Create template from space
 - `GET /api/templates/{templateId}` - Get template details
 - `DELETE /api/templates/{templateId}` - Delete template
-- `POST /api/workspaces/{workspaceId}/instantiate` - Instantiate template
+- `POST /api/spaces/{spaceId}/instantiate` - Instantiate template
 
 **Example**:
 ```json
 {
   "id": "template-uuid-1",
   "creatorId": "user-uuid-1",
-  "sourceWorkspaceId": "workspace-uuid-1",
+  "sourceSpaceId": "space-uuid-1",
   "name": "Business Model Canvas",
   "description": "9-block business model framework for strategy planning",
   "tags": ["business", "strategy", "canvas"],
@@ -187,13 +187,13 @@ Represents a reusable workspace structure that can be instantiated to create new
 
 #### 5. ContextTemplate
 
-Represents a folder structure template within a workspace template. Used to preserve folder hierarchies when instantiating templates.
+Represents a folder structure template within a space template. Used to preserve folder hierarchies when instantiating templates.
 
 **Purpose**: Enable preservation of Obsidian folder structures (e.g., "Customer Segments/", "Value Propositions/") when cloning templates.
 
 **Properties**:
 - `id` (UUID): Primary key
-- `workspaceTemplateId` (UUID): Foreign key to WorkspaceTemplate
+- `spaceTemplateId` (UUID): Foreign key to SpaceTemplate
 - `name` (String): Context/folder name (e.g., "Customer Segments")
 - `path` (String): Full folder path (e.g., "/Business Model Canvas/Customer Segments")
 - `description` (String): Optional description
@@ -202,23 +202,23 @@ Represents a folder structure template within a workspace template. Used to pres
 - `deleted` (Boolean): Soft delete flag
 
 **Relationships**:
-- `workspaceTemplate` (Many-to-One → WorkspaceTemplate): Parent workspace template
+- `spaceTemplate` (Many-to-One → SpaceTemplate): Parent space template
 
 **Validation Rules**:
 - `name` must be 1-100 characters
 - `path` must be a valid Unix-style path (no backslashes)
 - `path` must not contain ".." (path traversal prevention)
-- `workspaceTemplateId` must reference an existing, non-deleted WorkspaceTemplate
+- `spaceTemplateId` must reference an existing, non-deleted SpaceTemplate
 
 **API Endpoints**:
-- Context templates are nested within WorkspaceTemplate responses (no separate endpoints)
+- Context templates are nested within SpaceTemplate responses (no separate endpoints)
 - Retrieved via `GET /api/templates/{templateId}` (includes `contextTemplates` array)
 
 **Example**:
 ```json
 {
   "id": "context-template-uuid-1",
-  "workspaceTemplateId": "template-uuid-1",
+  "spaceTemplateId": "template-uuid-1",
   "name": "Customer Segments",
   "path": "/Business Model Canvas/Customer Segments",
   "description": "Who are the different groups of people or organizations your enterprise aims to reach and serve?",
@@ -238,7 +238,7 @@ Tracks batch upload progress for resumability (FR-008 to FR-012).
 
 **Properties**:
 - `id` (UUID): Primary key
-- `workspaceId` (UUID): Foreign key to Workspace
+- `spaceId` (UUID): Foreign key to Space
 - `totalFiles` (Integer): Total number of files to upload
 - `processedFiles` (Integer): Number of files successfully processed
 - `failedFiles` (Integer): Number of files that failed
@@ -248,12 +248,12 @@ Tracks batch upload progress for resumability (FR-008 to FR-012).
 - `updatedAt` (Timestamp): Last update timestamp
 
 **Relationships**:
-- `workspace` (Many-to-One → Workspace): Target workspace
+- `space` (Many-to-One → Space): Target space
 
 **API Endpoints**:
-- `POST /api/workspaces/{workspaceId}/upload/batch` - Start upload session
-- `GET /api/workspaces/{workspaceId}/upload/status` - Get upload progress
-- `POST /api/workspaces/{workspaceId}/upload/resume` - Resume failed upload
+- `POST /api/spaces/{spaceId}/upload/batch` - Start upload session
+- `GET /api/spaces/{spaceId}/upload/status` - Get upload progress
+- `POST /api/spaces/{spaceId}/upload/resume` - Resume failed upload
 
 ---
 
@@ -263,7 +263,7 @@ Tracks bidirectional sync operations for conflict resolution (FR-034 to FR-046).
 
 **Properties**:
 - `id` (UUID): Primary key
-- `workspaceId` (UUID): Foreign key to Workspace
+- `spaceId` (UUID): Foreign key to Space
 - `localChanges` (Integer): Number of local changes detected
 - `remoteChanges` (Integer): Number of remote changes detected
 - `conflicts` (Integer): Number of conflicts detected
@@ -274,11 +274,11 @@ Tracks bidirectional sync operations for conflict resolution (FR-034 to FR-046).
 - `updatedAt` (Timestamp): Last update timestamp
 
 **Relationships**:
-- `workspace` (Many-to-One → Workspace): Target workspace
+- `space` (Many-to-One → Space): Target space
 
 **API Endpoints**:
-- `POST /api/workspaces/{workspaceId}/sync/detect` - Detect changes and conflicts
-- `POST /api/workspaces/{workspaceId}/sync/apply` - Apply sync changes
+- `POST /api/spaces/{spaceId}/sync/detect` - Detect changes and conflicts
+- `POST /api/spaces/{spaceId}/sync/apply` - Apply sync changes
 
 ---
 
@@ -290,9 +290,9 @@ Represents a canvas visualization with viewport configuration (FR-015 to FR-021)
 
 **Properties**:
 - `id` (UUID): Primary key
-- `workspaceId` (UUID): Foreign key to Workspace
+- `spaceId` (UUID): Foreign key to Space
 - `name` (String): Canvas display name (derived from .canvas filename)
-- `slug` (String): URL-safe identifier (unique within workspace)
+- `slug` (String): URL-safe identifier (unique within space)
 - `description` (String): Optional description
 - `configuration` (JSONB): Viewport settings
 
@@ -306,13 +306,13 @@ Represents a canvas visualization with viewport configuration (FR-015 to FR-021)
 ```
 
 **Relationships**:
-- `workspace` (Many-to-One → Workspace): Parent workspace
+- `space` (Many-to-One → Space): Parent space
 - `nodeMappings` (One-to-Many → NodeMapping): Nodes within this canvas
 
 **API Endpoints**:
-- `GET /api/workspaces/{workspaceId}/mappings` - List canvases in workspace
-- `POST /api/workspaces/{workspaceId}/mappings` - Create canvas
-- `GET /api/workspaces/{workspaceId}/mappings/{mappingId}` - Get canvas details
+- `GET /api/spaces/{spaceId}/mappings` - List canvases in space
+- `POST /api/spaces/{spaceId}/mappings` - Create canvas
+- `GET /api/spaces/{spaceId}/mappings/{mappingId}` - Get canvas details
 
 ---
 
@@ -345,7 +345,7 @@ Represents a node's position and visual properties within a canvas (FR-020, FR-0
 
 **API Endpoints**:
 - NodeMappings are nested within Mapping responses (no separate endpoints)
-- Retrieved via `GET /api/workspaces/{workspaceId}/mappings/{mappingId}` (includes `nodeMappings` array)
+- Retrieved via `GET /api/spaces/{spaceId}/mappings/{mappingId}` (includes `nodeMappings` array)
 
 ---
 
@@ -379,8 +379,8 @@ Tracks version history of nodes for Git integration (FR-047 to FR-053).
 - `node` (Many-to-One → Node): Parent node
 
 **API Endpoints**:
-- `GET /api/workspaces/{workspaceId}/nodes/{nodeId}/versions` - List node versions
-- `GET /api/workspaces/{workspaceId}/nodes/{nodeId}/versions/{versionId}` - Get specific version
+- `GET /api/spaces/{spaceId}/nodes/{nodeId}/versions` - List node versions
+- `GET /api/spaces/{spaceId}/nodes/{nodeId}/versions/{versionId}` - Get specific version
 
 ---
 
@@ -396,7 +396,7 @@ Maps local file paths to backend Node UUIDs for efficient sync.
 ```json
 {
   "version": "1.0",
-  "workspaceId": "workspace-uuid",
+  "spaceId": "space-uuid",
   "mappings": {
     "Projects/Mujarrad/spec.md": "node-uuid-1",
     "Projects/Mujarrad/plan.md": "node-uuid-2",
@@ -408,7 +408,7 @@ Maps local file paths to backend Node UUIDs for efficient sync.
 **Operations**:
 - Created after initial upload
 - Updated after sync
-- Deleted when workspace is unlinked
+- Deleted when space is unlinked
 
 ---
 
@@ -439,14 +439,14 @@ Stores JWT tokens for authentication (with 600 permissions).
 
 ---
 
-### 3. Cache File (`~/.mujarrad/cache/{workspace-slug}/structure.json`)
+### 3. Cache File (`~/.mujarrad/cache/{space-slug}/structure.json`)
 
-Caches workspace structure for offline operations.
+Caches space structure for offline operations.
 
 **Format**:
 ```json
 {
-  "workspaceId": "workspace-uuid",
+  "spaceId": "space-uuid",
   "lastSync": "2025-10-10T10:00:00Z",
   "nodes": [
     {
@@ -472,11 +472,11 @@ Caches workspace structure for offline operations.
 ```
 User (existing, not shown)
   |
-  +-- WorkspaceTemplate (NEW)
+  +-- SpaceTemplate (NEW)
   |     |
   |     +-- ContextTemplate (NEW)
   |
-  +-- Workspace
+  +-- Space
         |
         +-- Node
         |     |
@@ -497,8 +497,8 @@ User (existing, not shown)
 The backend uses Flyway for versioned database migrations (Constitution Principle II).
 
 **Migration Files** (backend responsibility, CLI does not run these):
-- `V1__create_workspace_node_attribute.sql` - Existing entities (already applied)
-- `V2__create_template_entities.sql` - WorkspaceTemplate, ContextTemplate (NEW)
+- `V1__create_space_node_attribute.sql` - Existing entities (already applied)
+- `V2__create_template_entities.sql` - SpaceTemplate, ContextTemplate (NEW)
 - `V3__create_session_entities.sql` - UploadSession, SyncSession (NEW)
 - `V4__create_canvas_entities.sql` - Mapping, NodeMapping (NEW)
 - `V5__create_version_entities.sql` - NodeVersion (NEW)
@@ -513,14 +513,14 @@ The backend uses Flyway for versioned database migrations (Constitution Principl
 ## Terminology Clarification
 
 **MVP Terminology** (Current):
-- `WorkspaceTemplate` = Reusable workspace structure
-- `ContextTemplate` = Folder structure within workspace template
+- `SpaceTemplate` = Reusable space structure
+- `ContextTemplate` = Folder structure within space template
 
 **Future Terminology** (Post-MVP):
-- `SpaceTemplate` = Renamed from `WorkspaceTemplate` (aligns with "Space" naming convention)
+- `SpaceTemplate` = Renamed from `SpaceTemplate` (aligns with "Space" naming convention)
 - `ContextTemplate` = Unchanged
 
-**Migration Note**: The rename from `WorkspaceTemplate` → `SpaceTemplate` is deferred to post-MVP. All current code uses `WorkspaceTemplate`.
+**Migration Note**: The rename from `SpaceTemplate` → `SpaceTemplate` is deferred to post-MVP. All current code uses `SpaceTemplate`.
 
 ---
 

@@ -78,12 +78,12 @@ describe('Sync Command', () => {
       expect(cmd!.description()).toContain('Synchronize local vault');
     });
 
-    it('should have optional --workspace option', () => {
+    it('should have optional --space option', () => {
       const cmd = program.commands.find(c => c.name() === 'sync');
       const options = cmd!.options;
-      const workspaceOpt = options.find(opt => opt.long === '--workspace');
-      expect(workspaceOpt).toBeDefined();
-      // Workspace option exists (whether required or optional depends on implementation)
+      const spaceOpt = options.find(opt => opt.long === '--space');
+      expect(spaceOpt).toBeDefined();
+      // Space option exists (whether required or optional depends on implementation)
     });
 
     it('should use current directory as vault path', () => {
@@ -126,19 +126,19 @@ describe('Sync Command', () => {
     });
   });
 
-  describe('Workspace resolution', () => {
-    it('should use --workspace flag if provided', () => {
-      // workspace flag should take precedence
+  describe('Space resolution', () => {
+    it('should use --space flag if provided', () => {
+      // space flag should take precedence
       expect(true).toBe(true);
     });
 
-    it('should use default workspace from config if not provided', () => {
+    it('should use default space from config if not provided', () => {
       // Should load from ConfigManager
       expect(true).toBe(true);
     });
 
-    it('should fail if no workspace specified', () => {
-      // Should suggest using --workspace flag
+    it('should fail if no space specified', () => {
+      // Should suggest using --space flag
       expect(true).toBe(true);
     });
   });
@@ -250,8 +250,8 @@ describe('Sync Command', () => {
       expect(true).toBe(true);
     });
 
-    it('should handle 404 workspace not found', () => {
-      // Should suggest checking workspace slug
+    it('should handle 404 space not found', () => {
+      // Should suggest checking space slug
       expect(true).toBe(true);
     });
 
@@ -273,7 +273,7 @@ describe('Sync Command', () => {
 
   describe('Logging', () => {
     it('should log sync initiation', () => {
-      // Log: workspace slug, vault path
+      // Log: space slug, vault path
       expect(true).toBe(true);
     });
 

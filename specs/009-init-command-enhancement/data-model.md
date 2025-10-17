@@ -5,7 +5,7 @@
 
 ## Overview
 
-This data model defines all entities, relationships, and state machines for the enhanced `mujarrad init` command with bidirectional synchronization. The model supports workspace verification, remote content pull with version history, three-way merge detection using backend-calculated common ancestors, transactional downloads with rollback, and interactive conflict resolution with timeout handling.
+This data model defines all entities, relationships, and state machines for the enhanced `mujarrad init` command with bidirectional synchronization. The model supports space verification, remote content pull with version history, three-way merge detection using backend-calculated common ancestors, transactional downloads with rollback, and interactive conflict resolution with timeout handling.
 
 **Design Principles**:
 - **Immutability**: Entity hashes are content-addressable and immutable
@@ -16,19 +16,19 @@ This data model defines all entities, relationships, and state machines for the 
 
 ## Entity Definitions
 
-### 1. WorkspaceMetadata
+### 1. SpaceMetadata
 
-Represents remote workspace state retrieved during pre-flight verification (FR-001, FR-005).
+Represents remote space state retrieved during pre-flight verification (FR-001, FR-005).
 
-**Purpose**: Validate workspace existence and user permissions before scanning local vault.
+**Purpose**: Validate space existence and user permissions before scanning local vault.
 
 **TypeScript Definition**:
 ```typescript
-interface WorkspaceMetadata {
-  slug: string;              // Workspace identifier (URL-safe)
-  name: string;              // Human-readable workspace name
-  owner: string;             // Username of workspace owner
-  nodeCount: number;         // Total number of nodes in workspace
+interface SpaceMetadata {
+  slug: string;              // Space identifier (URL-safe)
+  name: string;              // Human-readable space name
+  owner: string;             // Username of space owner
+  nodeCount: number;         // Total number of nodes in space
   userPermissions: {
     canRead: boolean;
     canWrite: boolean;
@@ -47,7 +47,7 @@ interface WorkspaceMetadata {
 - At least one permission (`canRead`, `canWrite`, `canDelete`, `canShare`) MUST be true for operation to proceed
 - `canWrite` MUST be true for init operation (otherwise fail with exit code 4)
 
-**Source**: Backend API endpoint `GET /api/workspaces/{slug}`
+**Source**: Backend API endpoint `GET /api/spaces/{slug}`
 
 **Lifecycle**: Retrieved once at start of init operation, cached in memory for duration of command
 
@@ -55,7 +55,7 @@ interface WorkspaceMetadata {
 
 ### 2. RemoteNode
 
-Represents a file/note that exists in the remote workspace, including version history metadata for divergence detection.
+Represents a file/note that exists in the remote space, including version history metadata for divergence detection.
 
 **Purpose**: Store remote content metadata for comparison with local files (FR-007, FR-008, FR-019).
 
@@ -86,7 +86,7 @@ interface RemoteNode {
 - `ancestorHash` MUST be null OR 64-character lowercase hexadecimal string
 - `content` length MUST be <= 10MB (10,485,760 bytes)
 
-**Source**: Backend API endpoint `GET /api/workspaces/{slug}/nodes` (paginated)
+**Source**: Backend API endpoint `GET /api/spaces/{slug}/nodes` (paginated)
 
 **Lifecycle**: Fetched during pull phase, stored in memory, written to disk if classification requires download
 
@@ -127,7 +127,7 @@ interface LocalFile {
 
 **Source**: Local filesystem via VaultScanner and MetadataManager
 
-**Lifecycle**: Scanned after workspace verification, stored in memory for comparison phase
+**Lifecycle**: Scanned after space verification, stored in memory for comparison phase
 
 ---
 
@@ -278,7 +278,7 @@ Represents the ephemeral state of a single `mujarrad init --sync` operation.
 **TypeScript Definition**:
 ```typescript
 type SyncSessionStatus =
-  | 'VALIDATING_WORKSPACE'      // Pre-flight workspace verification (FR-001)
+  | 'VALIDATING_SPACE'      // Pre-flight space verification (FR-001)
   | 'PULLING_REMOTE'            // Downloading remote nodes (FR-007)
   | 'COMPARING'                 // Three-way merge classification (FR-021)
   | 'RESOLVING_CONFLICTS'       // Interactive/auto conflict resolution (FR-026)
@@ -288,7 +288,7 @@ type SyncSessionStatus =
 
 interface SyncSession {
   sessionId: string;                   // Unique session identifier (UUID v4)
-  workspaceSlug: string;               // Target workspace
+  spaceSlug: string;               // Target space
   startTime: string;                   // ISO 8601 timestamp
   endTime: string | null;              // ISO 8601 timestamp (null if in progress)
   status: SyncSessionStatus;           // Current operation state
@@ -341,9 +341,9 @@ Defines valid state transitions for `SyncSession.status` field.
 
 ```
 ┌─────────────────────┐
-│ VALIDATING_WORKSPACE │  [Entry Point]
+│ VALIDATING_SPACE │  [Entry Point]
 └──────────┬───────────┘
-           │ Workspace verified (FR-001 success)
+           │ Space verified (FR-001 success)
            ├─────────────────────────────────────────┐
            │                                         │
            v                                         v
@@ -380,16 +380,16 @@ Defines valid state transitions for `SyncSession.status` field.
 
 **State Descriptions**:
 
-1. **VALIDATING_WORKSPACE**:
+1. **VALIDATING_SPACE**:
    - **Entry Conditions**: Command executed with `--sync` flag
-   - **Activities**: Send GET request to `/api/workspaces/{slug}`, verify `canWrite` permission
+   - **Activities**: Send GET request to `/api/spaces/{slug}`, verify `canWrite` permission
    - **Exit Conditions**:
-     - Success: Workspace exists and user has write permission → PULLING_REMOTE
-     - Failure: Workspace not found OR no write permission → FAILED (exit code 4)
+     - Success: Space exists and user has write permission → PULLING_REMOTE
+     - Failure: Space not found OR no write permission → FAILED (exit code 4)
    - **Duration**: <5 seconds (NFR-001)
 
 2. **PULLING_REMOTE**:
-   - **Entry Conditions**: Workspace validated
+   - **Entry Conditions**: Space validated
    - **Activities**: Fetch remote nodes via paginated API, download to staging directory (FR-015)
    - **Exit Conditions**:
      - Success: All remote nodes fetched → COMPARING
@@ -436,7 +436,7 @@ Defines valid state transitions for `SyncSession.status` field.
      - Display error message with context
      - Write error logs
    - **Exit Conditions**: None (terminal state)
-   - **Exit Code**: 1 (general error) or 4 (workspace/permission error)
+   - **Exit Code**: 1 (general error) or 4 (space/permission error)
 
 ---
 
@@ -444,11 +444,11 @@ Defines valid state transitions for `SyncSession.status` field.
 
 All validation rules extracted from functional requirements (FR-001 to FR-037) and non-functional requirements (NFR-001 to NFR-005):
 
-### Workspace Validation (FR-001 to FR-005)
-- ✅ Workspace slug format: `^[a-z0-9-]{3,50}$`
+### Space Validation (FR-001 to FR-005)
+- ✅ Space slug format: `^[a-z0-9-]{3,50}$`
 - ✅ Verification timeout: 5 seconds (NFR-001)
 - ✅ Required permission: `canWrite === true`
-- ✅ Exit code 4 for workspace not found or access denied
+- ✅ Exit code 4 for space not found or access denied
 
 ### Remote Content Pull (FR-006 to FR-020)
 - ✅ `--sync` flag enables bidirectional mode (FR-006)
@@ -486,7 +486,7 @@ All validation rules extracted from functional requirements (FR-001 to FR-037) a
 - ✅ All existing flags supported (FR-037)
 
 ### Performance & Scale (NFR-001 to NFR-005)
-- ✅ Workspace verification: <5 seconds (NFR-001)
+- ✅ Space verification: <5 seconds (NFR-001)
 - ✅ Download rate: ≥100 KB/s (NFR-002)
 - ✅ Prompt timeout: 120 seconds (NFR-003)
 - ✅ Handle 10,000 remote nodes without memory issues (NFR-004, cursor-based pagination)
@@ -497,7 +497,7 @@ All validation rules extracted from functional requirements (FR-001 to FR-037) a
 ## Relationships Between Entities
 
 ```
-WorkspaceMetadata (1)
+SpaceMetadata (1)
     │
     │ validated by
     │
@@ -523,9 +523,9 @@ ConflictResolution (N)
 ```
 
 **Cardinality**:
-- 1 WorkspaceMetadata per sync session
+- 1 SpaceMetadata per sync session
 - 1 SyncSession per `mujarrad init --sync` invocation
-- N RemoteNodes per workspace (0 to 10,000+)
+- N RemoteNodes per space (0 to 10,000+)
 - N LocalFiles per vault (0 to 10,000+)
 - N ComparisonResults = total unique file paths across local and remote
 - N ConflictResolutions = count of conflicts requiring resolution
@@ -607,14 +607,14 @@ interface PaginatedResponse<T> {
 }
 
 async function* fetchAllNodes(
-  workspaceSlug: string
+  spaceSlug: string
 ): AsyncGenerator<RemoteNode> {
   let cursor: string | null = null;
 
   do {
     const url = cursor
-      ? `/api/workspaces/${workspaceSlug}/nodes?cursor=${cursor}`
-      : `/api/workspaces/${workspaceSlug}/nodes`;
+      ? `/api/spaces/${spaceSlug}/nodes?cursor=${cursor}`
+      : `/api/spaces/${spaceSlug}/nodes`;
 
     const response = await axios.get<PaginatedResponse<RemoteNode>>(url);
 
@@ -698,15 +698,15 @@ async function resolveConflict(
 - Cursor pagination (mock API responses)
 
 ### Integration Tests Required
-- Full sync flow (workspace validation → pull → compare → resolve → upload)
+- Full sync flow (space validation → pull → compare → resolve → upload)
 - Network failure during pull (verify rollback)
 - Conflict resolution timeout (verify skip and continue)
-- Large workspace (10,000 nodes, verify memory usage)
+- Large space (10,000 nodes, verify memory usage)
 - Backward compatibility (verify existing `mujarrad init` unchanged)
 
 ### Contract Tests Required
 - Backend API responses match OpenAPI spec (see contracts/backend-api.yaml)
-- WorkspaceMetadata deserialization
+- SpaceMetadata deserialization
 - RemoteNode deserialization with ancestorHash field
 - Paginated response format
 
@@ -714,7 +714,7 @@ async function resolveConflict(
 
 ## Appendix: Example Data
 
-### Example 1: Workspace Metadata Response
+### Example 1: Space Metadata Response
 ```json
 {
   "slug": "my-knowledge-base",
@@ -789,7 +789,7 @@ async function resolveConflict(
 ```json
 {
   "sessionId": "session-uuid-123",
-  "workspaceSlug": "my-workspace",
+  "spaceSlug": "my-space",
   "startTime": "2025-10-12T15:00:00Z",
   "endTime": "2025-10-12T15:03:42Z",
   "status": "COMPLETED",

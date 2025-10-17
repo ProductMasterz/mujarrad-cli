@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**templates** | [**Array&lt;WorkspaceTemplateResponse&gt;**](WorkspaceTemplateResponse.md) |  | [optional] [default to undefined]
+**templates** | [**Array&lt;SpaceTemplateResponse&gt;**](SpaceTemplateResponse.md) |  | [optional] [default to undefined]
 **totalElements** | **number** |  | [optional] [default to undefined]
 **totalPages** | **number** |  | [optional] [default to undefined]
 **currentPage** | **number** |  | [optional] [default to undefined]

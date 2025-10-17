@@ -1,9 +1,9 @@
 /**
- * Integration tests for init command with workspace validation
+ * Integration tests for init command with space validation
  * Feature: 009-init-command-enhancement
- * Task: T012 - Integration test for init command with workspace validation
+ * Task: T012 - Integration test for init command with space validation
  *
- * Purpose: Test full init command flow with workspace validation
+ * Purpose: Test full init command flow with space validation
  * Tests FR-001, FR-003, FR-004, FR-005 in realistic scenarios
  *
  * TDD approach: These tests are written BEFORE implementation and should FAIL initially
@@ -15,7 +15,7 @@ import * as path from 'path';
 import * as os from 'os';
 import nock from 'nock';
 
-describe('Init Command - Workspace Validation Integration', () => {
+describe('Init Command - Space Validation Integration', () => {
     let testVaultDir: string;
     const baseURL = 'https://mujarrad.onrender.com';
 
@@ -45,14 +45,14 @@ describe('Init Command - Workspace Validation Integration', () => {
         nock.cleanAll();
     });
 
-    describe('Workspace Validation Before Scan (FR-001)', () => {
-        it('should verify workspace exists before scanning vault', () => {
-            // Mock successful workspace validation
+    describe('Space Validation Before Scan (FR-001)', () => {
+        it('should verify space exists before scanning vault', () => {
+            // Mock successful space validation
             nock(baseURL)
-                .get('/api/workspaces/valid-workspace')
+                .get('/api/spaces/valid-space')
                 .reply(200, {
-                    slug: 'valid-workspace',
-                    name: 'Valid Workspace',
+                    slug: 'valid-space',
+                    name: 'Valid Space',
                     owner: 'test-user',
                     nodeCount: 10,
                     userPermissions: {
@@ -67,25 +67,25 @@ describe('Init Command - Workspace Validation Integration', () => {
 
             // Mock upload session creation (should be called after validation)
             nock(baseURL)
-                .post('/api/workspaces/valid-workspace/upload/start')
+                .post('/api/spaces/valid-space/upload/start')
                 .reply(202, {
                     success: true,
                     data: {
                         sessionId: 'session-123',
-                        workspaceId: 'workspace-uuid',
+                        spaceId: 'space-uuid',
                     },
                 });
 
             try {
                 // Execute init command
                 const output = execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace valid-workspace`,
+                    `node dist/index.js init ${testVaultDir} --space valid-space`,
                     { encoding: 'utf8', timeout: 10000 }
                 );
 
-                // Verify workspace verification message appears before scan
-                expect(output).toContain('Verifying workspace');
-                expect(output).toContain('Workspace verified: Valid Workspace');
+                // Verify space verification message appears before scan
+                expect(output).toContain('Verifying space');
+                expect(output).toContain('Space verified: Valid Space');
                 expect(output).toContain('10 existing nodes'); // FR-005
 
                 // Verify scan occurs after validation
@@ -98,13 +98,13 @@ describe('Init Command - Workspace Validation Integration', () => {
             }
         });
 
-        it('should fail fast with clear error when workspace does not exist (FR-003)', () => {
-            // Mock 404 workspace not found
+        it('should fail fast with clear error when space does not exist (FR-003)', () => {
+            // Mock 404 space not found
             nock(baseURL)
-                .get('/api/workspaces/nonexistent-workspace')
+                .get('/api/spaces/nonexistent-space')
                 .reply(404, {
-                    error: "Workspace 'nonexistent-workspace' not found",
-                    code: 'WORKSPACE_NOT_FOUND',
+                    error: "Space 'nonexistent-space' not found",
+                    code: 'SPACE_NOT_FOUND',
                     timestamp: '2025-10-12T15:30:00Z',
                 });
 
@@ -113,12 +113,12 @@ describe('Init Command - Workspace Validation Integration', () => {
                 const startTime = Date.now();
 
                 execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace nonexistent-workspace`,
+                    `node dist/index.js init ${testVaultDir} --space nonexistent-space`,
                     { encoding: 'utf8', timeout: 5000 }
                 );
 
                 // Should not reach here
-                fail('Expected command to fail with workspace not found error');
+                fail('Expected command to fail with space not found error');
             } catch (error: any) {
                 const elapsedTime = Date.now() - startTime;
 
@@ -127,7 +127,7 @@ describe('Init Command - Workspace Validation Integration', () => {
 
                 // Verify error message
                 const output = error.stderr || error.stdout || error.message;
-                expect(output).toContain('nonexistent-workspace');
+                expect(output).toContain('nonexistent-space');
                 expect(output).toContain('not found');
 
                 // Verify exit code 4 (FR-003)
@@ -142,16 +142,16 @@ describe('Init Command - Workspace Validation Integration', () => {
         it('should fail with access denied error when user lacks permissions (FR-004)', () => {
             // Mock 403 access denied
             nock(baseURL)
-                .get('/api/workspaces/restricted-workspace')
+                .get('/api/spaces/restricted-space')
                 .reply(403, {
-                    error: "Access denied to workspace 'restricted-workspace'. Contact the workspace owner for permissions.",
-                    code: 'WORKSPACE_ACCESS_DENIED',
+                    error: "Access denied to space 'restricted-space'. Contact the space owner for permissions.",
+                    code: 'SPACE_ACCESS_DENIED',
                     timestamp: '2025-10-12T15:30:00Z',
                 });
 
             try {
                 execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace restricted-workspace`,
+                    `node dist/index.js init ${testVaultDir} --space restricted-space`,
                     { encoding: 'utf8', timeout: 5000 }
                 );
 
@@ -161,18 +161,18 @@ describe('Init Command - Workspace Validation Integration', () => {
 
                 // Verify access denied message
                 expect(output).toContain('Access denied');
-                expect(output).toContain('restricted-workspace');
-                expect(output).toContain('workspace owner');
+                expect(output).toContain('restricted-space');
+                expect(output).toContain('space owner');
 
                 // Verify vault scanning did NOT occur
                 expect(output).not.toContain('Scanning vault');
             }
         });
 
-        it('should display workspace metadata after successful verification (FR-005)', () => {
-            // Mock workspace with metadata
+        it('should display space metadata after successful verification (FR-005)', () => {
+            // Mock space with metadata
             nock(baseURL)
-                .get('/api/workspaces/my-knowledge-base')
+                .get('/api/spaces/my-knowledge-base')
                 .reply(200, {
                     slug: 'my-knowledge-base',
                     name: 'My Knowledge Base',
@@ -189,23 +189,23 @@ describe('Init Command - Workspace Validation Integration', () => {
                 });
 
             nock(baseURL)
-                .post('/api/workspaces/my-knowledge-base/upload/start')
+                .post('/api/spaces/my-knowledge-base/upload/start')
                 .reply(202, {
                     success: true,
                     data: {
                         sessionId: 'session-123',
-                        workspaceId: 'workspace-uuid',
+                        spaceId: 'space-uuid',
                     },
                 });
 
             try {
                 const output = execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace my-knowledge-base`,
+                    `node dist/index.js init ${testVaultDir} --space my-knowledge-base`,
                     { encoding: 'utf8', timeout: 10000 }
                 );
 
-                // Verify workspace metadata display (FR-005)
-                expect(output).toContain('Workspace verified:');
+                // Verify space metadata display (FR-005)
+                expect(output).toContain('Space verified:');
                 expect(output).toContain('My Knowledge Base');
                 expect(output).toContain('42'); // Node count
                 expect(output).toContain('existing nodes');
@@ -220,17 +220,17 @@ describe('Init Command - Workspace Validation Integration', () => {
             }
         });
 
-        it('should retry workspace validation on network timeout', () => {
+        it('should retry space validation on network timeout', () => {
             // Mock first attempt fails with timeout, second succeeds
             nock(baseURL)
-                .get('/api/workspaces/my-workspace')
+                .get('/api/spaces/my-space')
                 .replyWithError({ code: 'ETIMEDOUT', message: 'Request timeout' });
 
             nock(baseURL)
-                .get('/api/workspaces/my-workspace')
+                .get('/api/spaces/my-space')
                 .reply(200, {
-                    slug: 'my-workspace',
-                    name: 'My Workspace',
+                    slug: 'my-space',
+                    name: 'My Space',
                     owner: 'test-user',
                     nodeCount: 5,
                     userPermissions: {
@@ -244,23 +244,23 @@ describe('Init Command - Workspace Validation Integration', () => {
                 });
 
             nock(baseURL)
-                .post('/api/workspaces/my-workspace/upload/start')
+                .post('/api/spaces/my-space/upload/start')
                 .reply(202, {
                     success: true,
                     data: {
                         sessionId: 'session-123',
-                        workspaceId: 'workspace-uuid',
+                        spaceId: 'space-uuid',
                     },
                 });
 
             try {
                 const output = execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace my-workspace`,
+                    `node dist/index.js init ${testVaultDir} --space my-space`,
                     { encoding: 'utf8', timeout: 15000 }
                 );
 
                 // Verify retry occurred and eventually succeeded
-                expect(output).toContain('Workspace verified');
+                expect(output).toContain('Space verified');
             } catch (error: any) {
                 // Test may fail if auth is not set up
                 if (!error.message.includes('Authentication required')) {
@@ -269,11 +269,11 @@ describe('Init Command - Workspace Validation Integration', () => {
             }
         });
 
-        it('should validate workspace slug format before API call', () => {
+        it('should validate space slug format before API call', () => {
             // Invalid slug (contains uppercase)
             try {
                 execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace Invalid-Workspace`,
+                    `node dist/index.js init ${testVaultDir} --space Invalid-Space`,
                     { encoding: 'utf8', timeout: 5000 }
                 );
 
@@ -282,18 +282,18 @@ describe('Init Command - Workspace Validation Integration', () => {
                 const output = error.stderr || error.stdout || error.message;
 
                 // Verify slug validation error
-                expect(output).toContain('Invalid workspace slug');
+                expect(output).toContain('Invalid space slug');
                 expect(output).toMatch(/lowercase|alphanumeric|hyphen/i);
             }
         });
 
-        it('should not scan vault if workspace validation fails', () => {
-            // Mock workspace not found
+        it('should not scan vault if space validation fails', () => {
+            // Mock space not found
             nock(baseURL)
-                .get('/api/workspaces/invalid-workspace')
+                .get('/api/spaces/invalid-space')
                 .reply(404, {
-                    error: "Workspace 'invalid-workspace' not found",
-                    code: 'WORKSPACE_NOT_FOUND',
+                    error: "Space 'invalid-space' not found",
+                    code: 'SPACE_NOT_FOUND',
                 });
 
             const scanStartMessage = 'Scanning vault';
@@ -301,7 +301,7 @@ describe('Init Command - Workspace Validation Integration', () => {
 
             try {
                 execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace invalid-workspace`,
+                    `node dist/index.js init ${testVaultDir} --space invalid-space`,
                     { encoding: 'utf8', timeout: 5000 }
                 );
 
@@ -320,13 +320,13 @@ describe('Init Command - Workspace Validation Integration', () => {
     });
 
     describe('Backward Compatibility', () => {
-        it('should still work with existing --workspace flag behavior', () => {
-            // Mock workspace validation
+        it('should still work with existing --space flag behavior', () => {
+            // Mock space validation
             nock(baseURL)
-                .get('/api/workspaces/test-workspace')
+                .get('/api/spaces/test-space')
                 .reply(200, {
-                    slug: 'test-workspace',
-                    name: 'Test Workspace',
+                    slug: 'test-space',
+                    name: 'Test Space',
                     owner: 'user',
                     nodeCount: 0,
                     userPermissions: {
@@ -340,24 +340,24 @@ describe('Init Command - Workspace Validation Integration', () => {
                 });
 
             nock(baseURL)
-                .post('/api/workspaces/test-workspace/upload/start')
+                .post('/api/spaces/test-space/upload/start')
                 .reply(202, {
                     success: true,
                     data: {
                         sessionId: 'session-123',
-                        workspaceId: 'workspace-uuid',
+                        spaceId: 'space-uuid',
                     },
                 });
 
             try {
-                // Execute with traditional --workspace flag
+                // Execute with traditional --space flag
                 const output = execSync(
-                    `node dist/index.js init ${testVaultDir} --workspace test-workspace`,
+                    `node dist/index.js init ${testVaultDir} --space test-space`,
                     { encoding: 'utf8', timeout: 10000 }
                 );
 
                 // Verify command still works
-                expect(output).toContain('Workspace verified');
+                expect(output).toContain('Space verified');
             } catch (error: any) {
                 // Expected to fail in TDD red phase
                 if (!error.message.includes('Authentication required')) {

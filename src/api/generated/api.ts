@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * Mujarrad Obsidian Mapper API
- * REST API for bidirectional synchronization between Obsidian vaults and Mujarrad workspaces.  This API extends the existing Mujarrad backend with endpoints for: - Uploading Obsidian vaults to Mujarrad workspaces - Cloning workspaces back to Obsidian format - Bidirectional sync with conflict resolution - Workspace template creation and instantiation - Git-based version history tracking  **Authentication**: All endpoints require JWT Bearer token (obtain via `/api/auth/login`).  **Base URL**: https://api.example.com 
+ * REST API for bidirectional synchronization between Obsidian vaults and Mujarrad spaces.  This API extends the existing Mujarrad backend with endpoints for: - Uploading Obsidian vaults to Mujarrad spaces - Cloning spaces back to Obsidian format - Bidirectional sync with conflict resolution - Space template creation and instantiation - Git-based version history tracking  **Authentication**: All endpoints require JWT Bearer token (obtain via `/api/auth/login`).  **Base URL**: https://api.example.com 
  *
  * The version of the OpenAPI document: 1.0.0
  * 
@@ -121,10 +121,10 @@ export interface CreateTemplate201Response {
     'success': boolean;
     /**
      * 
-     * @type {WorkspaceTemplateResponse}
+     * @type {SpaceTemplateResponse}
      * @memberof CreateTemplate201Response
      */
-    'data': WorkspaceTemplateResponse;
+    'data': SpaceTemplateResponse;
     /**
      * 
      * @type {string}
@@ -135,25 +135,25 @@ export interface CreateTemplate201Response {
 /**
  * 
  * @export
- * @interface CreateWorkspace201Response
+ * @interface CreateSpace201Response
  */
-export interface CreateWorkspace201Response {
+export interface CreateSpace201Response {
     /**
      * 
      * @type {boolean}
-     * @memberof CreateWorkspace201Response
+     * @memberof CreateSpace201Response
      */
     'success': boolean;
     /**
      * 
-     * @type {WorkspaceResponse}
-     * @memberof CreateWorkspace201Response
+     * @type {SpaceResponse}
+     * @memberof CreateSpace201Response
      */
-    'data': WorkspaceResponse;
+    'data': SpaceResponse;
     /**
      * 
      * @type {string}
-     * @memberof CreateWorkspace201Response
+     * @memberof CreateSpace201Response
      */
     'timestamp': string;
 }
@@ -279,88 +279,88 @@ export interface ErrorResponseError {
 /**
  * 
  * @export
- * @interface ExportWorkspace202Response
+ * @interface ExportSpace202Response
  */
-export interface ExportWorkspace202Response {
+export interface ExportSpace202Response {
     /**
      * 
      * @type {boolean}
-     * @memberof ExportWorkspace202Response
+     * @memberof ExportSpace202Response
      */
     'success': boolean;
     /**
      * 
-     * @type {ExportWorkspace202ResponseAllOfData}
-     * @memberof ExportWorkspace202Response
+     * @type {ExportSpace202ResponseAllOfData}
+     * @memberof ExportSpace202Response
      */
-    'data': ExportWorkspace202ResponseAllOfData;
+    'data': ExportSpace202ResponseAllOfData;
     /**
      * 
      * @type {string}
-     * @memberof ExportWorkspace202Response
+     * @memberof ExportSpace202Response
      */
     'timestamp': string;
 }
 /**
  * 
  * @export
- * @interface ExportWorkspace202ResponseAllOfData
+ * @interface ExportSpace202ResponseAllOfData
  */
-export interface ExportWorkspace202ResponseAllOfData {
+export interface ExportSpace202ResponseAllOfData {
     /**
      * 
      * @type {string}
-     * @memberof ExportWorkspace202ResponseAllOfData
+     * @memberof ExportSpace202ResponseAllOfData
      */
     'exportJobId'?: string;
     /**
      * 
      * @type {string}
-     * @memberof ExportWorkspace202ResponseAllOfData
+     * @memberof ExportSpace202ResponseAllOfData
      */
-    'status'?: ExportWorkspace202ResponseAllOfDataStatusEnum;
+    'status'?: ExportSpace202ResponseAllOfDataStatusEnum;
 }
 
-export const ExportWorkspace202ResponseAllOfDataStatusEnum = {
+export const ExportSpace202ResponseAllOfDataStatusEnum = {
     Pending: 'PENDING',
     InProgress: 'IN_PROGRESS',
     Completed: 'COMPLETED',
     Failed: 'FAILED'
 } as const;
 
-export type ExportWorkspace202ResponseAllOfDataStatusEnum = typeof ExportWorkspace202ResponseAllOfDataStatusEnum[keyof typeof ExportWorkspace202ResponseAllOfDataStatusEnum];
+export type ExportSpace202ResponseAllOfDataStatusEnum = typeof ExportSpace202ResponseAllOfDataStatusEnum[keyof typeof ExportSpace202ResponseAllOfDataStatusEnum];
 
 /**
  * 
  * @export
- * @interface ExportWorkspaceRequest
+ * @interface ExportSpaceRequest
  */
-export interface ExportWorkspaceRequest {
+export interface ExportSpaceRequest {
     /**
      * Export format (currently only Obsidian supported)
      * @type {string}
-     * @memberof ExportWorkspaceRequest
+     * @memberof ExportSpaceRequest
      */
-    'format'?: ExportWorkspaceRequestFormatEnum;
+    'format'?: ExportSpaceRequestFormatEnum;
     /**
      * Include Git history in export
      * @type {boolean}
-     * @memberof ExportWorkspaceRequest
+     * @memberof ExportSpaceRequest
      */
     'includeVersionHistory'?: boolean;
     /**
      * Include canvas files
      * @type {boolean}
-     * @memberof ExportWorkspaceRequest
+     * @memberof ExportSpaceRequest
      */
     'includeCanvases'?: boolean;
 }
 
-export const ExportWorkspaceRequestFormatEnum = {
+export const ExportSpaceRequestFormatEnum = {
     Obsidian: 'obsidian'
 } as const;
 
-export type ExportWorkspaceRequestFormatEnum = typeof ExportWorkspaceRequestFormatEnum[keyof typeof ExportWorkspaceRequestFormatEnum];
+export type ExportSpaceRequestFormatEnum = typeof ExportSpaceRequestFormatEnum[keyof typeof ExportSpaceRequestFormatEnum];
 
 /**
  * 
@@ -513,7 +513,7 @@ export interface InstantiateTemplate200ResponseAllOfData {
      * @type {string}
      * @memberof InstantiateTemplate200ResponseAllOfData
      */
-    'workspaceId'?: string;
+    'spaceId'?: string;
 }
 /**
  * 
@@ -598,10 +598,10 @@ export interface ListTemplates200Response {
 export interface ListTemplates200ResponseAllOfData {
     /**
      * 
-     * @type {Array<WorkspaceTemplateResponse>}
+     * @type {Array<SpaceTemplateResponse>}
      * @memberof ListTemplates200ResponseAllOfData
      */
-    'templates'?: Array<WorkspaceTemplateResponse>;
+    'templates'?: Array<SpaceTemplateResponse>;
     /**
      * 
      * @type {number}
@@ -624,56 +624,56 @@ export interface ListTemplates200ResponseAllOfData {
 /**
  * 
  * @export
- * @interface ListWorkspaces200Response
+ * @interface ListSpaces200Response
  */
-export interface ListWorkspaces200Response {
+export interface ListSpaces200Response {
     /**
      * 
      * @type {boolean}
-     * @memberof ListWorkspaces200Response
+     * @memberof ListSpaces200Response
      */
     'success': boolean;
     /**
      * 
-     * @type {ListWorkspaces200ResponseAllOfData}
-     * @memberof ListWorkspaces200Response
+     * @type {ListSpaces200ResponseAllOfData}
+     * @memberof ListSpaces200Response
      */
-    'data': ListWorkspaces200ResponseAllOfData;
+    'data': ListSpaces200ResponseAllOfData;
     /**
      * 
      * @type {string}
-     * @memberof ListWorkspaces200Response
+     * @memberof ListSpaces200Response
      */
     'timestamp': string;
 }
 /**
  * 
  * @export
- * @interface ListWorkspaces200ResponseAllOfData
+ * @interface ListSpaces200ResponseAllOfData
  */
-export interface ListWorkspaces200ResponseAllOfData {
+export interface ListSpaces200ResponseAllOfData {
     /**
      * 
-     * @type {Array<WorkspaceResponse>}
-     * @memberof ListWorkspaces200ResponseAllOfData
+     * @type {Array<SpaceResponse>}
+     * @memberof ListSpaces200ResponseAllOfData
      */
-    'workspaces'?: Array<WorkspaceResponse>;
+    'spaces'?: Array<SpaceResponse>;
     /**
      * 
      * @type {number}
-     * @memberof ListWorkspaces200ResponseAllOfData
+     * @memberof ListSpaces200ResponseAllOfData
      */
     'totalElements'?: number;
     /**
      * 
      * @type {number}
-     * @memberof ListWorkspaces200ResponseAllOfData
+     * @memberof ListSpaces200ResponseAllOfData
      */
     'totalPages'?: number;
     /**
      * 
      * @type {number}
-     * @memberof ListWorkspaces200ResponseAllOfData
+     * @memberof ListSpaces200ResponseAllOfData
      */
     'currentPage'?: number;
 }
@@ -885,30 +885,30 @@ export interface RollbackNodeRequest {
 /**
  * 
  * @export
- * @interface ShareWorkspaceRequest
+ * @interface ShareSpaceRequest
  */
-export interface ShareWorkspaceRequest {
+export interface ShareSpaceRequest {
     /**
      * 
      * @type {string}
-     * @memberof ShareWorkspaceRequest
+     * @memberof ShareSpaceRequest
      */
     'email'?: string;
     /**
      * 
      * @type {string}
-     * @memberof ShareWorkspaceRequest
+     * @memberof ShareSpaceRequest
      */
-    'permission'?: ShareWorkspaceRequestPermissionEnum;
+    'permission'?: ShareSpaceRequestPermissionEnum;
 }
 
-export const ShareWorkspaceRequestPermissionEnum = {
+export const ShareSpaceRequestPermissionEnum = {
     Read: 'read',
     Write: 'write',
     Admin: 'admin'
 } as const;
 
-export type ShareWorkspaceRequestPermissionEnum = typeof ShareWorkspaceRequestPermissionEnum[keyof typeof ShareWorkspaceRequestPermissionEnum];
+export type ShareSpaceRequestPermissionEnum = typeof ShareSpaceRequestPermissionEnum[keyof typeof ShareSpaceRequestPermissionEnum];
 
 /**
  * 
@@ -948,7 +948,7 @@ export interface SyncChangesResponse {
      */
     'localChanges': Array<SyncChangesResponseLocalChangesInner>;
     /**
-     * Changes detected in remote workspace
+     * Changes detected in remote space
      * @type {Array<SyncChangesResponseRemoteChangesInner>}
      * @memberof SyncChangesResponse
      */
@@ -1096,7 +1096,7 @@ export interface SyncSessionResponse {
      * @type {string}
      * @memberof SyncSessionResponse
      */
-    'workspaceId': string;
+    'spaceId': string;
     /**
      * 
      * @type {string}
@@ -1222,11 +1222,11 @@ export type SyncSessionResponseConflictDetailsInnerResolutionEnum = typeof SyncS
  */
 export interface TemplateCreateRequest {
     /**
-     * Workspace to create template from
+     * Space to create template from
      * @type {string}
      * @memberof TemplateCreateRequest
      */
-    'workspaceId': string;
+    'spaceId': string;
     /**
      * 
      * @type {string}
@@ -1313,7 +1313,7 @@ export interface UploadSessionResponse {
      * @type {string}
      * @memberof UploadSessionResponse
      */
-    'workspaceId': string;
+    'spaceId': string;
     /**
      * 
      * @type {string}
@@ -1383,190 +1383,190 @@ export type UploadSessionResponseStatusEnum = typeof UploadSessionResponseStatus
 /**
  * 
  * @export
- * @interface WorkspaceCreateRequest
+ * @interface SpaceCreateRequest
  */
-export interface WorkspaceCreateRequest {
+export interface SpaceCreateRequest {
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceCreateRequest
+     * @memberof SpaceCreateRequest
      */
     'title': string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceCreateRequest
+     * @memberof SpaceCreateRequest
      */
     'description'?: string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceCreateRequest
+     * @memberof SpaceCreateRequest
      */
     'gitRepositoryUrl'?: string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceCreateRequest
+     * @memberof SpaceCreateRequest
      */
     'gitBranch'?: string;
 }
 /**
  * 
  * @export
- * @interface WorkspaceResponse
+ * @interface SpaceResponse
  */
-export interface WorkspaceResponse {
+export interface SpaceResponse {
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceResponse
+     * @memberof SpaceResponse
      */
     'id': string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceResponse
+     * @memberof SpaceResponse
      */
     'ownerId': string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceResponse
+     * @memberof SpaceResponse
      */
     'title': string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceResponse
+     * @memberof SpaceResponse
      */
     'description'?: string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceResponse
+     * @memberof SpaceResponse
      */
     'gitRepositoryUrl'?: string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceResponse
+     * @memberof SpaceResponse
      */
     'gitBranch'?: string;
     /**
-     * Total number of nodes in workspace
+     * Total number of nodes in space
      * @type {number}
-     * @memberof WorkspaceResponse
+     * @memberof SpaceResponse
      */
     'nodeCount'?: number;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceResponse
+     * @memberof SpaceResponse
      */
     'createdAt': string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceResponse
+     * @memberof SpaceResponse
      */
     'updatedAt': string;
 }
 /**
  * 
  * @export
- * @interface WorkspaceTemplateResponse
+ * @interface SpaceTemplateResponse
  */
-export interface WorkspaceTemplateResponse {
+export interface SpaceTemplateResponse {
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'id': string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'creatorId': string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'name': string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'description'?: string;
     /**
      * 
      * @type {Array<string>}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'tags'?: Array<string>;
     /**
      * 
      * @type {boolean}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'isPublic': boolean;
     /**
      * Number of times template has been instantiated
      * @type {number}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'usageCount': number;
     /**
      * Number of nodes in template
      * @type {number}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'contextTemplatesCount'?: number;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'createdAt': string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceTemplateResponse
+     * @memberof SpaceTemplateResponse
      */
     'updatedAt'?: string;
 }
 /**
  * 
  * @export
- * @interface WorkspaceUpdateRequest
+ * @interface SpaceUpdateRequest
  */
-export interface WorkspaceUpdateRequest {
+export interface SpaceUpdateRequest {
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceUpdateRequest
+     * @memberof SpaceUpdateRequest
      */
     'title'?: string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceUpdateRequest
+     * @memberof SpaceUpdateRequest
      */
     'description'?: string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceUpdateRequest
+     * @memberof SpaceUpdateRequest
      */
     'gitRepositoryUrl'?: string;
     /**
      * 
      * @type {string}
-     * @memberof WorkspaceUpdateRequest
+     * @memberof SpaceUpdateRequest
      */
     'gitBranch'?: string;
 }
@@ -1825,20 +1825,20 @@ export class AuthenticationApi extends BaseAPI {
 export const CloneApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Download workspace exported as ZIP archive.
+         * Download space exported as ZIP archive.
          * @summary Download exported files
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} exportJobId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadExport: async (workspaceId: string, exportJobId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('downloadExport', 'workspaceId', workspaceId)
+        downloadExport: async (spaceId: string, exportJobId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('downloadExport', 'spaceId', spaceId)
             // verify required parameter 'exportJobId' is not null or undefined
             assertParamExists('downloadExport', 'exportJobId', exportJobId)
-            const localVarPath = `/api/workspaces/{workspaceId}/export/download`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+            const localVarPath = `/api/spaces/{spaceId}/export/download`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -1870,20 +1870,20 @@ export const CloneApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * Clone Mujarrad workspace to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
-         * @summary Export workspace to Obsidian format
-         * @param {string} workspaceId Workspace UUID
-         * @param {ExportWorkspaceRequest} exportWorkspaceRequest 
+         * Clone Mujarrad space to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
+         * @summary Export space to Obsidian format
+         * @param {string} spaceId Space UUID
+         * @param {ExportSpaceRequest} exportSpaceRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        exportWorkspace: async (workspaceId: string, exportWorkspaceRequest: ExportWorkspaceRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('exportWorkspace', 'workspaceId', workspaceId)
-            // verify required parameter 'exportWorkspaceRequest' is not null or undefined
-            assertParamExists('exportWorkspace', 'exportWorkspaceRequest', exportWorkspaceRequest)
-            const localVarPath = `/api/workspaces/{workspaceId}/export`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+        exportSpace: async (spaceId: string, exportSpaceRequest: ExportSpaceRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('exportSpace', 'spaceId', spaceId)
+            // verify required parameter 'exportSpaceRequest' is not null or undefined
+            assertParamExists('exportSpace', 'exportSpaceRequest', exportSpaceRequest)
+            const localVarPath = `/api/spaces/{spaceId}/export`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -1906,7 +1906,7 @@ export const CloneApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(exportWorkspaceRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(exportSpaceRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1916,18 +1916,18 @@ export const CloneApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Retrieve status of ongoing export job.
          * @summary Check export progress
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} exportJobId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getExportStatus: async (workspaceId: string, exportJobId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('getExportStatus', 'workspaceId', workspaceId)
+        getExportStatus: async (spaceId: string, exportJobId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('getExportStatus', 'spaceId', spaceId)
             // verify required parameter 'exportJobId' is not null or undefined
             assertParamExists('getExportStatus', 'exportJobId', exportJobId)
-            const localVarPath = `/api/workspaces/{workspaceId}/export/status`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+            const localVarPath = `/api/spaces/{spaceId}/export/status`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -1969,43 +1969,43 @@ export const CloneApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = CloneApiAxiosParamCreator(configuration)
     return {
         /**
-         * Download workspace exported as ZIP archive.
+         * Download space exported as ZIP archive.
          * @summary Download exported files
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} exportJobId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async downloadExport(workspaceId: string, exportJobId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadExport(workspaceId, exportJobId, options);
+        async downloadExport(spaceId: string, exportJobId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadExport(spaceId, exportJobId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CloneApi.downloadExport']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Clone Mujarrad workspace to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
-         * @summary Export workspace to Obsidian format
-         * @param {string} workspaceId Workspace UUID
-         * @param {ExportWorkspaceRequest} exportWorkspaceRequest 
+         * Clone Mujarrad space to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
+         * @summary Export space to Obsidian format
+         * @param {string} spaceId Space UUID
+         * @param {ExportSpaceRequest} exportSpaceRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async exportWorkspace(workspaceId: string, exportWorkspaceRequest: ExportWorkspaceRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ExportWorkspace202Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.exportWorkspace(workspaceId, exportWorkspaceRequest, options);
+        async exportSpace(spaceId: string, exportSpaceRequest: ExportSpaceRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ExportSpace202Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.exportSpace(spaceId, exportSpaceRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CloneApi.exportWorkspace']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CloneApi.exportSpace']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * Retrieve status of ongoing export job.
          * @summary Check export progress
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} exportJobId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getExportStatus(workspaceId: string, exportJobId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetExportStatus200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getExportStatus(workspaceId, exportJobId, options);
+        async getExportStatus(spaceId: string, exportJobId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetExportStatus200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getExportStatus(spaceId, exportJobId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CloneApi.getExportStatus']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -2021,37 +2021,37 @@ export const CloneApiFactory = function (configuration?: Configuration, basePath
     const localVarFp = CloneApiFp(configuration)
     return {
         /**
-         * Download workspace exported as ZIP archive.
+         * Download space exported as ZIP archive.
          * @summary Download exported files
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} exportJobId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadExport(workspaceId: string, exportJobId: string, options?: RawAxiosRequestConfig): AxiosPromise<File> {
-            return localVarFp.downloadExport(workspaceId, exportJobId, options).then((request) => request(axios, basePath));
+        downloadExport(spaceId: string, exportJobId: string, options?: RawAxiosRequestConfig): AxiosPromise<File> {
+            return localVarFp.downloadExport(spaceId, exportJobId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Clone Mujarrad workspace to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
-         * @summary Export workspace to Obsidian format
-         * @param {string} workspaceId Workspace UUID
-         * @param {ExportWorkspaceRequest} exportWorkspaceRequest 
+         * Clone Mujarrad space to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
+         * @summary Export space to Obsidian format
+         * @param {string} spaceId Space UUID
+         * @param {ExportSpaceRequest} exportSpaceRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        exportWorkspace(workspaceId: string, exportWorkspaceRequest: ExportWorkspaceRequest, options?: RawAxiosRequestConfig): AxiosPromise<ExportWorkspace202Response> {
-            return localVarFp.exportWorkspace(workspaceId, exportWorkspaceRequest, options).then((request) => request(axios, basePath));
+        exportSpace(spaceId: string, exportSpaceRequest: ExportSpaceRequest, options?: RawAxiosRequestConfig): AxiosPromise<ExportSpace202Response> {
+            return localVarFp.exportSpace(spaceId, exportSpaceRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * Retrieve status of ongoing export job.
          * @summary Check export progress
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} exportJobId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getExportStatus(workspaceId: string, exportJobId: string, options?: RawAxiosRequestConfig): AxiosPromise<GetExportStatus200Response> {
-            return localVarFp.getExportStatus(workspaceId, exportJobId, options).then((request) => request(axios, basePath));
+        getExportStatus(spaceId: string, exportJobId: string, options?: RawAxiosRequestConfig): AxiosPromise<GetExportStatus200Response> {
+            return localVarFp.getExportStatus(spaceId, exportJobId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2064,42 +2064,42 @@ export const CloneApiFactory = function (configuration?: Configuration, basePath
  */
 export class CloneApi extends BaseAPI {
     /**
-     * Download workspace exported as ZIP archive.
+     * Download space exported as ZIP archive.
      * @summary Download exported files
-     * @param {string} workspaceId Workspace UUID
+     * @param {string} spaceId Space UUID
      * @param {string} exportJobId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CloneApi
      */
-    public downloadExport(workspaceId: string, exportJobId: string, options?: RawAxiosRequestConfig) {
-        return CloneApiFp(this.configuration).downloadExport(workspaceId, exportJobId, options).then((request) => request(this.axios, this.basePath));
+    public downloadExport(spaceId: string, exportJobId: string, options?: RawAxiosRequestConfig) {
+        return CloneApiFp(this.configuration).downloadExport(spaceId, exportJobId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Clone Mujarrad workspace to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
-     * @summary Export workspace to Obsidian format
-     * @param {string} workspaceId Workspace UUID
-     * @param {ExportWorkspaceRequest} exportWorkspaceRequest 
+     * Clone Mujarrad space to Obsidian vault format.  **Process**: 1. Client requests export 2. Backend creates export job 3. Backend generates .md files, .canvas files, folder structure 4. Backend creates `.mujarrad/mappings.json` centralized mapping file 5. Client polls `/export/status` for progress 6. Client downloads exported files in batches  **Performance Target**: 1000 nodes in <3 minutes (NFR-002) 
+     * @summary Export space to Obsidian format
+     * @param {string} spaceId Space UUID
+     * @param {ExportSpaceRequest} exportSpaceRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CloneApi
      */
-    public exportWorkspace(workspaceId: string, exportWorkspaceRequest: ExportWorkspaceRequest, options?: RawAxiosRequestConfig) {
-        return CloneApiFp(this.configuration).exportWorkspace(workspaceId, exportWorkspaceRequest, options).then((request) => request(this.axios, this.basePath));
+    public exportSpace(spaceId: string, exportSpaceRequest: ExportSpaceRequest, options?: RawAxiosRequestConfig) {
+        return CloneApiFp(this.configuration).exportSpace(spaceId, exportSpaceRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Retrieve status of ongoing export job.
      * @summary Check export progress
-     * @param {string} workspaceId Workspace UUID
+     * @param {string} spaceId Space UUID
      * @param {string} exportJobId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CloneApi
      */
-    public getExportStatus(workspaceId: string, exportJobId: string, options?: RawAxiosRequestConfig) {
-        return CloneApiFp(this.configuration).getExportStatus(workspaceId, exportJobId, options).then((request) => request(this.axios, this.basePath));
+    public getExportStatus(spaceId: string, exportJobId: string, options?: RawAxiosRequestConfig) {
+        return CloneApiFp(this.configuration).getExportStatus(spaceId, exportJobId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2112,18 +2112,18 @@ export class CloneApi extends BaseAPI {
 export const SharingApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Share workspace with another user (not implemented in first release).
-         * @summary Share workspace (Future)
-         * @param {string} workspaceId Workspace UUID
-         * @param {ShareWorkspaceRequest} [shareWorkspaceRequest] 
+         * Share space with another user (not implemented in first release).
+         * @summary Share space (Future)
+         * @param {string} spaceId Space UUID
+         * @param {ShareSpaceRequest} [shareSpaceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        shareWorkspace: async (workspaceId: string, shareWorkspaceRequest?: ShareWorkspaceRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('shareWorkspace', 'workspaceId', workspaceId)
-            const localVarPath = `/api/workspaces/{workspaceId}/share`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+        shareSpace: async (spaceId: string, shareSpaceRequest?: ShareSpaceRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('shareSpace', 'spaceId', spaceId)
+            const localVarPath = `/api/spaces/{spaceId}/share`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2146,7 +2146,7 @@ export const SharingApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(shareWorkspaceRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(shareSpaceRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2164,17 +2164,17 @@ export const SharingApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = SharingApiAxiosParamCreator(configuration)
     return {
         /**
-         * Share workspace with another user (not implemented in first release).
-         * @summary Share workspace (Future)
-         * @param {string} workspaceId Workspace UUID
-         * @param {ShareWorkspaceRequest} [shareWorkspaceRequest] 
+         * Share space with another user (not implemented in first release).
+         * @summary Share space (Future)
+         * @param {string} spaceId Space UUID
+         * @param {ShareSpaceRequest} [shareSpaceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async shareWorkspace(workspaceId: string, shareWorkspaceRequest?: ShareWorkspaceRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.shareWorkspace(workspaceId, shareWorkspaceRequest, options);
+        async shareSpace(spaceId: string, shareSpaceRequest?: ShareSpaceRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.shareSpace(spaceId, shareSpaceRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SharingApi.shareWorkspace']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SharingApi.shareSpace']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -2188,15 +2188,15 @@ export const SharingApiFactory = function (configuration?: Configuration, basePa
     const localVarFp = SharingApiFp(configuration)
     return {
         /**
-         * Share workspace with another user (not implemented in first release).
-         * @summary Share workspace (Future)
-         * @param {string} workspaceId Workspace UUID
-         * @param {ShareWorkspaceRequest} [shareWorkspaceRequest] 
+         * Share space with another user (not implemented in first release).
+         * @summary Share space (Future)
+         * @param {string} spaceId Space UUID
+         * @param {ShareSpaceRequest} [shareSpaceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        shareWorkspace(workspaceId: string, shareWorkspaceRequest?: ShareWorkspaceRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.shareWorkspace(workspaceId, shareWorkspaceRequest, options).then((request) => request(axios, basePath));
+        shareSpace(spaceId: string, shareSpaceRequest?: ShareSpaceRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.shareSpace(spaceId, shareSpaceRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2209,16 +2209,16 @@ export const SharingApiFactory = function (configuration?: Configuration, basePa
  */
 export class SharingApi extends BaseAPI {
     /**
-     * Share workspace with another user (not implemented in first release).
-     * @summary Share workspace (Future)
-     * @param {string} workspaceId Workspace UUID
-     * @param {ShareWorkspaceRequest} [shareWorkspaceRequest] 
+     * Share space with another user (not implemented in first release).
+     * @summary Share space (Future)
+     * @param {string} spaceId Space UUID
+     * @param {ShareSpaceRequest} [shareSpaceRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SharingApi
      */
-    public shareWorkspace(workspaceId: string, shareWorkspaceRequest?: ShareWorkspaceRequest, options?: RawAxiosRequestConfig) {
-        return SharingApiFp(this.configuration).shareWorkspace(workspaceId, shareWorkspaceRequest, options).then((request) => request(this.axios, this.basePath));
+    public shareSpace(spaceId: string, shareSpaceRequest?: ShareSpaceRequest, options?: RawAxiosRequestConfig) {
+        return SharingApiFp(this.configuration).shareSpace(spaceId, shareSpaceRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2233,18 +2233,18 @@ export const SyncApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * Apply detected changes with conflict resolution.  **Conflict Resolution Strategy**: Last-write-wins using timestamp.  **Process**: 1. Backend applies changes in order: delete → update → create 2. Conflicts resolved automatically using most recent timestamp 3. Backend commits changes to Git per batch 4. Backend returns list of applied changes and resolved conflicts 
          * @summary Apply sync changes
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {ApplySyncChangesRequest} applySyncChangesRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        applySyncChanges: async (workspaceId: string, applySyncChangesRequest: ApplySyncChangesRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('applySyncChanges', 'workspaceId', workspaceId)
+        applySyncChanges: async (spaceId: string, applySyncChangesRequest: ApplySyncChangesRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('applySyncChanges', 'spaceId', spaceId)
             // verify required parameter 'applySyncChangesRequest' is not null or undefined
             assertParamExists('applySyncChanges', 'applySyncChangesRequest', applySyncChangesRequest)
-            const localVarPath = `/api/workspaces/{workspaceId}/sync/apply`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+            const localVarPath = `/api/spaces/{spaceId}/sync/apply`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2275,20 +2275,20 @@ export const SyncApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * Compare local vault state with remote workspace to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
+         * Compare local vault state with remote space to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
          * @summary Detect sync changes
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {DetectSyncChangesRequest} detectSyncChangesRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        detectSyncChanges: async (workspaceId: string, detectSyncChangesRequest: DetectSyncChangesRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('detectSyncChanges', 'workspaceId', workspaceId)
+        detectSyncChanges: async (spaceId: string, detectSyncChangesRequest: DetectSyncChangesRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('detectSyncChanges', 'spaceId', spaceId)
             // verify required parameter 'detectSyncChangesRequest' is not null or undefined
             assertParamExists('detectSyncChanges', 'detectSyncChangesRequest', detectSyncChangesRequest)
-            const localVarPath = `/api/workspaces/{workspaceId}/sync/detect`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+            const localVarPath = `/api/spaces/{spaceId}/sync/detect`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2331,27 +2331,27 @@ export const SyncApiFp = function(configuration?: Configuration) {
         /**
          * Apply detected changes with conflict resolution.  **Conflict Resolution Strategy**: Last-write-wins using timestamp.  **Process**: 1. Backend applies changes in order: delete → update → create 2. Conflicts resolved automatically using most recent timestamp 3. Backend commits changes to Git per batch 4. Backend returns list of applied changes and resolved conflicts 
          * @summary Apply sync changes
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {ApplySyncChangesRequest} applySyncChangesRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async applySyncChanges(workspaceId: string, applySyncChangesRequest: ApplySyncChangesRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApplySyncChanges200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.applySyncChanges(workspaceId, applySyncChangesRequest, options);
+        async applySyncChanges(spaceId: string, applySyncChangesRequest: ApplySyncChangesRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApplySyncChanges200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.applySyncChanges(spaceId, applySyncChangesRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SyncApi.applySyncChanges']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Compare local vault state with remote workspace to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
+         * Compare local vault state with remote space to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
          * @summary Detect sync changes
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {DetectSyncChangesRequest} detectSyncChangesRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async detectSyncChanges(workspaceId: string, detectSyncChangesRequest: DetectSyncChangesRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DetectSyncChanges200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.detectSyncChanges(workspaceId, detectSyncChangesRequest, options);
+        async detectSyncChanges(spaceId: string, detectSyncChangesRequest: DetectSyncChangesRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DetectSyncChanges200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.detectSyncChanges(spaceId, detectSyncChangesRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SyncApi.detectSyncChanges']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -2369,24 +2369,24 @@ export const SyncApiFactory = function (configuration?: Configuration, basePath?
         /**
          * Apply detected changes with conflict resolution.  **Conflict Resolution Strategy**: Last-write-wins using timestamp.  **Process**: 1. Backend applies changes in order: delete → update → create 2. Conflicts resolved automatically using most recent timestamp 3. Backend commits changes to Git per batch 4. Backend returns list of applied changes and resolved conflicts 
          * @summary Apply sync changes
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {ApplySyncChangesRequest} applySyncChangesRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        applySyncChanges(workspaceId: string, applySyncChangesRequest: ApplySyncChangesRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApplySyncChanges200Response> {
-            return localVarFp.applySyncChanges(workspaceId, applySyncChangesRequest, options).then((request) => request(axios, basePath));
+        applySyncChanges(spaceId: string, applySyncChangesRequest: ApplySyncChangesRequest, options?: RawAxiosRequestConfig): AxiosPromise<ApplySyncChanges200Response> {
+            return localVarFp.applySyncChanges(spaceId, applySyncChangesRequest, options).then((request) => request(axios, basePath));
         },
         /**
-         * Compare local vault state with remote workspace to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
+         * Compare local vault state with remote space to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
          * @summary Detect sync changes
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {DetectSyncChangesRequest} detectSyncChangesRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        detectSyncChanges(workspaceId: string, detectSyncChangesRequest: DetectSyncChangesRequest, options?: RawAxiosRequestConfig): AxiosPromise<DetectSyncChanges200Response> {
-            return localVarFp.detectSyncChanges(workspaceId, detectSyncChangesRequest, options).then((request) => request(axios, basePath));
+        detectSyncChanges(spaceId: string, detectSyncChangesRequest: DetectSyncChangesRequest, options?: RawAxiosRequestConfig): AxiosPromise<DetectSyncChanges200Response> {
+            return localVarFp.detectSyncChanges(spaceId, detectSyncChangesRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2401,27 +2401,27 @@ export class SyncApi extends BaseAPI {
     /**
      * Apply detected changes with conflict resolution.  **Conflict Resolution Strategy**: Last-write-wins using timestamp.  **Process**: 1. Backend applies changes in order: delete → update → create 2. Conflicts resolved automatically using most recent timestamp 3. Backend commits changes to Git per batch 4. Backend returns list of applied changes and resolved conflicts 
      * @summary Apply sync changes
-     * @param {string} workspaceId Workspace UUID
+     * @param {string} spaceId Space UUID
      * @param {ApplySyncChangesRequest} applySyncChangesRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SyncApi
      */
-    public applySyncChanges(workspaceId: string, applySyncChangesRequest: ApplySyncChangesRequest, options?: RawAxiosRequestConfig) {
-        return SyncApiFp(this.configuration).applySyncChanges(workspaceId, applySyncChangesRequest, options).then((request) => request(this.axios, this.basePath));
+    public applySyncChanges(spaceId: string, applySyncChangesRequest: ApplySyncChangesRequest, options?: RawAxiosRequestConfig) {
+        return SyncApiFp(this.configuration).applySyncChanges(spaceId, applySyncChangesRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Compare local vault state with remote workspace to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
+     * Compare local vault state with remote space to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
      * @summary Detect sync changes
-     * @param {string} workspaceId Workspace UUID
+     * @param {string} spaceId Space UUID
      * @param {DetectSyncChangesRequest} detectSyncChangesRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SyncApi
      */
-    public detectSyncChanges(workspaceId: string, detectSyncChangesRequest: DetectSyncChangesRequest, options?: RawAxiosRequestConfig) {
-        return SyncApiFp(this.configuration).detectSyncChanges(workspaceId, detectSyncChangesRequest, options).then((request) => request(this.axios, this.basePath));
+    public detectSyncChanges(spaceId: string, detectSyncChangesRequest: DetectSyncChangesRequest, options?: RawAxiosRequestConfig) {
+        return SyncApiFp(this.configuration).detectSyncChanges(spaceId, detectSyncChangesRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2434,8 +2434,8 @@ export class SyncApi extends BaseAPI {
 export const TemplatesApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Convert existing workspace into reusable template with placeholders.
-         * @summary Create template from workspace
+         * Convert existing space into reusable template with placeholders.
+         * @summary Create template from space
          * @param {TemplateCreateRequest} templateCreateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2474,7 +2474,7 @@ export const TemplatesApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * Delete workspace template (does not affect workspaces created from it).
+         * Delete space template (does not affect spaces created from it).
          * @summary Delete template
          * @param {string} templateId 
          * @param {*} [options] Override http request option.
@@ -2550,20 +2550,20 @@ export const TemplatesApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * Clone template into existing workspace, replacing placeholders with values.
-         * @summary Instantiate workspace from template
-         * @param {string} workspaceId Workspace UUID
+         * Clone template into existing space, replacing placeholders with values.
+         * @summary Instantiate space from template
+         * @param {string} spaceId Space UUID
          * @param {TemplateInstantiateRequest} templateInstantiateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        instantiateTemplate: async (workspaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('instantiateTemplate', 'workspaceId', workspaceId)
+        instantiateTemplate: async (spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('instantiateTemplate', 'spaceId', spaceId)
             // verify required parameter 'templateInstantiateRequest' is not null or undefined
             assertParamExists('instantiateTemplate', 'templateInstantiateRequest', templateInstantiateRequest)
-            const localVarPath = `/api/workspaces/{workspaceId}/instantiate`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+            const localVarPath = `/api/spaces/{spaceId}/instantiate`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2595,7 +2595,7 @@ export const TemplatesApiAxiosParamCreator = function (configuration?: Configura
         },
         /**
          * Retrieve public templates and user\'s private templates.
-         * @summary List workspace templates
+         * @summary List space templates
          * @param {ListTemplatesScopeEnum} [scope] Filter by visibility
          * @param {string} [tags] Filter by tags (comma-separated)
          * @param {number} [page] 
@@ -2658,8 +2658,8 @@ export const TemplatesApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = TemplatesApiAxiosParamCreator(configuration)
     return {
         /**
-         * Convert existing workspace into reusable template with placeholders.
-         * @summary Create template from workspace
+         * Convert existing space into reusable template with placeholders.
+         * @summary Create template from space
          * @param {TemplateCreateRequest} templateCreateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2671,7 +2671,7 @@ export const TemplatesApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Delete workspace template (does not affect workspaces created from it).
+         * Delete space template (does not affect spaces created from it).
          * @summary Delete template
          * @param {string} templateId 
          * @param {*} [options] Override http request option.
@@ -2697,22 +2697,22 @@ export const TemplatesApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Clone template into existing workspace, replacing placeholders with values.
-         * @summary Instantiate workspace from template
-         * @param {string} workspaceId Workspace UUID
+         * Clone template into existing space, replacing placeholders with values.
+         * @summary Instantiate space from template
+         * @param {string} spaceId Space UUID
          * @param {TemplateInstantiateRequest} templateInstantiateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async instantiateTemplate(workspaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InstantiateTemplate200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.instantiateTemplate(workspaceId, templateInstantiateRequest, options);
+        async instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InstantiateTemplate200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.instantiateTemplate(spaceId, templateInstantiateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TemplatesApi.instantiateTemplate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * Retrieve public templates and user\'s private templates.
-         * @summary List workspace templates
+         * @summary List space templates
          * @param {ListTemplatesScopeEnum} [scope] Filter by visibility
          * @param {string} [tags] Filter by tags (comma-separated)
          * @param {number} [page] 
@@ -2737,8 +2737,8 @@ export const TemplatesApiFactory = function (configuration?: Configuration, base
     const localVarFp = TemplatesApiFp(configuration)
     return {
         /**
-         * Convert existing workspace into reusable template with placeholders.
-         * @summary Create template from workspace
+         * Convert existing space into reusable template with placeholders.
+         * @summary Create template from space
          * @param {TemplateCreateRequest} templateCreateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2747,7 +2747,7 @@ export const TemplatesApiFactory = function (configuration?: Configuration, base
             return localVarFp.createTemplate(templateCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
-         * Delete workspace template (does not affect workspaces created from it).
+         * Delete space template (does not affect spaces created from it).
          * @summary Delete template
          * @param {string} templateId 
          * @param {*} [options] Override http request option.
@@ -2767,19 +2767,19 @@ export const TemplatesApiFactory = function (configuration?: Configuration, base
             return localVarFp.getTemplate(templateId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Clone template into existing workspace, replacing placeholders with values.
-         * @summary Instantiate workspace from template
-         * @param {string} workspaceId Workspace UUID
+         * Clone template into existing space, replacing placeholders with values.
+         * @summary Instantiate space from template
+         * @param {string} spaceId Space UUID
          * @param {TemplateInstantiateRequest} templateInstantiateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        instantiateTemplate(workspaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): AxiosPromise<InstantiateTemplate200Response> {
-            return localVarFp.instantiateTemplate(workspaceId, templateInstantiateRequest, options).then((request) => request(axios, basePath));
+        instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): AxiosPromise<InstantiateTemplate200Response> {
+            return localVarFp.instantiateTemplate(spaceId, templateInstantiateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * Retrieve public templates and user\'s private templates.
-         * @summary List workspace templates
+         * @summary List space templates
          * @param {ListTemplatesScopeEnum} [scope] Filter by visibility
          * @param {string} [tags] Filter by tags (comma-separated)
          * @param {number} [page] 
@@ -2801,8 +2801,8 @@ export const TemplatesApiFactory = function (configuration?: Configuration, base
  */
 export class TemplatesApi extends BaseAPI {
     /**
-     * Convert existing workspace into reusable template with placeholders.
-     * @summary Create template from workspace
+     * Convert existing space into reusable template with placeholders.
+     * @summary Create template from space
      * @param {TemplateCreateRequest} templateCreateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2813,7 +2813,7 @@ export class TemplatesApi extends BaseAPI {
     }
 
     /**
-     * Delete workspace template (does not affect workspaces created from it).
+     * Delete space template (does not affect spaces created from it).
      * @summary Delete template
      * @param {string} templateId 
      * @param {*} [options] Override http request option.
@@ -2837,21 +2837,21 @@ export class TemplatesApi extends BaseAPI {
     }
 
     /**
-     * Clone template into existing workspace, replacing placeholders with values.
-     * @summary Instantiate workspace from template
-     * @param {string} workspaceId Workspace UUID
+     * Clone template into existing space, replacing placeholders with values.
+     * @summary Instantiate space from template
+     * @param {string} spaceId Space UUID
      * @param {TemplateInstantiateRequest} templateInstantiateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TemplatesApi
      */
-    public instantiateTemplate(workspaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig) {
-        return TemplatesApiFp(this.configuration).instantiateTemplate(workspaceId, templateInstantiateRequest, options).then((request) => request(this.axios, this.basePath));
+    public instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig) {
+        return TemplatesApiFp(this.configuration).instantiateTemplate(spaceId, templateInstantiateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Retrieve public templates and user\'s private templates.
-     * @summary List workspace templates
+     * @summary List space templates
      * @param {ListTemplatesScopeEnum} [scope] Filter by visibility
      * @param {string} [tags] Filter by tags (comma-separated)
      * @param {number} [page] 
@@ -2885,18 +2885,18 @@ export const UploadApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * Retrieve detailed log file for upload session (JSON Lines format).
          * @summary Download upload log
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} sessionId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUploadLog: async (workspaceId: string, sessionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('getUploadLog', 'workspaceId', workspaceId)
+        getUploadLog: async (spaceId: string, sessionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('getUploadLog', 'spaceId', spaceId)
             // verify required parameter 'sessionId' is not null or undefined
             assertParamExists('getUploadLog', 'sessionId', sessionId)
-            const localVarPath = `/api/workspaces/{workspaceId}/upload/log`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+            const localVarPath = `/api/spaces/{spaceId}/upload/log`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2930,18 +2930,18 @@ export const UploadApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * Retrieve status of ongoing or completed upload session.
          * @summary Check upload progress
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} sessionId Upload session ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUploadStatus: async (workspaceId: string, sessionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('getUploadStatus', 'workspaceId', workspaceId)
+        getUploadStatus: async (spaceId: string, sessionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('getUploadStatus', 'spaceId', spaceId)
             // verify required parameter 'sessionId' is not null or undefined
             assertParamExists('getUploadStatus', 'sessionId', sessionId)
-            const localVarPath = `/api/workspaces/{workspaceId}/upload/status`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+            const localVarPath = `/api/spaces/{spaceId}/upload/status`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2973,9 +2973,9 @@ export const UploadApiAxiosParamCreator = function (configuration?: Configuratio
             };
         },
         /**
-         * Upload multiple Obsidian files (notes, canvases) to workspace in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
-         * @summary Batch upload files to workspace
-         * @param {string} workspaceId Workspace UUID
+         * Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
+         * @summary Batch upload files to space
+         * @param {string} spaceId Space UUID
          * @param {Array<File>} files Array of Obsidian files (.md, .canvas)
          * @param {number} [batchNumber] Batch sequence number (for resume capability)
          * @param {string} [sessionId] Upload session ID (for continuing previous upload)
@@ -2983,13 +2983,13 @@ export const UploadApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadBatch: async (workspaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('uploadBatch', 'workspaceId', workspaceId)
+        uploadBatch: async (spaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('uploadBatch', 'spaceId', spaceId)
             // verify required parameter 'files' is not null or undefined
             assertParamExists('uploadBatch', 'files', files)
-            const localVarPath = `/api/workspaces/{workspaceId}/upload/batch`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+            const localVarPath = `/api/spaces/{spaceId}/upload/batch`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3049,13 +3049,13 @@ export const UploadApiFp = function(configuration?: Configuration) {
         /**
          * Retrieve detailed log file for upload session (JSON Lines format).
          * @summary Download upload log
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} sessionId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getUploadLog(workspaceId: string, sessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUploadLog(workspaceId, sessionId, options);
+        async getUploadLog(spaceId: string, sessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUploadLog(spaceId, sessionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['UploadApi.getUploadLog']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -3063,21 +3063,21 @@ export const UploadApiFp = function(configuration?: Configuration) {
         /**
          * Retrieve status of ongoing or completed upload session.
          * @summary Check upload progress
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} sessionId Upload session ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getUploadStatus(workspaceId: string, sessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadBatch202Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUploadStatus(workspaceId, sessionId, options);
+        async getUploadStatus(spaceId: string, sessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadBatch202Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUploadStatus(spaceId, sessionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['UploadApi.getUploadStatus']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Upload multiple Obsidian files (notes, canvases) to workspace in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
-         * @summary Batch upload files to workspace
-         * @param {string} workspaceId Workspace UUID
+         * Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
+         * @summary Batch upload files to space
+         * @param {string} spaceId Space UUID
          * @param {Array<File>} files Array of Obsidian files (.md, .canvas)
          * @param {number} [batchNumber] Batch sequence number (for resume capability)
          * @param {string} [sessionId] Upload session ID (for continuing previous upload)
@@ -3085,8 +3085,8 @@ export const UploadApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadBatch(workspaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadBatch202Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadBatch(workspaceId, files, batchNumber, sessionId, commitMessage, options);
+        async uploadBatch(spaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadBatch202Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadBatch(spaceId, files, batchNumber, sessionId, commitMessage, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['UploadApi.uploadBatch']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -3104,29 +3104,29 @@ export const UploadApiFactory = function (configuration?: Configuration, basePat
         /**
          * Retrieve detailed log file for upload session (JSON Lines format).
          * @summary Download upload log
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} sessionId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUploadLog(workspaceId: string, sessionId: string, options?: RawAxiosRequestConfig): AxiosPromise<File> {
-            return localVarFp.getUploadLog(workspaceId, sessionId, options).then((request) => request(axios, basePath));
+        getUploadLog(spaceId: string, sessionId: string, options?: RawAxiosRequestConfig): AxiosPromise<File> {
+            return localVarFp.getUploadLog(spaceId, sessionId, options).then((request) => request(axios, basePath));
         },
         /**
          * Retrieve status of ongoing or completed upload session.
          * @summary Check upload progress
-         * @param {string} workspaceId Workspace UUID
+         * @param {string} spaceId Space UUID
          * @param {string} sessionId Upload session ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUploadStatus(workspaceId: string, sessionId: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadBatch202Response> {
-            return localVarFp.getUploadStatus(workspaceId, sessionId, options).then((request) => request(axios, basePath));
+        getUploadStatus(spaceId: string, sessionId: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadBatch202Response> {
+            return localVarFp.getUploadStatus(spaceId, sessionId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Upload multiple Obsidian files (notes, canvases) to workspace in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
-         * @summary Batch upload files to workspace
-         * @param {string} workspaceId Workspace UUID
+         * Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
+         * @summary Batch upload files to space
+         * @param {string} spaceId Space UUID
          * @param {Array<File>} files Array of Obsidian files (.md, .canvas)
          * @param {number} [batchNumber] Batch sequence number (for resume capability)
          * @param {string} [sessionId] Upload session ID (for continuing previous upload)
@@ -3134,8 +3134,8 @@ export const UploadApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadBatch(workspaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadBatch202Response> {
-            return localVarFp.uploadBatch(workspaceId, files, batchNumber, sessionId, commitMessage, options).then((request) => request(axios, basePath));
+        uploadBatch(spaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadBatch202Response> {
+            return localVarFp.uploadBatch(spaceId, files, batchNumber, sessionId, commitMessage, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3150,33 +3150,33 @@ export class UploadApi extends BaseAPI {
     /**
      * Retrieve detailed log file for upload session (JSON Lines format).
      * @summary Download upload log
-     * @param {string} workspaceId Workspace UUID
+     * @param {string} spaceId Space UUID
      * @param {string} sessionId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof UploadApi
      */
-    public getUploadLog(workspaceId: string, sessionId: string, options?: RawAxiosRequestConfig) {
-        return UploadApiFp(this.configuration).getUploadLog(workspaceId, sessionId, options).then((request) => request(this.axios, this.basePath));
+    public getUploadLog(spaceId: string, sessionId: string, options?: RawAxiosRequestConfig) {
+        return UploadApiFp(this.configuration).getUploadLog(spaceId, sessionId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Retrieve status of ongoing or completed upload session.
      * @summary Check upload progress
-     * @param {string} workspaceId Workspace UUID
+     * @param {string} spaceId Space UUID
      * @param {string} sessionId Upload session ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof UploadApi
      */
-    public getUploadStatus(workspaceId: string, sessionId: string, options?: RawAxiosRequestConfig) {
-        return UploadApiFp(this.configuration).getUploadStatus(workspaceId, sessionId, options).then((request) => request(this.axios, this.basePath));
+    public getUploadStatus(spaceId: string, sessionId: string, options?: RawAxiosRequestConfig) {
+        return UploadApiFp(this.configuration).getUploadStatus(spaceId, sessionId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Upload multiple Obsidian files (notes, canvases) to workspace in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
-     * @summary Batch upload files to workspace
-     * @param {string} workspaceId Workspace UUID
+     * Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
+     * @summary Batch upload files to space
+     * @param {string} spaceId Space UUID
      * @param {Array<File>} files Array of Obsidian files (.md, .canvas)
      * @param {number} [batchNumber] Batch sequence number (for resume capability)
      * @param {string} [sessionId] Upload session ID (for continuing previous upload)
@@ -3185,8 +3185,8 @@ export class UploadApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof UploadApi
      */
-    public uploadBatch(workspaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig) {
-        return UploadApiFp(this.configuration).uploadBatch(workspaceId, files, batchNumber, sessionId, commitMessage, options).then((request) => request(this.axios, this.basePath));
+    public uploadBatch(spaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig) {
+        return UploadApiFp(this.configuration).uploadBatch(spaceId, files, batchNumber, sessionId, commitMessage, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -3483,22 +3483,22 @@ export class VersionHistoryApi extends BaseAPI {
 
 
 /**
- * WorkspacesApi - axios parameter creator
+ * SpacesApi - axios parameter creator
  * @export
  */
-export const WorkspacesApiAxiosParamCreator = function (configuration?: Configuration) {
+export const SpacesApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Create empty workspace or from template.
-         * @summary Create new workspace
-         * @param {WorkspaceCreateRequest} workspaceCreateRequest 
+         * Create empty space or from template.
+         * @summary Create new space
+         * @param {SpaceCreateRequest} spaceCreateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createWorkspace: async (workspaceCreateRequest: WorkspaceCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceCreateRequest' is not null or undefined
-            assertParamExists('createWorkspace', 'workspaceCreateRequest', workspaceCreateRequest)
-            const localVarPath = `/api/workspaces`;
+        createSpace: async (spaceCreateRequest: SpaceCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceCreateRequest' is not null or undefined
+            assertParamExists('createSpace', 'spaceCreateRequest', spaceCreateRequest)
+            const localVarPath = `/api/spaces`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3521,7 +3521,7 @@ export const WorkspacesApiAxiosParamCreator = function (configuration?: Configur
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(workspaceCreateRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(spaceCreateRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3529,17 +3529,17 @@ export const WorkspacesApiAxiosParamCreator = function (configuration?: Configur
             };
         },
         /**
-         * Soft delete workspace and all contained nodes, attributes, mappings.
-         * @summary Delete workspace
-         * @param {string} workspaceId Workspace UUID
+         * Soft delete space and all contained nodes, attributes, mappings.
+         * @summary Delete space
+         * @param {string} spaceId Space UUID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteWorkspace: async (workspaceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('deleteWorkspace', 'workspaceId', workspaceId)
-            const localVarPath = `/api/workspaces/{workspaceId}`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+        deleteSpace: async (spaceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('deleteSpace', 'spaceId', spaceId)
+            const localVarPath = `/api/spaces/{spaceId}`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3567,17 +3567,17 @@ export const WorkspacesApiAxiosParamCreator = function (configuration?: Configur
             };
         },
         /**
-         * Retrieve workspace details including node count and Git status.
-         * @summary Get workspace by ID
-         * @param {string} workspaceId Workspace UUID
+         * Retrieve space details including node count and Git status.
+         * @summary Get space by ID
+         * @param {string} spaceId Space UUID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getWorkspace: async (workspaceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('getWorkspace', 'workspaceId', workspaceId)
-            const localVarPath = `/api/workspaces/{workspaceId}`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+        getSpace: async (spaceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('getSpace', 'spaceId', spaceId)
+            const localVarPath = `/api/spaces/{spaceId}`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3605,20 +3605,20 @@ export const WorkspacesApiAxiosParamCreator = function (configuration?: Configur
             };
         },
         /**
-         * Clone template into existing workspace, replacing placeholders with values.
-         * @summary Instantiate workspace from template
-         * @param {string} workspaceId Workspace UUID
+         * Clone template into existing space, replacing placeholders with values.
+         * @summary Instantiate space from template
+         * @param {string} spaceId Space UUID
          * @param {TemplateInstantiateRequest} templateInstantiateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        instantiateTemplate: async (workspaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('instantiateTemplate', 'workspaceId', workspaceId)
+        instantiateTemplate: async (spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('instantiateTemplate', 'spaceId', spaceId)
             // verify required parameter 'templateInstantiateRequest' is not null or undefined
             assertParamExists('instantiateTemplate', 'templateInstantiateRequest', templateInstantiateRequest)
-            const localVarPath = `/api/workspaces/{workspaceId}/instantiate`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+            const localVarPath = `/api/spaces/{spaceId}/instantiate`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3649,16 +3649,16 @@ export const WorkspacesApiAxiosParamCreator = function (configuration?: Configur
             };
         },
         /**
-         * Retrieve all workspaces owned by authenticated user (excludes soft-deleted).
-         * @summary List all workspaces
+         * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
+         * @summary List all spaces
          * @param {number} [page] Page number (0-indexed)
          * @param {number} [size] Page size
-         * @param {ListWorkspacesSortEnum} [sort] Sort field and direction
+         * @param {ListSpacesSortEnum} [sort] Sort field and direction
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listWorkspaces: async (page?: number, size?: number, sort?: ListWorkspacesSortEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/workspaces`;
+        listSpaces: async (page?: number, size?: number, sort?: ListSpacesSortEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/spaces`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3698,20 +3698,20 @@ export const WorkspacesApiAxiosParamCreator = function (configuration?: Configur
             };
         },
         /**
-         * Update workspace title, description, or Git configuration.
-         * @summary Update workspace
-         * @param {string} workspaceId Workspace UUID
-         * @param {WorkspaceUpdateRequest} workspaceUpdateRequest 
+         * Update space title, description, or Git configuration.
+         * @summary Update space
+         * @param {string} spaceId Space UUID
+         * @param {SpaceUpdateRequest} spaceUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateWorkspace: async (workspaceId: string, workspaceUpdateRequest: WorkspaceUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workspaceId' is not null or undefined
-            assertParamExists('updateWorkspace', 'workspaceId', workspaceId)
-            // verify required parameter 'workspaceUpdateRequest' is not null or undefined
-            assertParamExists('updateWorkspace', 'workspaceUpdateRequest', workspaceUpdateRequest)
-            const localVarPath = `/api/workspaces/{workspaceId}`
-                .replace(`{${"workspaceId"}}`, encodeURIComponent(String(workspaceId)));
+        updateSpace: async (spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('updateSpace', 'spaceId', spaceId)
+            // verify required parameter 'spaceUpdateRequest' is not null or undefined
+            assertParamExists('updateSpace', 'spaceUpdateRequest', spaceUpdateRequest)
+            const localVarPath = `/api/spaces/{spaceId}`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3734,7 +3734,7 @@ export const WorkspacesApiAxiosParamCreator = function (configuration?: Configur
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(workspaceUpdateRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(spaceUpdateRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3745,259 +3745,259 @@ export const WorkspacesApiAxiosParamCreator = function (configuration?: Configur
 };
 
 /**
- * WorkspacesApi - functional programming interface
+ * SpacesApi - functional programming interface
  * @export
  */
-export const WorkspacesApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = WorkspacesApiAxiosParamCreator(configuration)
+export const SpacesApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = SpacesApiAxiosParamCreator(configuration)
     return {
         /**
-         * Create empty workspace or from template.
-         * @summary Create new workspace
-         * @param {WorkspaceCreateRequest} workspaceCreateRequest 
+         * Create empty space or from template.
+         * @summary Create new space
+         * @param {SpaceCreateRequest} spaceCreateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createWorkspace(workspaceCreateRequest: WorkspaceCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateWorkspace201Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createWorkspace(workspaceCreateRequest, options);
+        async createSpace(spaceCreateRequest: SpaceCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateSpace201Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createSpace(spaceCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkspacesApi.createWorkspace']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.createSpace']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Soft delete workspace and all contained nodes, attributes, mappings.
-         * @summary Delete workspace
-         * @param {string} workspaceId Workspace UUID
+         * Soft delete space and all contained nodes, attributes, mappings.
+         * @summary Delete space
+         * @param {string} spaceId Space UUID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteWorkspace(workspaceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteWorkspace(workspaceId, options);
+        async deleteSpace(spaceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteSpace(spaceId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkspacesApi.deleteWorkspace']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.deleteSpace']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retrieve workspace details including node count and Git status.
-         * @summary Get workspace by ID
-         * @param {string} workspaceId Workspace UUID
+         * Retrieve space details including node count and Git status.
+         * @summary Get space by ID
+         * @param {string} spaceId Space UUID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getWorkspace(workspaceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateWorkspace201Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getWorkspace(workspaceId, options);
+        async getSpace(spaceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateSpace201Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSpace(spaceId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkspacesApi.getWorkspace']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.getSpace']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Clone template into existing workspace, replacing placeholders with values.
-         * @summary Instantiate workspace from template
-         * @param {string} workspaceId Workspace UUID
+         * Clone template into existing space, replacing placeholders with values.
+         * @summary Instantiate space from template
+         * @param {string} spaceId Space UUID
          * @param {TemplateInstantiateRequest} templateInstantiateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async instantiateTemplate(workspaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InstantiateTemplate200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.instantiateTemplate(workspaceId, templateInstantiateRequest, options);
+        async instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InstantiateTemplate200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.instantiateTemplate(spaceId, templateInstantiateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkspacesApi.instantiateTemplate']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.instantiateTemplate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retrieve all workspaces owned by authenticated user (excludes soft-deleted).
-         * @summary List all workspaces
+         * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
+         * @summary List all spaces
          * @param {number} [page] Page number (0-indexed)
          * @param {number} [size] Page size
-         * @param {ListWorkspacesSortEnum} [sort] Sort field and direction
+         * @param {ListSpacesSortEnum} [sort] Sort field and direction
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listWorkspaces(page?: number, size?: number, sort?: ListWorkspacesSortEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListWorkspaces200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listWorkspaces(page, size, sort, options);
+        async listSpaces(page?: number, size?: number, sort?: ListSpacesSortEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListSpaces200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listSpaces(page, size, sort, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkspacesApi.listWorkspaces']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.listSpaces']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Update workspace title, description, or Git configuration.
-         * @summary Update workspace
-         * @param {string} workspaceId Workspace UUID
-         * @param {WorkspaceUpdateRequest} workspaceUpdateRequest 
+         * Update space title, description, or Git configuration.
+         * @summary Update space
+         * @param {string} spaceId Space UUID
+         * @param {SpaceUpdateRequest} spaceUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateWorkspace(workspaceId: string, workspaceUpdateRequest: WorkspaceUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateWorkspace201Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateWorkspace(workspaceId, workspaceUpdateRequest, options);
+        async updateSpace(spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateSpace201Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateSpace(spaceId, spaceUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkspacesApi.updateWorkspace']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.updateSpace']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
 };
 
 /**
- * WorkspacesApi - factory interface
+ * SpacesApi - factory interface
  * @export
  */
-export const WorkspacesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = WorkspacesApiFp(configuration)
+export const SpacesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = SpacesApiFp(configuration)
     return {
         /**
-         * Create empty workspace or from template.
-         * @summary Create new workspace
-         * @param {WorkspaceCreateRequest} workspaceCreateRequest 
+         * Create empty space or from template.
+         * @summary Create new space
+         * @param {SpaceCreateRequest} spaceCreateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createWorkspace(workspaceCreateRequest: WorkspaceCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CreateWorkspace201Response> {
-            return localVarFp.createWorkspace(workspaceCreateRequest, options).then((request) => request(axios, basePath));
+        createSpace(spaceCreateRequest: SpaceCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CreateSpace201Response> {
+            return localVarFp.createSpace(spaceCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
-         * Soft delete workspace and all contained nodes, attributes, mappings.
-         * @summary Delete workspace
-         * @param {string} workspaceId Workspace UUID
+         * Soft delete space and all contained nodes, attributes, mappings.
+         * @summary Delete space
+         * @param {string} spaceId Space UUID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteWorkspace(workspaceId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteWorkspace(workspaceId, options).then((request) => request(axios, basePath));
+        deleteSpace(spaceId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteSpace(spaceId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retrieve workspace details including node count and Git status.
-         * @summary Get workspace by ID
-         * @param {string} workspaceId Workspace UUID
+         * Retrieve space details including node count and Git status.
+         * @summary Get space by ID
+         * @param {string} spaceId Space UUID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getWorkspace(workspaceId: string, options?: RawAxiosRequestConfig): AxiosPromise<CreateWorkspace201Response> {
-            return localVarFp.getWorkspace(workspaceId, options).then((request) => request(axios, basePath));
+        getSpace(spaceId: string, options?: RawAxiosRequestConfig): AxiosPromise<CreateSpace201Response> {
+            return localVarFp.getSpace(spaceId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Clone template into existing workspace, replacing placeholders with values.
-         * @summary Instantiate workspace from template
-         * @param {string} workspaceId Workspace UUID
+         * Clone template into existing space, replacing placeholders with values.
+         * @summary Instantiate space from template
+         * @param {string} spaceId Space UUID
          * @param {TemplateInstantiateRequest} templateInstantiateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        instantiateTemplate(workspaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): AxiosPromise<InstantiateTemplate200Response> {
-            return localVarFp.instantiateTemplate(workspaceId, templateInstantiateRequest, options).then((request) => request(axios, basePath));
+        instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): AxiosPromise<InstantiateTemplate200Response> {
+            return localVarFp.instantiateTemplate(spaceId, templateInstantiateRequest, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retrieve all workspaces owned by authenticated user (excludes soft-deleted).
-         * @summary List all workspaces
+         * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
+         * @summary List all spaces
          * @param {number} [page] Page number (0-indexed)
          * @param {number} [size] Page size
-         * @param {ListWorkspacesSortEnum} [sort] Sort field and direction
+         * @param {ListSpacesSortEnum} [sort] Sort field and direction
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listWorkspaces(page?: number, size?: number, sort?: ListWorkspacesSortEnum, options?: RawAxiosRequestConfig): AxiosPromise<ListWorkspaces200Response> {
-            return localVarFp.listWorkspaces(page, size, sort, options).then((request) => request(axios, basePath));
+        listSpaces(page?: number, size?: number, sort?: ListSpacesSortEnum, options?: RawAxiosRequestConfig): AxiosPromise<ListSpaces200Response> {
+            return localVarFp.listSpaces(page, size, sort, options).then((request) => request(axios, basePath));
         },
         /**
-         * Update workspace title, description, or Git configuration.
-         * @summary Update workspace
-         * @param {string} workspaceId Workspace UUID
-         * @param {WorkspaceUpdateRequest} workspaceUpdateRequest 
+         * Update space title, description, or Git configuration.
+         * @summary Update space
+         * @param {string} spaceId Space UUID
+         * @param {SpaceUpdateRequest} spaceUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateWorkspace(workspaceId: string, workspaceUpdateRequest: WorkspaceUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CreateWorkspace201Response> {
-            return localVarFp.updateWorkspace(workspaceId, workspaceUpdateRequest, options).then((request) => request(axios, basePath));
+        updateSpace(spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CreateSpace201Response> {
+            return localVarFp.updateSpace(spaceId, spaceUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
 
 /**
- * WorkspacesApi - object-oriented interface
+ * SpacesApi - object-oriented interface
  * @export
- * @class WorkspacesApi
+ * @class SpacesApi
  * @extends {BaseAPI}
  */
-export class WorkspacesApi extends BaseAPI {
+export class SpacesApi extends BaseAPI {
     /**
-     * Create empty workspace or from template.
-     * @summary Create new workspace
-     * @param {WorkspaceCreateRequest} workspaceCreateRequest 
+     * Create empty space or from template.
+     * @summary Create new space
+     * @param {SpaceCreateRequest} spaceCreateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof WorkspacesApi
+     * @memberof SpacesApi
      */
-    public createWorkspace(workspaceCreateRequest: WorkspaceCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkspacesApiFp(this.configuration).createWorkspace(workspaceCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public createSpace(spaceCreateRequest: SpaceCreateRequest, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).createSpace(spaceCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Soft delete workspace and all contained nodes, attributes, mappings.
-     * @summary Delete workspace
-     * @param {string} workspaceId Workspace UUID
+     * Soft delete space and all contained nodes, attributes, mappings.
+     * @summary Delete space
+     * @param {string} spaceId Space UUID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof WorkspacesApi
+     * @memberof SpacesApi
      */
-    public deleteWorkspace(workspaceId: string, options?: RawAxiosRequestConfig) {
-        return WorkspacesApiFp(this.configuration).deleteWorkspace(workspaceId, options).then((request) => request(this.axios, this.basePath));
+    public deleteSpace(spaceId: string, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).deleteSpace(spaceId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retrieve workspace details including node count and Git status.
-     * @summary Get workspace by ID
-     * @param {string} workspaceId Workspace UUID
+     * Retrieve space details including node count and Git status.
+     * @summary Get space by ID
+     * @param {string} spaceId Space UUID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof WorkspacesApi
+     * @memberof SpacesApi
      */
-    public getWorkspace(workspaceId: string, options?: RawAxiosRequestConfig) {
-        return WorkspacesApiFp(this.configuration).getWorkspace(workspaceId, options).then((request) => request(this.axios, this.basePath));
+    public getSpace(spaceId: string, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).getSpace(spaceId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Clone template into existing workspace, replacing placeholders with values.
-     * @summary Instantiate workspace from template
-     * @param {string} workspaceId Workspace UUID
+     * Clone template into existing space, replacing placeholders with values.
+     * @summary Instantiate space from template
+     * @param {string} spaceId Space UUID
      * @param {TemplateInstantiateRequest} templateInstantiateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof WorkspacesApi
+     * @memberof SpacesApi
      */
-    public instantiateTemplate(workspaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig) {
-        return WorkspacesApiFp(this.configuration).instantiateTemplate(workspaceId, templateInstantiateRequest, options).then((request) => request(this.axios, this.basePath));
+    public instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).instantiateTemplate(spaceId, templateInstantiateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retrieve all workspaces owned by authenticated user (excludes soft-deleted).
-     * @summary List all workspaces
+     * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
+     * @summary List all spaces
      * @param {number} [page] Page number (0-indexed)
      * @param {number} [size] Page size
-     * @param {ListWorkspacesSortEnum} [sort] Sort field and direction
+     * @param {ListSpacesSortEnum} [sort] Sort field and direction
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof WorkspacesApi
+     * @memberof SpacesApi
      */
-    public listWorkspaces(page?: number, size?: number, sort?: ListWorkspacesSortEnum, options?: RawAxiosRequestConfig) {
-        return WorkspacesApiFp(this.configuration).listWorkspaces(page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    public listSpaces(page?: number, size?: number, sort?: ListSpacesSortEnum, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).listSpaces(page, size, sort, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Update workspace title, description, or Git configuration.
-     * @summary Update workspace
-     * @param {string} workspaceId Workspace UUID
-     * @param {WorkspaceUpdateRequest} workspaceUpdateRequest 
+     * Update space title, description, or Git configuration.
+     * @summary Update space
+     * @param {string} spaceId Space UUID
+     * @param {SpaceUpdateRequest} spaceUpdateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof WorkspacesApi
+     * @memberof SpacesApi
      */
-    public updateWorkspace(workspaceId: string, workspaceUpdateRequest: WorkspaceUpdateRequest, options?: RawAxiosRequestConfig) {
-        return WorkspacesApiFp(this.configuration).updateWorkspace(workspaceId, workspaceUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public updateSpace(spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).updateSpace(spaceId, spaceUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
 /**
  * @export
  */
-export const ListWorkspacesSortEnum = {
+export const ListSpacesSortEnum = {
     CreatedAt: 'createdAt',
     Asc: 'asc',
     CreatedAt2: 'createdAt',
@@ -4011,6 +4011,6 @@ export const ListWorkspacesSortEnum = {
     Title2: 'title',
     Desc3: 'desc'
 } as const;
-export type ListWorkspacesSortEnum = typeof ListWorkspacesSortEnum[keyof typeof ListWorkspacesSortEnum];
+export type ListSpacesSortEnum = typeof ListSpacesSortEnum[keyof typeof ListSpacesSortEnum];
 
 

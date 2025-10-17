@@ -2,13 +2,13 @@ openapi: 3.0.3
 info:
   title: Mujarrad Obsidian Mapper API
   description: |
-    REST API for bidirectional synchronization between Obsidian vaults and Mujarrad workspaces.
+    REST API for bidirectional synchronization between Obsidian vaults and Mujarrad spaces.
 
     This API extends the existing Mujarrad backend with endpoints for:
-    - Uploading Obsidian vaults to Mujarrad workspaces
-    - Cloning workspaces back to Obsidian format
+    - Uploading Obsidian vaults to Mujarrad spaces
+    - Cloning spaces back to Obsidian format
     - Bidirectional sync with conflict resolution
-    - Workspace template creation and instantiation
+    - Space template creation and instantiation
     - Git-based version history tracking
 
     **Authentication**: All endpoints require JWT Bearer token (obtain via `/api/auth/login`).
@@ -31,20 +31,20 @@ servers:
 tags:
   - name: Authentication
     description: User authentication and token management
-  - name: Workspaces
-    description: Workspace CRUD operations
+  - name: Spaces
+    description: Space CRUD operations
   - name: Templates
-    description: Workspace template management
+    description: Space template management
   - name: Upload
-    description: Batch upload Obsidian vaults to workspaces
+    description: Batch upload Obsidian vaults to spaces
   - name: Clone
-    description: Export workspaces to Obsidian format
+    description: Export spaces to Obsidian format
   - name: Sync
     description: Bidirectional synchronization
   - name: Version History
     description: Git commit history and rollback
   - name: Sharing
-    description: Workspace sharing and permissions
+    description: Space sharing and permissions
 
 security:
   - bearerAuth: []
@@ -167,15 +167,15 @@ paths:
           $ref: '#/components/responses/Unauthorized'
 
   # ============================================================================
-  # WORKSPACE APIs (Existing + Extensions)
+  # SPACE APIs (Existing + Extensions)
   # ============================================================================
 
-  /api/workspaces:
+  /api/spaces:
     get:
-      tags: [Workspaces]
-      summary: List all workspaces
-      description: Retrieve all workspaces owned by authenticated user (excludes soft-deleted).
-      operationId: listWorkspaces
+      tags: [Spaces]
+      summary: List all spaces
+      description: Retrieve all spaces owned by authenticated user (excludes soft-deleted).
+      operationId: listSpaces
       parameters:
         - name: page
           in: query
@@ -201,7 +201,7 @@ paths:
             default: createdAt,desc
       responses:
         '200':
-          description: Workspaces retrieved successfully
+          description: Spaces retrieved successfully
           content:
             application/json:
               schema:
@@ -212,10 +212,10 @@ paths:
                       data:
                         type: object
                         properties:
-                          workspaces:
+                          spaces:
                             type: array
                             items:
-                              $ref: '#/components/schemas/WorkspaceResponse'
+                              $ref: '#/components/schemas/SpaceResponse'
                           totalElements:
                             type: integer
                           totalPages:
@@ -226,19 +226,19 @@ paths:
           $ref: '#/components/responses/Unauthorized'
 
     post:
-      tags: [Workspaces]
-      summary: Create new workspace
-      description: Create empty workspace or from template.
-      operationId: createWorkspace
+      tags: [Spaces]
+      summary: Create new space
+      description: Create empty space or from template.
+      operationId: createSpace
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkspaceCreateRequest'
+              $ref: '#/components/schemas/SpaceCreateRequest'
       responses:
         '201':
-          description: Workspace created successfully
+          description: Space created successfully
           content:
             application/json:
               schema:
@@ -247,23 +247,23 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/WorkspaceResponse'
+                        $ref: '#/components/schemas/SpaceResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /api/workspaces/{workspaceId}:
+  /api/spaces/{spaceId}:
     get:
-      tags: [Workspaces]
-      summary: Get workspace by ID
-      description: Retrieve workspace details including node count and Git status.
-      operationId: getWorkspace
+      tags: [Spaces]
+      summary: Get space by ID
+      description: Retrieve space details including node count and Git status.
+      operationId: getSpace
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
       responses:
         '200':
-          description: Workspace retrieved successfully
+          description: Space retrieved successfully
           content:
             application/json:
               schema:
@@ -272,7 +272,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/WorkspaceResponse'
+                        $ref: '#/components/schemas/SpaceResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -281,21 +281,21 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     patch:
-      tags: [Workspaces]
-      summary: Update workspace
-      description: Update workspace title, description, or Git configuration.
-      operationId: updateWorkspace
+      tags: [Spaces]
+      summary: Update space
+      description: Update space title, description, or Git configuration.
+      operationId: updateSpace
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkspaceUpdateRequest'
+              $ref: '#/components/schemas/SpaceUpdateRequest'
       responses:
         '200':
-          description: Workspace updated successfully
+          description: Space updated successfully
           content:
             application/json:
               schema:
@@ -304,7 +304,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/WorkspaceResponse'
+                        $ref: '#/components/schemas/SpaceResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -315,15 +315,15 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     delete:
-      tags: [Workspaces]
-      summary: Delete workspace
-      description: Soft delete workspace and all contained nodes, attributes, mappings.
-      operationId: deleteWorkspace
+      tags: [Spaces]
+      summary: Delete space
+      description: Soft delete space and all contained nodes, attributes, mappings.
+      operationId: deleteSpace
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
       responses:
         '204':
-          description: Workspace deleted successfully
+          description: Space deleted successfully
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -338,7 +338,7 @@ paths:
   /api/templates:
     get:
       tags: [Templates]
-      summary: List workspace templates
+      summary: List space templates
       description: Retrieve public templates and user's private templates.
       operationId: listTemplates
       parameters:
@@ -384,7 +384,7 @@ paths:
                           templates:
                             type: array
                             items:
-                              $ref: '#/components/schemas/WorkspaceTemplateResponse'
+                              $ref: '#/components/schemas/SpaceTemplateResponse'
                           totalElements:
                             type: integer
                           totalPages:
@@ -396,8 +396,8 @@ paths:
 
     post:
       tags: [Templates]
-      summary: Create template from workspace
-      description: Convert existing workspace into reusable template with placeholders.
+      summary: Create template from space
+      description: Convert existing space into reusable template with placeholders.
       operationId: createTemplate
       requestBody:
         required: true
@@ -416,7 +416,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/WorkspaceTemplateResponse'
+                        $ref: '#/components/schemas/SpaceTemplateResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -448,7 +448,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/WorkspaceTemplateResponse'
+                        $ref: '#/components/schemas/SpaceTemplateResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -457,7 +457,7 @@ paths:
     delete:
       tags: [Templates]
       summary: Delete template
-      description: Delete workspace template (does not affect workspaces created from it).
+      description: Delete space template (does not affect spaces created from it).
       operationId: deleteTemplate
       parameters:
         - name: templateId
@@ -476,14 +476,14 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/workspaces/{workspaceId}/instantiate:
+  /api/spaces/{spaceId}/instantiate:
     post:
-      tags: [Templates, Workspaces]
-      summary: Instantiate workspace from template
-      description: Clone template into existing workspace, replacing placeholders with values.
+      tags: [Templates, Spaces]
+      summary: Instantiate space from template
+      description: Clone template into existing space, replacing placeholders with values.
       operationId: instantiateTemplate
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
       requestBody:
         required: true
         content:
@@ -507,7 +507,7 @@ paths:
                             type: integer
                           attributesCreated:
                             type: integer
-                          workspaceId:
+                          spaceId:
                             type: string
                             format: uuid
         '400':
@@ -523,12 +523,12 @@ paths:
   # UPLOAD APIs (New)
   # ============================================================================
 
-  /api/workspaces/{workspaceId}/upload/batch:
+  /api/spaces/{spaceId}/upload/batch:
     post:
       tags: [Upload]
-      summary: Batch upload files to workspace
+      summary: Batch upload files to space
       description: |
-        Upload multiple Obsidian files (notes, canvases) to workspace in batches.
+        Upload multiple Obsidian files (notes, canvases) to space in batches.
 
         **Process**:
         1. Client sends batch of files (max 100 files per request)
@@ -541,7 +541,7 @@ paths:
         **Performance Target**: 1000 files in <5 minutes (NFR-001)
       operationId: uploadBatch
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
       requestBody:
         required: true
         content:
@@ -600,14 +600,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/workspaces/{workspaceId}/upload/status:
+  /api/spaces/{spaceId}/upload/status:
     get:
       tags: [Upload]
       summary: Check upload progress
       description: Retrieve status of ongoing or completed upload session.
       operationId: getUploadStatus
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
         - name: sessionId
           in: query
           required: true
@@ -634,14 +634,14 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/workspaces/{workspaceId}/upload/log:
+  /api/spaces/{spaceId}/upload/log:
     get:
       tags: [Upload]
       summary: Download upload log
       description: Retrieve detailed log file for upload session (JSON Lines format).
       operationId: getUploadLog
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
         - name: sessionId
           in: query
           required: true
@@ -671,12 +671,12 @@ paths:
   # CLONE APIs (New)
   # ============================================================================
 
-  /api/workspaces/{workspaceId}/export:
+  /api/spaces/{spaceId}/export:
     post:
       tags: [Clone]
-      summary: Export workspace to Obsidian format
+      summary: Export space to Obsidian format
       description: |
-        Clone Mujarrad workspace to Obsidian vault format.
+        Clone Mujarrad space to Obsidian vault format.
 
         **Process**:
         1. Client requests export
@@ -687,9 +687,9 @@ paths:
         6. Client downloads exported files in batches
 
         **Performance Target**: 1000 nodes in <3 minutes (NFR-002)
-      operationId: exportWorkspace
+      operationId: exportSpace
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
       requestBody:
         required: true
         content:
@@ -736,14 +736,14 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/workspaces/{workspaceId}/export/status:
+  /api/spaces/{spaceId}/export/status:
     get:
       tags: [Clone]
       summary: Check export progress
       description: Retrieve status of ongoing export job.
       operationId: getExportStatus
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
         - name: exportJobId
           in: query
           required: true
@@ -786,14 +786,14 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/workspaces/{workspaceId}/export/download:
+  /api/spaces/{spaceId}/export/download:
     get:
       tags: [Clone]
       summary: Download exported files
-      description: Download workspace exported as ZIP archive.
+      description: Download space exported as ZIP archive.
       operationId: downloadExport
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
         - name: exportJobId
           in: query
           required: true
@@ -825,12 +825,12 @@ paths:
   # SYNC APIs (New)
   # ============================================================================
 
-  /api/workspaces/{workspaceId}/sync/detect:
+  /api/spaces/{spaceId}/sync/detect:
     post:
       tags: [Sync]
       summary: Detect sync changes
       description: |
-        Compare local vault state with remote workspace to detect changes.
+        Compare local vault state with remote space to detect changes.
 
         **Process**:
         1. Client sends local file hashes and timestamps
@@ -839,7 +839,7 @@ paths:
         4. Client reviews conflicts and confirms sync
       operationId: detectSyncChanges
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
       requestBody:
         required: true
         content:
@@ -889,7 +889,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/workspaces/{workspaceId}/sync/apply:
+  /api/spaces/{spaceId}/sync/apply:
     post:
       tags: [Sync]
       summary: Apply sync changes
@@ -905,7 +905,7 @@ paths:
         4. Backend returns list of applied changes and resolved conflicts
       operationId: applySyncChanges
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
       requestBody:
         required: true
         content:
@@ -1121,14 +1121,14 @@ paths:
   # SHARING APIs (Future - placeholder)
   # ============================================================================
 
-  /api/workspaces/{workspaceId}/share:
+  /api/spaces/{spaceId}/share:
     post:
       tags: [Sharing]
-      summary: Share workspace (Future)
-      description: Share workspace with another user (not implemented in first release).
-      operationId: shareWorkspace
+      summary: Share space (Future)
+      description: Share space with another user (not implemented in first release).
+      operationId: shareSpace
       parameters:
-        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/SpaceId'
       requestBody:
         content:
           application/json:
@@ -1152,7 +1152,7 @@ paths:
                 success: false
                 error:
                   code: "NOT_IMPLEMENTED"
-                  message: "Workspace sharing not implemented in v1.0"
+                  message: "Space sharing not implemented in v1.0"
                   timestamp: "2025-10-09T10:15:30Z"
 
 # ==============================================================================
@@ -1168,11 +1168,11 @@ components:
       description: JWT token obtained from `/api/auth/login`
 
   parameters:
-    WorkspaceId:
-      name: workspaceId
+    SpaceId:
+      name: spaceId
       in: path
       required: true
-      description: Workspace UUID
+      description: Space UUID
       schema:
         type: string
         format: uuid
@@ -1216,7 +1216,7 @@ components:
             message:
               type: string
               description: Human-readable error message
-              example: "Workspace not found"
+              example: "Space not found"
             details:
               type: object
               description: Additional error context (optional)
@@ -1229,7 +1229,7 @@ components:
     # Domain Models
     # ==========================================================================
 
-    WorkspaceResponse:
+    SpaceResponse:
       type: object
       required: [id, ownerId, title, createdAt, updatedAt]
       properties:
@@ -1253,7 +1253,7 @@ components:
           default: "main"
         nodeCount:
           type: integer
-          description: Total number of nodes in workspace
+          description: Total number of nodes in space
         createdAt:
           type: string
           format: date-time
@@ -1261,7 +1261,7 @@ components:
           type: string
           format: date-time
 
-    WorkspaceCreateRequest:
+    SpaceCreateRequest:
       type: object
       required: [title]
       properties:
@@ -1269,7 +1269,7 @@ components:
           type: string
           minLength: 1
           maxLength: 500
-          example: "My Knowledge Workspace"
+          example: "My Knowledge Space"
         description:
           type: string
           example: "Personal notes and research"
@@ -1281,7 +1281,7 @@ components:
           type: string
           default: "main"
 
-    WorkspaceUpdateRequest:
+    SpaceUpdateRequest:
       type: object
       properties:
         title:
@@ -1296,7 +1296,7 @@ components:
         gitBranch:
           type: string
 
-    WorkspaceTemplateResponse:
+    SpaceTemplateResponse:
       type: object
       required: [id, creatorId, name, isPublic, usageCount, createdAt]
       properties:
@@ -1334,12 +1334,12 @@ components:
 
     TemplateCreateRequest:
       type: object
-      required: [workspaceId, name]
+      required: [spaceId, name]
       properties:
-        workspaceId:
+        spaceId:
           type: string
           format: uuid
-          description: Workspace to create template from
+          description: Space to create template from
         name:
           type: string
           minLength: 1
@@ -1374,12 +1374,12 @@ components:
 
     UploadSessionResponse:
       type: object
-      required: [id, workspaceId, status, totalFiles, processedFiles, createdAt]
+      required: [id, spaceId, status, totalFiles, processedFiles, createdAt]
       properties:
         id:
           type: string
           format: uuid
-        workspaceId:
+        spaceId:
           type: string
           format: uuid
         status:
@@ -1428,7 +1428,7 @@ components:
                 format: date-time
         remoteChanges:
           type: array
-          description: Changes detected in remote workspace
+          description: Changes detected in remote space
           items:
             type: object
             required: [filePath, action, nodeId]
@@ -1468,12 +1468,12 @@ components:
 
     SyncSessionResponse:
       type: object
-      required: [id, workspaceId, status, changesDetected, changesApplied]
+      required: [id, spaceId, status, changesDetected, changesApplied]
       properties:
         id:
           type: string
           format: uuid
-        workspaceId:
+        spaceId:
           type: string
           format: uuid
         status:
@@ -1606,7 +1606,7 @@ components:
             success: false
             error:
               code: "FORBIDDEN"
-              message: "User does not have access to this workspace"
+              message: "User does not have access to this space"
               timestamp: "2025-10-09T10:15:30Z"
 
     NotFound:
@@ -1619,7 +1619,7 @@ components:
             success: false
             error:
               code: "NOT_FOUND"
-              message: "Workspace not found"
+              message: "Space not found"
               timestamp: "2025-10-09T10:15:30Z"
 
     Conflict:

@@ -70,14 +70,14 @@ export class SyncService {
    * Detect file changes using Git diff since last sync
    *
    * @param vaultPath - Absolute path to local vault
-   * @param workspaceSlug - Workspace identifier for cache lookup
+   * @param spaceSlug - Space identifier for cache lookup
    * @returns Array of detected changes with Git metadata
    */
-  async detectChanges(vaultPath: string, workspaceSlug: string): Promise<Change[]> {
+  async detectChanges(vaultPath: string, spaceSlug: string): Promise<Change[]> {
     const git: SimpleGit = simpleGit(vaultPath);
 
     // Get last sync time from cache
-    const lastSyncTime = await CacheManager.getLastSyncTime(workspaceSlug);
+    const lastSyncTime = await CacheManager.getLastSyncTime(spaceSlug);
     if (!lastSyncTime) {
       throw new Error('No previous sync found. Run initial sync first.');
     }
@@ -165,11 +165,11 @@ export class SyncService {
    *
    * Uses applySyncChanges API which handles both push and conflict resolution
    *
-   * @param workspaceId - Workspace UUID
+   * @param spaceId - Space UUID
    * @param changes - Array of changes to push
    * @returns Result with versions created and any conflicts detected
    */
-  async pushChanges(workspaceId: string, changes: Change[]): Promise<PushResult> {
+  async pushChanges(spaceId: string, changes: Change[]): Promise<PushResult> {
     // Transform changes to API format
     const apiChanges = changes.map(change => ({
       nodeId: change.nodeId || '',
@@ -182,7 +182,7 @@ export class SyncService {
     }));
 
     // Call backend API - applySyncChanges handles both push and pull
-    const response = await this.syncApi.applySyncChanges(workspaceId, {
+    const response = await this.syncApi.applySyncChanges(spaceId, {
       changes: apiChanges as any
     });
 
@@ -197,10 +197,10 @@ export class SyncService {
    *
    * Note: In MVP, applySyncChanges returns remote changes in the same response
    *
-   * @param workspaceId - Workspace UUID
+   * @param spaceId - Space UUID
    * @returns Remote changes to apply locally
    */
-  async pullChanges(_workspaceId: string): Promise<PullResult> {
+  async pullChanges(_spaceId: string): Promise<PullResult> {
     // In MVP, we get remote changes from applySyncChanges response
     // For now, return empty (will be populated during actual sync)
     return {
@@ -231,10 +231,10 @@ export class SyncService {
   /**
    * Complete sync operation by updating last sync timestamp
    *
-   * @param workspaceSlug - Workspace identifier
+   * @param spaceSlug - Space identifier
    * @param timestamp - New sync timestamp (ISO-8601)
    */
-  async completeSync(workspaceSlug: string, timestamp: string): Promise<void> {
-    await CacheManager.setLastSyncTime(workspaceSlug, timestamp);
+  async completeSync(spaceSlug: string, timestamp: string): Promise<void> {
+    await CacheManager.setLastSyncTime(spaceSlug, timestamp);
   }
 }

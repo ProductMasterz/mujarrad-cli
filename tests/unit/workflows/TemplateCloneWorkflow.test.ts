@@ -1,5 +1,5 @@
 import { TemplateCloneWorkflow } from '../../../src/workflows/TemplateCloneWorkflow.js';
-import { TemplatesApi, WorkspacesApi } from '../../../src/api/generated/api.js';
+import { TemplatesApi, SpacesApi } from '../../../src/api/generated/api.js';
 import { CloneService } from '../../../src/services/CloneService.js';
 import { Logger } from '../../../src/utils/Logger.js';
 import * as fs from 'fs/promises';
@@ -23,17 +23,17 @@ jest.mock('fs/promises');
 describe('TemplateCloneWorkflow', () => {
   let workflow: TemplateCloneWorkflow;
   let mockTemplatesApi: jest.Mocked<TemplatesApi>;
-  let mockWorkspacesApi: jest.Mocked<WorkspacesApi>;
+  let mockSpacesApi: jest.Mocked<SpacesApi>;
   let mockCloneService: jest.Mocked<CloneService>;
   const mockTargetPath = '/tmp/test-vault';
 
   beforeEach(() => {
     // Create mock instances
     mockTemplatesApi = new TemplatesApi() as jest.Mocked<TemplatesApi>;
-    mockWorkspacesApi = new WorkspacesApi() as jest.Mocked<WorkspacesApi>;
+    mockSpacesApi = new SpacesApi() as jest.Mocked<SpacesApi>;
     mockCloneService = new CloneService(jest.fn() as any) as jest.Mocked<CloneService>;
 
-    workflow = new TemplateCloneWorkflow(mockTemplatesApi, mockWorkspacesApi, mockCloneService);
+    workflow = new TemplateCloneWorkflow(mockTemplatesApi, mockSpacesApi, mockCloneService);
 
     // Mock logger methods
     jest.spyOn(Logger.prototype, 'info').mockImplementation();
@@ -50,14 +50,14 @@ describe('TemplateCloneWorkflow', () => {
   });
 
   describe('execute', () => {
-    it('should instantiate workspace from template', async () => {
-      const mockWorkspaceResponse = {
+    it('should instantiate space from template', async () => {
+      const mockSpaceResponse = {
         data: {
           data: {
-            id: 'new-workspace-uuid',
+            id: 'new-space-uuid',
             name: 'My Startup',
             slug: 'my-startup',
-            description: 'Workspace created from template'
+            description: 'Space created from template'
           }
         }
       };
@@ -67,23 +67,23 @@ describe('TemplateCloneWorkflow', () => {
           data: {
             id: 'template-uuid-001',
             name: 'Business Model Canvas',
-            sourceWorkspaceId: 'source-workspace-uuid',
+            sourceSpaceId: 'source-space-uuid',
             contextTemplatesCount: 9
           }
         }
       };
 
       mockTemplatesApi.getTemplate = jest.fn().mockResolvedValue(mockTemplateResponse);
-      mockWorkspacesApi.createWorkspace = jest.fn().mockResolvedValue(mockWorkspaceResponse);
+      mockSpacesApi.createSpace = jest.fn().mockResolvedValue(mockSpaceResponse);
       mockTemplatesApi.instantiateTemplate = jest.fn().mockResolvedValue({
         data: {
           data: {
-            workspaceId: 'new-workspace-uuid',
+            spaceId: 'new-space-uuid',
             status: 'COMPLETED'
           }
         }
       });
-      mockCloneService.cloneWorkspace = jest.fn().mockResolvedValue({
+      mockCloneService.cloneSpace = jest.fn().mockResolvedValue({
         success: true,
         totalNodes: 15,
         totalErrors: 0,
@@ -91,17 +91,17 @@ describe('TemplateCloneWorkflow', () => {
       });
 
       const result = await workflow.execute('template-uuid-001', {
-        workspaceName: 'My Startup',
-        workspaceDescription: 'Test workspace',
+        spaceName: 'My Startup',
+        spaceDescription: 'Test space',
         placeholders: {}
       }, mockTargetPath);
 
-      expect(result.workspaceId).toBe('new-workspace-uuid');
+      expect(result.spaceId).toBe('new-space-uuid');
       expect(result.success).toBe(true);
       expect(mockTemplatesApi.getTemplate).toHaveBeenCalledWith('template-uuid-001');
-      expect(mockWorkspacesApi.createWorkspace).toHaveBeenCalled();
+      expect(mockSpacesApi.createSpace).toHaveBeenCalled();
       expect(mockTemplatesApi.instantiateTemplate).toHaveBeenCalledWith(
-        'new-workspace-uuid',
+        'new-space-uuid',
         expect.objectContaining({
           templateId: 'template-uuid-001',
           placeholderValues: {}
@@ -110,12 +110,12 @@ describe('TemplateCloneWorkflow', () => {
     });
 
     it('should include template config file in cloned vault', async () => {
-      const mockWorkspaceResponse = {
+      const mockSpaceResponse = {
         data: {
           data: {
-            id: 'new-workspace-uuid',
-            name: 'Test Workspace',
-            slug: 'test-workspace'
+            id: 'new-space-uuid',
+            name: 'Test Space',
+            slug: 'test-space'
           }
         }
       };
@@ -125,17 +125,17 @@ describe('TemplateCloneWorkflow', () => {
           data: {
             id: 'template-uuid-001',
             name: 'Business Model Canvas',
-            sourceWorkspaceId: 'source-workspace-uuid'
+            sourceSpaceId: 'source-space-uuid'
           }
         }
       };
 
       mockTemplatesApi.getTemplate = jest.fn().mockResolvedValue(mockTemplateResponse);
-      mockWorkspacesApi.createWorkspace = jest.fn().mockResolvedValue(mockWorkspaceResponse);
+      mockSpacesApi.createSpace = jest.fn().mockResolvedValue(mockSpaceResponse);
       mockTemplatesApi.instantiateTemplate = jest.fn().mockResolvedValue({
-        data: { data: { workspaceId: 'new-workspace-uuid', status: 'COMPLETED' } }
+        data: { data: { spaceId: 'new-space-uuid', status: 'COMPLETED' } }
       });
-      mockCloneService.cloneWorkspace = jest.fn().mockResolvedValue({
+      mockCloneService.cloneSpace = jest.fn().mockResolvedValue({
         success: true,
         totalNodes: 10,
         totalErrors: 0,
@@ -143,7 +143,7 @@ describe('TemplateCloneWorkflow', () => {
       });
 
       await workflow.execute('template-uuid-001', {
-        workspaceName: 'Test',
+        spaceName: 'Test',
         placeholders: {}
       }, mockTargetPath);
 
@@ -166,14 +166,14 @@ describe('TemplateCloneWorkflow', () => {
       const config = JSON.parse(writeFileCall[1]);
       expect(config.templateId).toBe('template-uuid-001');
       expect(config.templateName).toBe('Business Model Canvas');
-      expect(config.workspaceId).toBe('new-workspace-uuid');
+      expect(config.spaceId).toBe('new-space-uuid');
     });
 
     it('should handle template with placeholders', async () => {
-      const mockWorkspaceResponse = {
+      const mockSpaceResponse = {
         data: {
           data: {
-            id: 'new-workspace-uuid',
+            id: 'new-space-uuid',
             name: 'Week of 2025-01-01',
             slug: 'week-of-2025-01-01'
           }
@@ -185,17 +185,17 @@ describe('TemplateCloneWorkflow', () => {
           data: {
             id: 'template-uuid-002',
             name: 'Weekly Planning Template',
-            sourceWorkspaceId: 'source-workspace-uuid'
+            sourceSpaceId: 'source-space-uuid'
           }
         }
       };
 
       mockTemplatesApi.getTemplate = jest.fn().mockResolvedValue(mockTemplateResponse);
-      mockWorkspacesApi.createWorkspace = jest.fn().mockResolvedValue(mockWorkspaceResponse);
+      mockSpacesApi.createSpace = jest.fn().mockResolvedValue(mockSpaceResponse);
       mockTemplatesApi.instantiateTemplate = jest.fn().mockResolvedValue({
-        data: { data: { workspaceId: 'new-workspace-uuid', status: 'COMPLETED' } }
+        data: { data: { spaceId: 'new-space-uuid', status: 'COMPLETED' } }
       });
-      mockCloneService.cloneWorkspace = jest.fn().mockResolvedValue({
+      mockCloneService.cloneSpace = jest.fn().mockResolvedValue({
         success: true,
         totalNodes: 5,
         totalErrors: 0,
@@ -208,13 +208,13 @@ describe('TemplateCloneWorkflow', () => {
       };
 
       const result = await workflow.execute('template-uuid-002', {
-        workspaceName: 'Week of 2025-01-01',
+        spaceName: 'Week of 2025-01-01',
         placeholders
       }, mockTargetPath);
 
       expect(result.success).toBe(true);
       expect(mockTemplatesApi.instantiateTemplate).toHaveBeenCalledWith(
-        'new-workspace-uuid',
+        'new-space-uuid',
         expect.objectContaining({
           templateId: 'template-uuid-002',
           placeholderValues: placeholders
@@ -223,12 +223,12 @@ describe('TemplateCloneWorkflow', () => {
     });
 
     it('should handle instantiation failure', async () => {
-      const mockWorkspaceResponse = {
+      const mockSpaceResponse = {
         data: {
           data: {
-            id: 'new-workspace-uuid',
-            name: 'Test Workspace',
-            slug: 'test-workspace'
+            id: 'new-space-uuid',
+            name: 'Test Space',
+            slug: 'test-space'
           }
         }
       };
@@ -243,26 +243,26 @@ describe('TemplateCloneWorkflow', () => {
       };
 
       mockTemplatesApi.getTemplate = jest.fn().mockResolvedValue(mockTemplateResponse);
-      mockWorkspacesApi.createWorkspace = jest.fn().mockResolvedValue(mockWorkspaceResponse);
+      mockSpacesApi.createSpace = jest.fn().mockResolvedValue(mockSpaceResponse);
       mockTemplatesApi.instantiateTemplate = jest.fn().mockRejectedValue(
         new Error('Instantiation failed')
       );
 
       await expect(
         workflow.execute('template-uuid-001', {
-          workspaceName: 'Test',
+          spaceName: 'Test',
           placeholders: {}
         }, mockTargetPath)
       ).rejects.toThrow('Failed to instantiate template: Instantiation failed');
     });
 
     it('should handle clone failure', async () => {
-      const mockWorkspaceResponse = {
+      const mockSpaceResponse = {
         data: {
           data: {
-            id: 'new-workspace-uuid',
-            name: 'Test Workspace',
-            slug: 'test-workspace'
+            id: 'new-space-uuid',
+            name: 'Test Space',
+            slug: 'test-space'
           }
         }
       };
@@ -277,11 +277,11 @@ describe('TemplateCloneWorkflow', () => {
       };
 
       mockTemplatesApi.getTemplate = jest.fn().mockResolvedValue(mockTemplateResponse);
-      mockWorkspacesApi.createWorkspace = jest.fn().mockResolvedValue(mockWorkspaceResponse);
+      mockSpacesApi.createSpace = jest.fn().mockResolvedValue(mockSpaceResponse);
       mockTemplatesApi.instantiateTemplate = jest.fn().mockResolvedValue({
-        data: { data: { workspaceId: 'new-workspace-uuid', status: 'COMPLETED' } }
+        data: { data: { spaceId: 'new-space-uuid', status: 'COMPLETED' } }
       });
-      mockCloneService.cloneWorkspace = jest.fn().mockResolvedValue({
+      mockCloneService.cloneSpace = jest.fn().mockResolvedValue({
         success: false,
         totalNodes: 0,
         totalErrors: 1,
@@ -289,7 +289,7 @@ describe('TemplateCloneWorkflow', () => {
       });
 
       const result = await workflow.execute('template-uuid-001', {
-        workspaceName: 'Test',
+        spaceName: 'Test',
         placeholders: {}
       }, mockTargetPath);
 

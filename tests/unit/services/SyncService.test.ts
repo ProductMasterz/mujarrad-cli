@@ -54,7 +54,7 @@ describe('SyncService', () => {
         message: 'Update notes'
       });
 
-      const changes = await syncService.detectChanges('/vault', 'workspace-123');
+      const changes = await syncService.detectChanges('/vault', 'space-123');
 
       expect(changes).toHaveLength(2);
       expect(changes[0].operation).toBe('UPDATE');
@@ -78,7 +78,7 @@ describe('SyncService', () => {
         }
       });
 
-      const changes = await syncService.detectChanges('/vault', 'workspace-123');
+      const changes = await syncService.detectChanges('/vault', 'space-123');
 
       expect(changes[0].gitMetadata).toEqual({
         hash: 'abc123def456',
@@ -101,7 +101,7 @@ describe('SyncService', () => {
         }
       });
 
-      const changes = await syncService.detectChanges('/vault', 'workspace-123');
+      const changes = await syncService.detectChanges('/vault', 'space-123');
 
       expect(changes).toHaveLength(1);
       expect(changes[0].operation).toBe('CREATE');
@@ -121,7 +121,7 @@ describe('SyncService', () => {
         }
       });
 
-      const changes = await syncService.detectChanges('/vault', 'workspace-123');
+      const changes = await syncService.detectChanges('/vault', 'space-123');
 
       expect(changes).toHaveLength(1);
       expect(changes[0].operation).toBe('DELETE');
@@ -132,7 +132,7 @@ describe('SyncService', () => {
       (CacheManager.getLastSyncTime as jest.Mock).mockResolvedValue('2025-10-10T10:00:00Z');
       mockGit.diff.mockResolvedValue('');
 
-      const changes = await syncService.detectChanges('/vault', 'workspace-123');
+      const changes = await syncService.detectChanges('/vault', 'space-123');
 
       expect(changes).toEqual([]);
     });
@@ -150,7 +150,7 @@ describe('SyncService', () => {
         }
       });
 
-      const changes = await syncService.detectChanges('/vault', 'workspace-123');
+      const changes = await syncService.detectChanges('/vault', 'space-123');
 
       expect(changes).toHaveLength(1);
       expect(changes[0].operation).toBe('RENAME');
@@ -183,11 +183,11 @@ describe('SyncService', () => {
         }
       });
 
-      const result = await syncService.pushChanges('workspace-123', changes);
+      const result = await syncService.pushChanges('space-123', changes);
 
       expect(result.versionsCreated).toBe(1);
       expect(result.conflicts).toEqual([]);
-      expect(mockSyncApi.pushChanges).toHaveBeenCalledWith('workspace-123', {
+      expect(mockSyncApi.pushChanges).toHaveBeenCalledWith('space-123', {
         changes: expect.arrayContaining([
           expect.objectContaining({
             nodeId: 'uuid-123',
@@ -221,7 +221,7 @@ describe('SyncService', () => {
       mockSyncApi.pushChanges.mockRejectedValue(new Error('Network error'));
 
       await expect(
-        syncService.pushChanges('workspace-123', changes)
+        syncService.pushChanges('space-123', changes)
       ).rejects.toThrow('Network error');
     });
 
@@ -257,7 +257,7 @@ describe('SyncService', () => {
         }
       });
 
-      const result = await syncService.pushChanges('workspace-123', changes);
+      const result = await syncService.pushChanges('space-123', changes);
 
       expect(result.versionsCreated).toBe(0);
       expect(result.conflicts).toHaveLength(1);
@@ -283,13 +283,13 @@ describe('SyncService', () => {
         }
       });
 
-      const result = await syncService.pullChanges('workspace-123');
+      const result = await syncService.pullChanges('space-123');
 
       expect(result.changes).toHaveLength(1);
       expect(result.changes[0].operation).toBe('UPDATE');
       expect(result.changes[0].content).toBe('# Remote Update');
       expect(mockSyncApi.pullChanges).toHaveBeenCalledWith(
-        'workspace-123',
+        'space-123',
         { since: '2025-10-10T10:00:00Z' }
       );
     });
@@ -300,7 +300,7 @@ describe('SyncService', () => {
         data: { changes: [] }
       });
 
-      const result = await syncService.pullChanges('workspace-123');
+      const result = await syncService.pullChanges('space-123');
 
       expect(result.changes).toEqual([]);
     });
@@ -374,10 +374,10 @@ describe('SyncService', () => {
     it('should update last sync timestamp', async () => {
       (CacheManager.setLastSyncTime as jest.Mock).mockResolvedValue(undefined);
 
-      await syncService.completeSync('workspace-123', '2025-10-11T18:00:00Z');
+      await syncService.completeSync('space-123', '2025-10-11T18:00:00Z');
 
       expect(CacheManager.setLastSyncTime).toHaveBeenCalledWith(
-        'workspace-123',
+        'space-123',
         '2025-10-11T18:00:00Z'
       );
     });

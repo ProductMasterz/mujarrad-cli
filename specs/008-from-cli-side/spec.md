@@ -115,11 +115,11 @@ A user wants to upload their Obsidian vault to Mujarrad. The system needs to fir
 
 **Why this priority**: The upload process is a core workflow that needs proper preparation. Combining initialization and upload into a single command (`mujarrad init`) provides a seamless user experience while internally performing both preparation and upload steps.
 
-**Independent Test**: Can be fully tested by running `mujarrad init <vault-path> --workspace <slug>` on a sample vault and verifying it performs vault scanning, validation, and upload in sequence with appropriate progress feedback.
+**Independent Test**: Can be fully tested by running `mujarrad init <vault-path> --space <slug>` on a sample vault and verifying it performs vault scanning, validation, and upload in sequence with appropriate progress feedback.
 
 **Acceptance Scenarios**:
 
-1. **Given** a user runs `mujarrad init ./my-vault --workspace my-workspace`, **When** the command executes, **Then** it first scans and validates the vault structure before uploading
+1. **Given** a user runs `mujarrad init ./my-vault --space my-space`, **When** the command executes, **Then** it first scans and validates the vault structure before uploading
 2. **Given** initialization is in progress, **When** vault scanning happens, **Then** progress shows "Initializing vault: scanning files..."
 3. **Given** validation completes successfully, **When** upload begins, **Then** progress shows "Uploading: X/Y files complete"
 4. **Given** the combined operation completes, **When** all steps finish, **Then** a summary shows both initialization and upload statistics
@@ -235,12 +235,12 @@ A developer preparing a new release needs to run comprehensive tests on all CLI 
 - **FR-053**: System MUST provide `mujarrad init` command that performs both vault preparation and upload
 - **FR-054**: System MUST scan vault directory structure before beginning upload during init
 - **FR-055**: System MUST validate vault structure (check for markdown files, canvas files) during initialization
-- **FR-056**: System MUST check prerequisites (authentication status, workspace existence) before upload
+- **FR-056**: System MUST check prerequisites (authentication status, space existence) before upload
 - **FR-057**: System MUST display separate progress indicators for initialization phase and upload phase
 - **FR-058**: System MUST show file counts and validation results during initialization
 - **FR-059**: System MUST provide combined statistics showing both initialization and upload results
 - **FR-060**: System MUST fail gracefully if validation fails, showing specific issues found
-- **FR-061**: System MUST accept workspace parameter: `mujarrad init <vault-path> --workspace <slug>`
+- **FR-061**: System MUST accept space parameter: `mujarrad init <vault-path> --space <slug>`
 - **FR-062**: System MUST log all initialization and upload operations to debug logs
 
 ### Non-Functional Requirements

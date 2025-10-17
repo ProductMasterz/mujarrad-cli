@@ -3,7 +3,7 @@
  *
  * Tests end-to-end clone functionality:
  * - Full authentication flow
- * - Workspace export and download
+ * - Space export and download
  * - Local vault creation
  * - Git repository initialization
  * - File structure validation
@@ -63,13 +63,13 @@ describe('Clone Command Integration Tests', () => {
   });
 
   skipIfNoToken('Full clone workflow', () => {
-    it('should clone workspace to local directory', async () => {
+    it('should clone space to local directory', async () => {
       const targetPath = path.join(testDir, 'test-clone');
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
-      // Clone workspace
-      const summary = await cloneService.cloneWorkspace(
-        workspaceSlug,
+      // Clone space
+      const summary = await cloneService.cloneSpace(
+        spaceSlug,
         targetPath,
         false // includeHistory
       );
@@ -95,10 +95,10 @@ describe('Clone Command Integration Tests', () => {
 
     it('should initialize git repository by default', async () => {
       const targetPath = path.join(testDir, 'test-clone-git');
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
-      // Clone workspace
-      await cloneService.cloneWorkspace(workspaceSlug, targetPath, false);
+      // Clone space
+      await cloneService.cloneSpace(spaceSlug, targetPath, false);
 
       // Check if git repository was initialized
       const gitPath = path.join(targetPath, '.git');
@@ -114,16 +114,16 @@ describe('Clone Command Integration Tests', () => {
 
     it('should create proper Obsidian vault structure', async () => {
       const targetPath = path.join(testDir, 'test-clone-structure');
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
-      // Clone workspace
-      await cloneService.cloneWorkspace(workspaceSlug, targetPath, false);
+      // Clone space
+      await cloneService.cloneSpace(spaceSlug, targetPath, false);
 
       // Validate essential Obsidian files/folders
       const requiredPaths = [
         '.obsidian',
         '.obsidian/app.json',
-        '.obsidian/workspace.json'
+        '.obsidian/space.json'
       ];
 
       for (const relativePath of requiredPaths) {
@@ -139,10 +139,10 @@ describe('Clone Command Integration Tests', () => {
 
     it('should preserve markdown content and frontmatter', async () => {
       const targetPath = path.join(testDir, 'test-clone-content');
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
-      // Clone workspace
-      await cloneService.cloneWorkspace(workspaceSlug, targetPath, false);
+      // Clone space
+      await cloneService.cloneSpace(spaceSlug, targetPath, false);
 
       // Find a markdown file
       const files = await fs.readdir(targetPath);
@@ -164,13 +164,13 @@ describe('Clone Command Integration Tests', () => {
   });
 
   skipIfNoToken('Error handling', () => {
-    it('should handle non-existent workspace gracefully', async () => {
+    it('should handle non-existent space gracefully', async () => {
       const targetPath = path.join(testDir, 'test-clone-404');
-      const invalidSlug = 'non-existent-workspace-12345';
+      const invalidSlug = 'non-existent-space-12345';
 
       try {
-        await cloneService.cloneWorkspace(invalidSlug, targetPath, false);
-        fail('Should have thrown error for non-existent workspace');
+        await cloneService.cloneSpace(invalidSlug, targetPath, false);
+        fail('Should have thrown error for non-existent space');
       } catch (error: any) {
         expect(error.response?.status).toBe(404);
       }
@@ -178,16 +178,16 @@ describe('Clone Command Integration Tests', () => {
 
     it('should handle permission denied gracefully', async () => {
       const targetPath = path.join(testDir, 'test-clone-403');
-      const restrictedSlug = process.env.TEST_RESTRICTED_WORKSPACE_SLUG;
+      const restrictedSlug = process.env.TEST_RESTRICTED_SPACE_SLUG;
 
       if (!restrictedSlug) {
-        // Skip if no restricted workspace configured
+        // Skip if no restricted space configured
         return;
       }
 
       try {
-        await cloneService.cloneWorkspace(restrictedSlug, targetPath, false);
-        fail('Should have thrown error for restricted workspace');
+        await cloneService.cloneSpace(restrictedSlug, targetPath, false);
+        fail('Should have thrown error for restricted space');
       } catch (error: any) {
         expect(error.response?.status).toBe(403);
       }
@@ -210,11 +210,11 @@ describe('Clone Command Integration Tests', () => {
   skipIfNoToken('Version history', () => {
     it('should include version history with --include-history flag', async () => {
       const targetPath = path.join(testDir, 'test-clone-history');
-      const workspaceSlug = process.env.TEST_WORKSPACE_SLUG || 'test-workspace';
+      const spaceSlug = process.env.TEST_SPACE_SLUG || 'test-space';
 
       // Clone with history
-      const summary = await cloneService.cloneWorkspace(
-        workspaceSlug,
+      const summary = await cloneService.cloneSpace(
+        spaceSlug,
         targetPath,
         true // includeHistory
       );
@@ -227,19 +227,19 @@ describe('Clone Command Integration Tests', () => {
   });
 
   skipIfNoToken('Performance', () => {
-    it('should handle large workspaces efficiently', async () => {
+    it('should handle large spaces efficiently', async () => {
       const targetPath = path.join(testDir, 'test-clone-large');
-      const largeWorkspaceSlug = process.env.TEST_LARGE_WORKSPACE_SLUG;
+      const largeSpaceSlug = process.env.TEST_LARGE_SPACE_SLUG;
 
-      if (!largeWorkspaceSlug) {
-        // Skip if no large workspace configured
+      if (!largeSpaceSlug) {
+        // Skip if no large space configured
         return;
       }
 
       const startTime = Date.now();
 
-      const summary = await cloneService.cloneWorkspace(
-        largeWorkspaceSlug,
+      const summary = await cloneService.cloneSpace(
+        largeSpaceSlug,
         targetPath,
         false
       );

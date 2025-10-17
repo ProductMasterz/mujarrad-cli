@@ -1,4 +1,4 @@
-# CreateWorkspace201Response
+# CreateSpace201Response
 
 
 ## Properties
@@ -6,15 +6,15 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [default to undefined]
-**data** | [**WorkspaceResponse**](WorkspaceResponse.md) |  | [default to undefined]
+**data** | [**SpaceResponse**](SpaceResponse.md) |  | [default to undefined]
 **timestamp** | **string** |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { CreateWorkspace201Response } from 'mujarrad-api-client';
+import { CreateSpace201Response } from 'mujarrad-api-client';
 
-const instance: CreateWorkspace201Response = {
+const instance: CreateSpace201Response = {
     success,
     data,
     timestamp,

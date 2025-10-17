@@ -4,8 +4,8 @@ All URIs are relative to *https://api.example.com*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**applySyncChanges**](#applysyncchanges) | **POST** /api/workspaces/{workspaceId}/sync/apply | Apply sync changes|
-|[**detectSyncChanges**](#detectsyncchanges) | **POST** /api/workspaces/{workspaceId}/sync/detect | Detect sync changes|
+|[**applySyncChanges**](#applysyncchanges) | **POST** /api/spaces/{spaceId}/sync/apply | Apply sync changes|
+|[**detectSyncChanges**](#detectsyncchanges) | **POST** /api/spaces/{spaceId}/sync/detect | Detect sync changes|
 
 # **applySyncChanges**
 > ApplySyncChanges200Response applySyncChanges(applySyncChangesRequest)
@@ -24,11 +24,11 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SyncApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 let applySyncChangesRequest: ApplySyncChangesRequest; //
 
 const { status, data } = await apiInstance.applySyncChanges(
-    workspaceId,
+    spaceId,
     applySyncChangesRequest
 );
 ```
@@ -38,7 +38,7 @@ const { status, data } = await apiInstance.applySyncChanges(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **applySyncChangesRequest** | **ApplySyncChangesRequest**|  | |
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type
@@ -70,7 +70,7 @@ const { status, data } = await apiInstance.applySyncChanges(
 # **detectSyncChanges**
 > DetectSyncChanges200Response detectSyncChanges(detectSyncChangesRequest)
 
-Compare local vault state with remote workspace to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
+Compare local vault state with remote space to detect changes.  **Process**: 1. Client sends local file hashes and timestamps 2. Backend compares with NodeVersion history 3. Backend returns list of changes (create, update, delete) in each direction 4. Client reviews conflicts and confirms sync 
 
 ### Example
 
@@ -84,11 +84,11 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SyncApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 let detectSyncChangesRequest: DetectSyncChangesRequest; //
 
 const { status, data } = await apiInstance.detectSyncChanges(
-    workspaceId,
+    spaceId,
     detectSyncChangesRequest
 );
 ```
@@ -98,7 +98,7 @@ const { status, data } = await apiInstance.detectSyncChanges(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **detectSyncChangesRequest** | **DetectSyncChangesRequest**|  | |
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type

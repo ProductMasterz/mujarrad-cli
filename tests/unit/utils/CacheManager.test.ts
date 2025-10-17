@@ -4,11 +4,11 @@ import * as path from 'path';
 import * as os from 'os';
 
 describe('CacheManager', () => {
-  const testWorkspaceSlug = `test-workspace-${Date.now()}`;
+  const testSpaceSlug = `test-space-${Date.now()}`;
   let testCacheDir: string;
 
   beforeAll(async () => {
-    testCacheDir = path.join(os.tmpdir(), '.mujarrad-test', 'cache', testWorkspaceSlug);
+    testCacheDir = path.join(os.tmpdir(), '.mujarrad-test', 'cache', testSpaceSlug);
   });
 
   afterAll(async () => {
@@ -20,39 +20,39 @@ describe('CacheManager', () => {
     }
   });
 
-  describe('cacheWorkspace and getWorkspace', () => {
-    it('should cache workspace structure', async () => {
-      const workspaceData = {
-        id: 'uuid-workspace-1',
-        name: 'Test Workspace',
+  describe('cacheSpace and getSpace', () => {
+    it('should cache space structure', async () => {
+      const spaceData = {
+        id: 'uuid-space-1',
+        name: 'Test Space',
         nodes: [
           { id: 'node1', name: 'Note 1' },
           { id: 'node2', name: 'Note 2' }
         ]
       };
 
-      await CacheManager.cacheWorkspace(testWorkspaceSlug, workspaceData, testCacheDir);
+      await CacheManager.cacheSpace(testSpaceSlug, spaceData, testCacheDir);
 
-      const cached = await CacheManager.getWorkspace(testWorkspaceSlug, testCacheDir);
+      const cached = await CacheManager.getSpace(testSpaceSlug, testCacheDir);
       expect(cached).toBeDefined();
-      expect(cached.id).toBe('uuid-workspace-1');
-      expect(cached.name).toBe('Test Workspace');
+      expect(cached.id).toBe('uuid-space-1');
+      expect(cached.name).toBe('Test Space');
       expect(cached.nodes).toHaveLength(2);
     });
 
-    it('should return null for non-existent workspace', async () => {
-      const cached = await CacheManager.getWorkspace('non-existent-workspace', testCacheDir);
+    it('should return null for non-existent space', async () => {
+      const cached = await CacheManager.getSpace('non-existent-space', testCacheDir);
       expect(cached).toBeNull();
     });
 
-    it('should overwrite existing workspace cache', async () => {
-      const workspaceData1 = { id: 'uuid-1', name: 'Original' };
-      const workspaceData2 = { id: 'uuid-2', name: 'Updated' };
+    it('should overwrite existing space cache', async () => {
+      const spaceData1 = { id: 'uuid-1', name: 'Original' };
+      const spaceData2 = { id: 'uuid-2', name: 'Updated' };
 
-      await CacheManager.cacheWorkspace(testWorkspaceSlug, workspaceData1, testCacheDir);
-      await CacheManager.cacheWorkspace(testWorkspaceSlug, workspaceData2, testCacheDir);
+      await CacheManager.cacheSpace(testSpaceSlug, spaceData1, testCacheDir);
+      await CacheManager.cacheSpace(testSpaceSlug, spaceData2, testCacheDir);
 
-      const cached = await CacheManager.getWorkspace(testWorkspaceSlug, testCacheDir);
+      const cached = await CacheManager.getSpace(testSpaceSlug, testCacheDir);
       expect(cached.id).toBe('uuid-2');
       expect(cached.name).toBe('Updated');
     });
@@ -61,14 +61,14 @@ describe('CacheManager', () => {
   describe('setLastSyncTime and getLastSyncTime', () => {
     it('should store last sync timestamp', async () => {
       const timestamp = '2025-10-10T10:00:00Z';
-      await CacheManager.setLastSyncTime(testWorkspaceSlug, timestamp, testCacheDir);
+      await CacheManager.setLastSyncTime(testSpaceSlug, timestamp, testCacheDir);
 
-      const lastSync = await CacheManager.getLastSyncTime(testWorkspaceSlug, testCacheDir);
+      const lastSync = await CacheManager.getLastSyncTime(testSpaceSlug, testCacheDir);
       expect(lastSync).toBe(timestamp);
     });
 
-    it('should return null for workspace without sync time', async () => {
-      const lastSync = await CacheManager.getLastSyncTime('workspace-no-sync', testCacheDir);
+    it('should return null for space without sync time', async () => {
+      const lastSync = await CacheManager.getLastSyncTime('space-no-sync', testCacheDir);
       expect(lastSync).toBeNull();
     });
 
@@ -76,43 +76,43 @@ describe('CacheManager', () => {
       const timestamp1 = '2025-10-10T10:00:00Z';
       const timestamp2 = '2025-10-10T11:00:00Z';
 
-      await CacheManager.setLastSyncTime(testWorkspaceSlug, timestamp1, testCacheDir);
-      await CacheManager.setLastSyncTime(testWorkspaceSlug, timestamp2, testCacheDir);
+      await CacheManager.setLastSyncTime(testSpaceSlug, timestamp1, testCacheDir);
+      await CacheManager.setLastSyncTime(testSpaceSlug, timestamp2, testCacheDir);
 
-      const lastSync = await CacheManager.getLastSyncTime(testWorkspaceSlug, testCacheDir);
+      const lastSync = await CacheManager.getLastSyncTime(testSpaceSlug, testCacheDir);
       expect(lastSync).toBe(timestamp2);
     });
 
     it('should handle ISO 8601 timestamps', async () => {
       const timestamp = new Date().toISOString();
-      await CacheManager.setLastSyncTime(testWorkspaceSlug, timestamp, testCacheDir);
+      await CacheManager.setLastSyncTime(testSpaceSlug, timestamp, testCacheDir);
 
-      const lastSync = await CacheManager.getLastSyncTime(testWorkspaceSlug, testCacheDir);
+      const lastSync = await CacheManager.getLastSyncTime(testSpaceSlug, testCacheDir);
       expect(lastSync).toBe(timestamp);
     });
   });
 
   describe('cacheNodeMapping and getFilePathForNode', () => {
     it('should store node UUID to file path mappings', async () => {
-      await CacheManager.cacheNodeMapping(testWorkspaceSlug, 'uuid-123', 'folder/note.md', testCacheDir);
+      await CacheManager.cacheNodeMapping(testSpaceSlug, 'uuid-123', 'folder/note.md', testCacheDir);
 
-      const filePath = await CacheManager.getFilePathForNode(testWorkspaceSlug, 'uuid-123', testCacheDir);
+      const filePath = await CacheManager.getFilePathForNode(testSpaceSlug, 'uuid-123', testCacheDir);
       expect(filePath).toBe('folder/note.md');
     });
 
     it('should return null for unknown node UUID', async () => {
-      const filePath = await CacheManager.getFilePathForNode(testWorkspaceSlug, 'unknown-uuid', testCacheDir);
+      const filePath = await CacheManager.getFilePathForNode(testSpaceSlug, 'unknown-uuid', testCacheDir);
       expect(filePath).toBeNull();
     });
 
     it('should store multiple node mappings', async () => {
-      await CacheManager.cacheNodeMapping(testWorkspaceSlug, 'uuid-1', 'note1.md', testCacheDir);
-      await CacheManager.cacheNodeMapping(testWorkspaceSlug, 'uuid-2', 'folder/note2.md', testCacheDir);
-      await CacheManager.cacheNodeMapping(testWorkspaceSlug, 'uuid-3', 'deep/nested/note3.md', testCacheDir);
+      await CacheManager.cacheNodeMapping(testSpaceSlug, 'uuid-1', 'note1.md', testCacheDir);
+      await CacheManager.cacheNodeMapping(testSpaceSlug, 'uuid-2', 'folder/note2.md', testCacheDir);
+      await CacheManager.cacheNodeMapping(testSpaceSlug, 'uuid-3', 'deep/nested/note3.md', testCacheDir);
 
-      const filePath1 = await CacheManager.getFilePathForNode(testWorkspaceSlug, 'uuid-1', testCacheDir);
-      const filePath2 = await CacheManager.getFilePathForNode(testWorkspaceSlug, 'uuid-2', testCacheDir);
-      const filePath3 = await CacheManager.getFilePathForNode(testWorkspaceSlug, 'uuid-3', testCacheDir);
+      const filePath1 = await CacheManager.getFilePathForNode(testSpaceSlug, 'uuid-1', testCacheDir);
+      const filePath2 = await CacheManager.getFilePathForNode(testSpaceSlug, 'uuid-2', testCacheDir);
+      const filePath3 = await CacheManager.getFilePathForNode(testSpaceSlug, 'uuid-3', testCacheDir);
 
       expect(filePath1).toBe('note1.md');
       expect(filePath2).toBe('folder/note2.md');
@@ -120,67 +120,67 @@ describe('CacheManager', () => {
     });
 
     it('should update existing node mapping', async () => {
-      await CacheManager.cacheNodeMapping(testWorkspaceSlug, 'uuid-update', 'old-path.md', testCacheDir);
-      await CacheManager.cacheNodeMapping(testWorkspaceSlug, 'uuid-update', 'new-path.md', testCacheDir);
+      await CacheManager.cacheNodeMapping(testSpaceSlug, 'uuid-update', 'old-path.md', testCacheDir);
+      await CacheManager.cacheNodeMapping(testSpaceSlug, 'uuid-update', 'new-path.md', testCacheDir);
 
-      const filePath = await CacheManager.getFilePathForNode(testWorkspaceSlug, 'uuid-update', testCacheDir);
+      const filePath = await CacheManager.getFilePathForNode(testSpaceSlug, 'uuid-update', testCacheDir);
       expect(filePath).toBe('new-path.md');
     });
   });
 
   describe('getNodeUUIDForFilePath', () => {
     it('should get node UUID for file path (reverse mapping)', async () => {
-      await CacheManager.cacheNodeMapping(testWorkspaceSlug, 'uuid-reverse', 'test-file.md', testCacheDir);
+      await CacheManager.cacheNodeMapping(testSpaceSlug, 'uuid-reverse', 'test-file.md', testCacheDir);
 
-      const nodeUUID = await CacheManager.getNodeUUIDForFilePath(testWorkspaceSlug, 'test-file.md', testCacheDir);
+      const nodeUUID = await CacheManager.getNodeUUIDForFilePath(testSpaceSlug, 'test-file.md', testCacheDir);
       expect(nodeUUID).toBe('uuid-reverse');
     });
 
     it('should return null for unknown file path', async () => {
-      const nodeUUID = await CacheManager.getNodeUUIDForFilePath(testWorkspaceSlug, 'unknown.md', testCacheDir);
+      const nodeUUID = await CacheManager.getNodeUUIDForFilePath(testSpaceSlug, 'unknown.md', testCacheDir);
       expect(nodeUUID).toBeNull();
     });
   });
 
-  describe('clearWorkspaceCache', () => {
-    it('should clear cache for workspace', async () => {
+  describe('clearSpaceCache', () => {
+    it('should clear cache for space', async () => {
       // Set up cache data
-      await CacheManager.cacheWorkspace(testWorkspaceSlug, { id: 'uuid-clear' }, testCacheDir);
-      await CacheManager.setLastSyncTime(testWorkspaceSlug, '2025-10-10T10:00:00Z', testCacheDir);
-      await CacheManager.cacheNodeMapping(testWorkspaceSlug, 'uuid-node', 'note.md', testCacheDir);
+      await CacheManager.cacheSpace(testSpaceSlug, { id: 'uuid-clear' }, testCacheDir);
+      await CacheManager.setLastSyncTime(testSpaceSlug, '2025-10-10T10:00:00Z', testCacheDir);
+      await CacheManager.cacheNodeMapping(testSpaceSlug, 'uuid-node', 'note.md', testCacheDir);
 
       // Clear cache
-      await CacheManager.clearWorkspaceCache(testWorkspaceSlug, testCacheDir);
+      await CacheManager.clearSpaceCache(testSpaceSlug, testCacheDir);
 
       // Verify all cache data is cleared
-      const workspace = await CacheManager.getWorkspace(testWorkspaceSlug, testCacheDir);
-      const syncTime = await CacheManager.getLastSyncTime(testWorkspaceSlug, testCacheDir);
-      const filePath = await CacheManager.getFilePathForNode(testWorkspaceSlug, 'uuid-node', testCacheDir);
+      const space = await CacheManager.getSpace(testSpaceSlug, testCacheDir);
+      const syncTime = await CacheManager.getLastSyncTime(testSpaceSlug, testCacheDir);
+      const filePath = await CacheManager.getFilePathForNode(testSpaceSlug, 'uuid-node', testCacheDir);
 
-      expect(workspace).toBeNull();
+      expect(space).toBeNull();
       expect(syncTime).toBeNull();
       expect(filePath).toBeNull();
     });
 
     it('should not throw error when clearing non-existent cache', async () => {
       await expect(
-        CacheManager.clearWorkspaceCache('non-existent', testCacheDir)
+        CacheManager.clearSpaceCache('non-existent', testCacheDir)
       ).resolves.not.toThrow();
     });
   });
 
   describe('getCacheDir and ensureCacheDir', () => {
     it('should get cache directory path', () => {
-      const cacheDir = CacheManager.getCacheDir('new-workspace', testCacheDir);
+      const cacheDir = CacheManager.getCacheDir('new-space', testCacheDir);
       expect(cacheDir).toContain('cache');
-      expect(cacheDir).toContain('new-workspace');
+      expect(cacheDir).toContain('new-space');
     });
 
     it('should handle cache directory creation', async () => {
-      const newWorkspaceSlug = `new-workspace-${Date.now()}`;
-      const cacheDir = CacheManager.getCacheDir(newWorkspaceSlug, testCacheDir);
+      const newSpaceSlug = `new-space-${Date.now()}`;
+      const cacheDir = CacheManager.getCacheDir(newSpaceSlug, testCacheDir);
 
-      await CacheManager.ensureCacheDir(newWorkspaceSlug, testCacheDir);
+      await CacheManager.ensureCacheDir(newSpaceSlug, testCacheDir);
 
       // Check directory exists
       const stats = await fs.stat(cacheDir);
@@ -188,69 +188,69 @@ describe('CacheManager', () => {
     });
 
     it('should not throw error if cache directory already exists', async () => {
-      const existingWorkspace = `existing-workspace-${Date.now()}`;
-      await CacheManager.ensureCacheDir(existingWorkspace, testCacheDir);
+      const existingSpace = `existing-space-${Date.now()}`;
+      await CacheManager.ensureCacheDir(existingSpace, testCacheDir);
 
       await expect(
-        CacheManager.ensureCacheDir(existingWorkspace, testCacheDir)
+        CacheManager.ensureCacheDir(existingSpace, testCacheDir)
       ).resolves.not.toThrow();
     });
   });
 
-  describe('getAllCachedWorkspaces', () => {
-    it('should list all cached workspace slugs', async () => {
-      const slug1 = `workspace-list-1-${Date.now()}`;
-      const slug2 = `workspace-list-2-${Date.now()}`;
+  describe('getAllCachedSpaces', () => {
+    it('should list all cached space slugs', async () => {
+      const slug1 = `space-list-1-${Date.now()}`;
+      const slug2 = `space-list-2-${Date.now()}`;
 
-      await CacheManager.cacheWorkspace(slug1, { id: 'uuid-1' }, testCacheDir);
-      await CacheManager.cacheWorkspace(slug2, { id: 'uuid-2' }, testCacheDir);
+      await CacheManager.cacheSpace(slug1, { id: 'uuid-1' }, testCacheDir);
+      await CacheManager.cacheSpace(slug2, { id: 'uuid-2' }, testCacheDir);
 
-      const workspaces = await CacheManager.getAllCachedWorkspaces(testCacheDir);
+      const spaces = await CacheManager.getAllCachedSpaces(testCacheDir);
 
-      expect(workspaces).toContain(slug1);
-      expect(workspaces).toContain(slug2);
+      expect(spaces).toContain(slug1);
+      expect(spaces).toContain(slug2);
     });
 
-    it('should return empty array if no workspaces cached', async () => {
+    it('should return empty array if no spaces cached', async () => {
       const emptyCacheDir = path.join(os.tmpdir(), '.mujarrad-test-empty', 'cache');
-      const workspaces = await CacheManager.getAllCachedWorkspaces(emptyCacheDir);
+      const spaces = await CacheManager.getAllCachedSpaces(emptyCacheDir);
 
-      expect(workspaces).toEqual([]);
+      expect(spaces).toEqual([]);
     });
   });
 
   describe('getCacheStats', () => {
     it('should return cache statistics', async () => {
-      const statsSlug = `stats-workspace-${Date.now()}`;
-      await CacheManager.cacheWorkspace(statsSlug, { id: 'uuid-stats', nodes: [] }, testCacheDir);
+      const statsSlug = `stats-space-${Date.now()}`;
+      await CacheManager.cacheSpace(statsSlug, { id: 'uuid-stats', nodes: [] }, testCacheDir);
       await CacheManager.setLastSyncTime(statsSlug, '2025-10-10T10:00:00Z', testCacheDir);
       await CacheManager.cacheNodeMapping(statsSlug, 'uuid-1', 'note1.md', testCacheDir);
       await CacheManager.cacheNodeMapping(statsSlug, 'uuid-2', 'note2.md', testCacheDir);
 
       const stats = await CacheManager.getCacheStats(statsSlug, testCacheDir);
 
-      expect(stats.workspaceCached).toBe(true);
+      expect(stats.spaceCached).toBe(true);
       expect(stats.lastSyncTime).toBe('2025-10-10T10:00:00Z');
       expect(stats.nodeMappingCount).toBe(2);
     });
 
-    it('should return stats for workspace without cache', async () => {
-      const stats = await CacheManager.getCacheStats('no-cache-workspace', testCacheDir);
+    it('should return stats for space without cache', async () => {
+      const stats = await CacheManager.getCacheStats('no-cache-space', testCacheDir);
 
-      expect(stats.workspaceCached).toBe(false);
+      expect(stats.spaceCached).toBe(false);
       expect(stats.lastSyncTime).toBeNull();
       expect(stats.nodeMappingCount).toBe(0);
     });
   });
 
   describe('error handling', () => {
-    it('should handle invalid JSON in workspace cache', async () => {
+    it('should handle invalid JSON in space cache', async () => {
       const invalidSlug = `invalid-json-${Date.now()}`;
-      const cachePath = path.join(testCacheDir, invalidSlug, 'workspace.json');
+      const cachePath = path.join(testCacheDir, invalidSlug, 'space.json');
       await fs.mkdir(path.dirname(cachePath), { recursive: true });
       await fs.writeFile(cachePath, 'invalid json {', 'utf-8');
 
-      const cached = await CacheManager.getWorkspace(invalidSlug, testCacheDir);
+      const cached = await CacheManager.getSpace(invalidSlug, testCacheDir);
       expect(cached).toBeNull();
     });
 

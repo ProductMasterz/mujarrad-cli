@@ -38,7 +38,7 @@ interface SessionMetadata {
   workingDirectory: string;      // process.cwd()
   environment: 'development' | 'production' | 'ci';
   userId?: string;               // If authenticated
-  workspaceSlug?: string;        // If command targets a workspace
+  spaceSlug?: string;        // If command targets a space
 }
 ```
 
@@ -71,7 +71,7 @@ export interface SessionMetadata {
   workingDirectory: string;
   environment: 'development' | 'production' | 'ci';
   userId?: string;
-  workspaceSlug?: string;
+  spaceSlug?: string;
 }
 ```
 

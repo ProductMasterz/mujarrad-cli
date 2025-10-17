@@ -141,7 +141,7 @@ export class CanvasUploadService {
    * Returns mock result structure
    */
   async uploadCanvas(
-    _workspaceId: string,
+    _spaceId: string,
     _sessionId: string,
     canvasFilePath: string,
     canvasData: ParsedCanvas

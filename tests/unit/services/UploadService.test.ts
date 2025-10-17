@@ -94,14 +94,14 @@ describe('UploadService', () => {
       };
       mockUploadApi.uploadBatch.mockResolvedValue(mockResponse);
 
-      const result = await uploadService.uploadBatch('workspace-123', mockFiles, 1);
+      const result = await uploadService.uploadBatch('space-123', mockFiles, 1);
 
       expect(result.sessionId).toBe('session-123');
       expect(result.created).toHaveLength(1);
       expect(result.errors).toHaveLength(0);
       expect(result.batchNumber).toBe(1);
       expect(mockUploadApi.uploadBatch).toHaveBeenCalledWith(
-        'workspace-123',
+        'space-123',
         mockFiles,
         1,
         undefined,
@@ -121,7 +121,7 @@ describe('UploadService', () => {
       mockUploadApi.uploadBatch.mockResolvedValue(mockResponse);
 
       const result = await uploadService.uploadBatch(
-        'workspace-123',
+        'space-123',
         mockFiles,
         2,
         'session-123',
@@ -130,7 +130,7 @@ describe('UploadService', () => {
 
       expect(result.sessionId).toBe('session-123');
       expect(mockUploadApi.uploadBatch).toHaveBeenCalledWith(
-        'workspace-123',
+        'space-123',
         mockFiles,
         2,
         'session-123',
@@ -143,7 +143,7 @@ describe('UploadService', () => {
       mockUploadApi.uploadBatch.mockRejectedValue(new Error('Network error'));
 
       await expect(
-        uploadService.uploadBatch('workspace-123', mockFiles, 1)
+        uploadService.uploadBatch('space-123', mockFiles, 1)
       ).rejects.toThrow('Network error');
     });
 
@@ -161,7 +161,7 @@ describe('UploadService', () => {
       };
       mockUploadApi.uploadBatch.mockResolvedValue(mockResponse);
 
-      const result = await uploadService.uploadBatch('workspace-123', mockFiles, 1);
+      const result = await uploadService.uploadBatch('space-123', mockFiles, 1);
 
       expect(result.created).toHaveLength(1);
       expect(result.errors).toHaveLength(1);
@@ -181,17 +181,17 @@ describe('UploadService', () => {
       };
       mockUploadApi.getUploadStatus.mockResolvedValue({ data: mockStatus });
 
-      const status = await uploadService.getUploadStatus('workspace-123', 'session-123');
+      const status = await uploadService.getUploadStatus('space-123', 'session-123');
 
       expect(status).toEqual(mockStatus);
-      expect(mockUploadApi.getUploadStatus).toHaveBeenCalledWith('workspace-123', 'session-123');
+      expect(mockUploadApi.getUploadStatus).toHaveBeenCalledWith('space-123', 'session-123');
     });
 
     it('should handle status retrieval errors', async () => {
       mockUploadApi.getUploadStatus.mockRejectedValue(new Error('Session not found'));
 
       await expect(
-        uploadService.getUploadStatus('workspace-123', 'invalid-session')
+        uploadService.getUploadStatus('space-123', 'invalid-session')
       ).rejects.toThrow('Session not found');
     });
   });
@@ -204,10 +204,10 @@ describe('UploadService', () => {
       ];
       mockUploadApi.getUploadLog.mockResolvedValue({ data: mockLog });
 
-      const log = await uploadService.getUploadLog('workspace-123', 'session-123');
+      const log = await uploadService.getUploadLog('space-123', 'session-123');
 
       expect(log).toEqual(mockLog);
-      expect(mockUploadApi.getUploadLog).toHaveBeenCalledWith('workspace-123', 'session-123');
+      expect(mockUploadApi.getUploadLog).toHaveBeenCalledWith('space-123', 'session-123');
     });
   });
 
@@ -354,7 +354,7 @@ describe('UploadService', () => {
       (CacheManager.cacheNodeMapping as jest.Mock).mockResolvedValue(undefined);
       (CacheManager.setLastSyncTime as jest.Mock).mockResolvedValue(undefined);
 
-      const summary = await uploadService.uploadVault('workspace-123', '/vault');
+      const summary = await uploadService.uploadVault('space-123', '/vault');
 
       expect(summary.success).toBe(true);
       expect(summary.totalNodesCreated).toBe(2);
@@ -373,7 +373,7 @@ describe('UploadService', () => {
       };
       (VaultScanner as jest.Mock).mockImplementation(() => mockScanner);
 
-      const summary = await uploadService.uploadVault('workspace-123', '/vault');
+      const summary = await uploadService.uploadVault('space-123', '/vault');
 
       expect(summary.success).toBe(true);
       expect(summary.totalNodesCreated).toBe(0);
@@ -422,7 +422,7 @@ describe('UploadService', () => {
       (CacheManager.cacheNodeMapping as jest.Mock).mockResolvedValue(undefined);
       (CacheManager.setLastSyncTime as jest.Mock).mockResolvedValue(undefined);
 
-      const summary = await uploadService.uploadVault('workspace-123', '/vault', 50);
+      const summary = await uploadService.uploadVault('space-123', '/vault', 50);
 
       expect(summary.totalNodesCreated).toBe(150);
       expect(mockUploadApi.uploadBatch).toHaveBeenCalledTimes(3);
@@ -430,7 +430,7 @@ describe('UploadService', () => {
       // Verify first call has no sessionId
       expect(mockUploadApi.uploadBatch).toHaveBeenNthCalledWith(
         1,
-        'workspace-123',
+        'space-123',
         expect.any(Array),
         1,
         undefined,
@@ -440,7 +440,7 @@ describe('UploadService', () => {
       // Verify subsequent calls have sessionId
       expect(mockUploadApi.uploadBatch).toHaveBeenNthCalledWith(
         2,
-        'workspace-123',
+        'space-123',
         expect.any(Array),
         2,
         'session-123',
@@ -477,7 +477,7 @@ describe('UploadService', () => {
       (CacheManager.cacheNodeMapping as jest.Mock).mockResolvedValue(undefined);
       (CacheManager.setLastSyncTime as jest.Mock).mockResolvedValue(undefined);
 
-      const summary = await uploadService.uploadVault('workspace-123', '/vault');
+      const summary = await uploadService.uploadVault('space-123', '/vault');
 
       expect(summary.success).toBe(false);
       expect(summary.totalNodesCreated).toBe(1);
@@ -491,7 +491,7 @@ describe('UploadService', () => {
       (VaultScanner as jest.Mock).mockImplementation(() => mockScanner);
 
       await expect(
-        uploadService.uploadVault('workspace-123', '/vault')
+        uploadService.uploadVault('space-123', '/vault')
       ).rejects.toThrow('Scan failed');
     });
   });
@@ -506,14 +506,14 @@ describe('UploadService', () => {
    *    - Add rollbackError?: string
    *
    * 2. Add rollback API method:
-   *    - UploadApi.deleteNodes(workspaceId: string, nodeIds: string[]): Promise<void>
+   *    - UploadApi.deleteNodes(spaceId: string, nodeIds: string[]): Promise<void>
    *    OR
-   *    - UploadApi.rollbackSession(workspaceId: string, sessionId: string): Promise<void>
+   *    - UploadApi.rollbackSession(spaceId: string, sessionId: string): Promise<void>
    *
    * 3. Implement rollback logic in UploadService.uploadVault():
    *    - Track created node IDs during batch uploads
    *    - On error, call deleteNodes() with all created IDs
-   *    - Clear workspace cache via CacheManager.clearWorkspaceCache()
+   *    - Clear space cache via CacheManager.clearSpaceCache()
    *    - Set rollbackPerformed and rollbackError in summary
    *
    * Test Scenarios (see spec.md lines 756-761 for FR-050):
@@ -521,7 +521,7 @@ describe('UploadService', () => {
    * - Test 2: Handle rollback failure gracefully (network error during DELETE)
    * - Test 3: Skip rollback when no nodes created (all files fail immediately)
    *
-   * Blocked by: Backend API /api/workspaces/{id}/nodes/batch-delete endpoint
+   * Blocked by: Backend API /api/spaces/{id}/nodes/batch-delete endpoint
    * Priority: Phase 6 (before production release)
    */
 });

@@ -52,7 +52,7 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
   it('should detect changes within 10 seconds for typical edit session', async () => {
     // Simulate typical editing session: 5 files modified
     const modifiedFiles = 5;
-    const workspaceSlug = 'test-workspace';
+    const spaceSlug = 'test-space';
     const vaultPath = '/path/to/vault';
 
     // Mock last sync time
@@ -78,7 +78,7 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
 
     const start = Date.now();
 
-    const changes = await syncService.detectChanges(vaultPath, workspaceSlug);
+    const changes = await syncService.detectChanges(vaultPath, spaceSlug);
 
     const detectionTime = (Date.now() - start) / 1000;
 
@@ -93,7 +93,7 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
 
   it('should push changes within performance target', async () => {
     const changeCount = 10;
-    const workspaceSlug = 'test-workspace';
+    const spaceSlug = 'test-space';
 
     const changes = Array.from({ length: changeCount }, (_, i) => ({
       nodeId: `uuid-${i}`,
@@ -121,7 +121,7 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
 
     const start = Date.now();
 
-    const result = await syncService.pushChanges(workspaceSlug, changes);
+    const result = await syncService.pushChanges(spaceSlug, changes);
 
     const pushTime = (Date.now() - start) / 1000;
 
@@ -136,7 +136,7 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
   });
 
   it('should complete full sync cycle within 10 seconds', async () => {
-    const workspaceSlug = 'test-workspace';
+    const spaceSlug = 'test-space';
     const vaultPath = '/path/to/vault';
 
     // 1. Detect changes (5 files modified)
@@ -165,9 +165,9 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
     const start = Date.now();
 
     // Full sync cycle
-    const changes = await syncService.detectChanges(vaultPath, workspaceSlug);
-    const pushResult = await syncService.pushChanges(workspaceSlug, changes);
-    await syncService.completeSync(workspaceSlug, new Date().toISOString());
+    const changes = await syncService.detectChanges(vaultPath, spaceSlug);
+    const pushResult = await syncService.pushChanges(spaceSlug, changes);
+    await syncService.completeSync(spaceSlug, new Date().toISOString());
 
     const totalTime = (Date.now() - start) / 1000;
 
@@ -182,7 +182,7 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
   });
 
   it('should handle concurrent edits efficiently', async () => {
-    const workspaceSlug = 'test-workspace';
+    const spaceSlug = 'test-space';
     const conflictCount = 3;
 
     const changes = Array.from({ length: 10 }, (_, i) => ({
@@ -217,7 +217,7 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
 
     const start = Date.now();
 
-    const result = await syncService.pushChanges(workspaceSlug, changes);
+    const result = await syncService.pushChanges(spaceSlug, changes);
 
     const syncTime = (Date.now() - start) / 1000;
 
@@ -274,7 +274,7 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
     // System should be optimized for this common case
 
     const typicalChangeCount = 3;
-    const workspaceSlug = 'test-workspace';
+    const spaceSlug = 'test-space';
 
     const changes = Array.from({ length: typicalChangeCount }, (_, i) => ({
       nodeId: `uuid-${i}`,
@@ -298,7 +298,7 @@ describe('NFR-003: Sync Performance (<10 seconds)', () => {
 
     const start = Date.now();
 
-    await syncService.pushChanges(workspaceSlug, changes);
+    await syncService.pushChanges(spaceSlug, changes);
 
     const duration = (Date.now() - start) / 1000;
 

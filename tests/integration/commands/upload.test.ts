@@ -133,10 +133,10 @@ describe('upload command', () => {
 
   describe('upload vault', () => {
     it('should upload vault successfully', async () => {
-      await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '--workspace', 'my-workspace']);
+      await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '--space', 'my-space']);
 
       expect(mockUploadService.uploadVault).toHaveBeenCalledWith(
-        'my-workspace',
+        'my-space',
         tempVaultDir,
         50 // default batch size
       );
@@ -152,24 +152,24 @@ describe('upload command', () => {
         'test',
         'upload',
         tempVaultDir,
-        '--workspace',
-        'my-workspace',
+        '--space',
+        'my-space',
         '--batch-size',
         '100'
       ]);
 
       expect(mockUploadService.uploadVault).toHaveBeenCalledWith(
-        'my-workspace',
+        'my-space',
         tempVaultDir,
         100
       );
     });
 
-    it('should support short option for workspace', async () => {
-      await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '-w', 'my-workspace']);
+    it('should support short option for space', async () => {
+      await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '-w', 'my-space']);
 
       expect(mockUploadService.uploadVault).toHaveBeenCalledWith(
-        'my-workspace',
+        'my-space',
         tempVaultDir,
         50
       );
@@ -187,7 +187,7 @@ describe('upload command', () => {
       uploadCommand(program, mockUploadService);
 
       try {
-        await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '-w', 'my-workspace']);
+        await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '-w', 'my-space']);
       } catch (error: any) {
         expect(error.exitCode).toBe(1);
       }
@@ -201,7 +201,7 @@ describe('upload command', () => {
       const nonExistentPath = '/nonexistent/vault/path';
 
       try {
-        await program.parseAsync(['node', 'test', 'upload', nonExistentPath, '-w', 'my-workspace']);
+        await program.parseAsync(['node', 'test', 'upload', nonExistentPath, '-w', 'my-space']);
       } catch (error: any) {
         expect(error.exitCode).toBe(3); // Exit code 3 for validation errors
       }
@@ -219,7 +219,7 @@ describe('upload command', () => {
           'upload',
           tempVaultDir,
           '-w',
-          'my-workspace',
+          'my-space',
           '--batch-size',
           'invalid'
         ]);
@@ -241,7 +241,7 @@ describe('upload command', () => {
         duration: 3000
       });
 
-      await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '-w', 'my-workspace']);
+      await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '-w', 'my-space']);
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining('Errors: 3')
@@ -254,7 +254,7 @@ describe('upload command', () => {
       );
 
       try {
-        await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '-w', 'my-workspace']);
+        await program.parseAsync(['node', 'test', 'upload', tempVaultDir, '-w', 'my-space']);
       } catch (error: any) {
         expect(error.exitCode).toBe(1);
       }

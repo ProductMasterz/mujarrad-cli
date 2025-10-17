@@ -87,7 +87,7 @@ describe('NFR-001: Upload Performance (1000 files in <5 minutes)', () => {
 
     const start = Date.now();
 
-    // This would normally call uploadService.uploadVault(sampleVaultPath, 'workspace-slug')
+    // This would normally call uploadService.uploadVault(sampleVaultPath, 'space-slug')
     // For now, we simulate the performance characteristics
     const batches = Math.ceil(fileCount / batchSize);
 

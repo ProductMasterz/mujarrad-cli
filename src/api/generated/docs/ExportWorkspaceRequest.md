@@ -1,4 +1,4 @@
-# ExportWorkspaceRequest
+# ExportSpaceRequest
 
 
 ## Properties
@@ -12,9 +12,9 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ExportWorkspaceRequest } from 'mujarrad-api-client';
+import { ExportSpaceRequest } from 'mujarrad-api-client';
 
-const instance: ExportWorkspaceRequest = {
+const instance: ExportSpaceRequest = {
     format,
     includeVersionHistory,
     includeCanvases,

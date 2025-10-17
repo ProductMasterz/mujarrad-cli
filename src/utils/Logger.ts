@@ -185,36 +185,36 @@ export class Logger {
   }
 
   /**
-   * Log workspace validation start (FR-001)
+   * Log space validation start (FR-001)
    * Feature: 009-init-command-enhancement
    */
-  logWorkspaceValidationStart(workspaceSlug: string): void {
-    this.info('Workspace validation started', {
-      event: 'workspace_validation_start',
-      workspaceSlug,
+  logSpaceValidationStart(spaceSlug: string): void {
+    this.info('Space validation started', {
+      event: 'space_validation_start',
+      spaceSlug,
     });
   }
 
   /**
-   * Log workspace validation success (FR-005)
+   * Log space validation success (FR-005)
    * Feature: 009-init-command-enhancement
    */
-  logWorkspaceValidationSuccess(workspaceSlug: string, nodeCount: number): void {
-    this.info('Workspace validation successful', {
-      event: 'workspace_validation_success',
-      workspaceSlug,
+  logSpaceValidationSuccess(spaceSlug: string, nodeCount: number): void {
+    this.info('Space validation successful', {
+      event: 'space_validation_success',
+      spaceSlug,
       nodeCount,
     });
   }
 
   /**
-   * Log workspace validation failure (FR-003, FR-004)
+   * Log space validation failure (FR-003, FR-004)
    * Feature: 009-init-command-enhancement
    */
-  logWorkspaceValidationFailure(workspaceSlug: string, reason: string): void {
-    this.error('Workspace validation failed', {
-      event: 'workspace_validation_failure',
-      workspaceSlug,
+  logSpaceValidationFailure(spaceSlug: string, reason: string): void {
+    this.error('Space validation failed', {
+      event: 'space_validation_failure',
+      spaceSlug,
       reason,
     });
   }
@@ -223,10 +223,10 @@ export class Logger {
    * Log remote content pull start (FR-007)
    * Feature: 009-init-command-enhancement
    */
-  logPullStart(workspaceSlug: string, expectedNodeCount: number): void {
+  logPullStart(spaceSlug: string, expectedNodeCount: number): void {
     this.info('Remote content pull started', {
       event: 'pull_start',
-      workspaceSlug,
+      spaceSlug,
       expectedNodeCount,
     });
   }
@@ -320,11 +320,11 @@ export class Logger {
    * Log sync session start
    * Feature: 009-init-command-enhancement
    */
-  logSyncSessionStart(sessionId: string, workspaceSlug: string, vaultPath: string): void {
+  logSyncSessionStart(sessionId: string, spaceSlug: string, vaultPath: string): void {
     this.info('Sync session started', {
       event: 'sync_session_start',
       sessionId,
-      workspaceSlug,
+      spaceSlug,
       vaultPath,
     });
   }

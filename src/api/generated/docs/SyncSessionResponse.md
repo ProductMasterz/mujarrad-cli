@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **string** |  | [default to undefined]
-**workspaceId** | **string** |  | [default to undefined]
+**spaceId** | **string** |  | [default to undefined]
 **status** | **string** |  | [default to undefined]
 **syncDirection** | **string** |  | [optional] [default to undefined]
 **changesDetected** | **number** |  | [default to undefined]
@@ -24,7 +24,7 @@ import { SyncSessionResponse } from 'mujarrad-api-client';
 
 const instance: SyncSessionResponse = {
     id,
-    workspaceId,
+    spaceId,
     status,
     syncDirection,
     changesDetected,

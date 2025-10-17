@@ -14,8 +14,8 @@ import * as path from 'path';
 export interface UploadSession {
   /** Session ID from first batch upload */
   sessionId: string;
-  /** Workspace ID */
-  workspaceId: string;
+  /** Space ID */
+  spaceId: string;
   /** Current batch number */
   currentBatch: number;
   /** Total files to upload */
@@ -99,7 +99,7 @@ export interface BatchUploadResult {
  * Usage:
  * ```typescript
  * const uploadService = new UploadService(uploadApi);
- * const summary = await uploadService.uploadVault('workspace-123', '/path/to/vault');
+ * const summary = await uploadService.uploadVault('space-123', '/path/to/vault');
  * console.log(`Uploaded ${summary.totalNodesCreated} nodes`);
  * ```
  *
@@ -137,7 +137,7 @@ export class UploadService {
   /**
    * Upload a batch of files
    *
-   * @param workspaceId - Workspace ID
+   * @param spaceId - Space ID
    * @param files - Files to upload (as File objects or compatible)
    * @param batchNumber - Batch sequence number
    * @param sessionId - Session ID (omit for first batch)
@@ -145,7 +145,7 @@ export class UploadService {
    * @returns Upload result with created nodes and errors
    */
   async uploadBatch(
-    workspaceId: string,
+    spaceId: string,
     files: any[], // Use any to match generated API File type
     batchNumber: number,
     sessionId?: string,
@@ -154,7 +154,7 @@ export class UploadService {
     const startTime = Date.now();
 
     this.logger.debug('Uploading batch', {
-      workspaceId,
+      spaceId,
       batchNumber,
       fileCount: files.length,
       sessionId,
@@ -163,7 +163,7 @@ export class UploadService {
 
     try {
       const response = await this.uploadApi.uploadBatch(
-        workspaceId,
+        spaceId,
         files,
         batchNumber,
         sessionId,
@@ -179,7 +179,7 @@ export class UploadService {
       };
 
       this.logger.info('Batch upload completed', {
-        workspaceId,
+        spaceId,
         batchNumber,
         created: result.created.length,
         errors: result.errors.length,
@@ -190,7 +190,7 @@ export class UploadService {
     } catch (error: any) {
       const duration = Date.now() - startTime;
       this.logger.error('Batch upload failed', {
-        workspaceId,
+        spaceId,
         batchNumber,
         error: error.message,
         stack: error.stack,
@@ -203,24 +203,24 @@ export class UploadService {
   /**
    * Get upload status
    *
-   * @param workspaceId - Workspace ID
+   * @param spaceId - Space ID
    * @param sessionId - Session ID
    * @returns Upload status information
    */
-  async getUploadStatus(workspaceId: string, sessionId: string): Promise<any> {
-    const response = await this.uploadApi.getUploadStatus(workspaceId, sessionId);
+  async getUploadStatus(spaceId: string, sessionId: string): Promise<any> {
+    const response = await this.uploadApi.getUploadStatus(spaceId, sessionId);
     return response.data;
   }
 
   /**
    * Get upload log
    *
-   * @param workspaceId - Workspace ID
+   * @param spaceId - Space ID
    * @param sessionId - Session ID
    * @returns Upload log entries
    */
-  async getUploadLog(workspaceId: string, sessionId: string): Promise<any> {
-    const response = await this.uploadApi.getUploadLog(workspaceId, sessionId);
+  async getUploadLog(spaceId: string, sessionId: string): Promise<any> {
+    const response = await this.uploadApi.getUploadLog(spaceId, sessionId);
     return response.data;
   }
 
@@ -312,7 +312,7 @@ export class UploadService {
   }
 
   /**
-   * Upload entire vault to workspace
+   * Upload entire vault to space
    *
    * Orchestrates complete upload flow:
    * 1. Scan vault
@@ -321,20 +321,20 @@ export class UploadService {
    * 4. Cache mappings
    * 5. Return summary
    *
-   * @param workspaceId - Target workspace ID
+   * @param spaceId - Target space ID
    * @param vaultPath - Vault root path
    * @param batchSize - Batch size (default 50)
    * @returns Upload summary
    */
   async uploadVault(
-    workspaceId: string,
+    spaceId: string,
     vaultPath: string,
     batchSize: number = this.defaultBatchSize
   ): Promise<UploadSummary> {
     const startTime = Date.now();
 
     this.logger.info('Starting vault upload', {
-      workspaceId,
+      spaceId,
       vaultPath,
       batchSize
     });
@@ -384,7 +384,7 @@ export class UploadService {
 
       // Upload batch (first batch creates session)
       const result = await this.uploadBatch(
-        workspaceId,
+        spaceId,
         filesForUpload,
         batchNumber,
         sessionId,
@@ -413,11 +413,11 @@ export class UploadService {
       // Step 5: Cache node mappings
       this.logger.debug('Caching node mappings', { nodeCount: createdNodes.length });
       for (const node of createdNodes) {
-        await CacheManager.cacheNodeMapping(workspaceId, node.nodeId, node.filePath);
+        await CacheManager.cacheNodeMapping(spaceId, node.nodeId, node.filePath);
       }
 
       // Update last sync time
-      await CacheManager.setLastSyncTime(workspaceId, new Date().toISOString());
+      await CacheManager.setLastSyncTime(spaceId, new Date().toISOString());
 
       const duration = Date.now() - startTime;
       const summary = {
@@ -430,7 +430,7 @@ export class UploadService {
 
       // Step 6: Return summary
       this.logger.info('Vault upload completed', {
-        workspaceId,
+        spaceId,
         ...summary
       });
 
@@ -438,7 +438,7 @@ export class UploadService {
     } catch (error: any) {
       const duration = Date.now() - startTime;
       this.logger.error('Vault upload failed', {
-        workspaceId,
+        spaceId,
         vaultPath,
         error: error.message,
         stack: error.stack,

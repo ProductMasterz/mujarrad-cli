@@ -22,7 +22,7 @@ export interface ExportStatus {
 }
 
 /**
- * Node data from exported workspace
+ * Node data from exported space
  */
 export interface ExportedNode {
   /** Node UUID */
@@ -40,10 +40,10 @@ export interface ExportedNode {
 }
 
 /**
- * Exported workspace data structure
+ * Exported space data structure
  */
 export interface ExportData {
-  /** All nodes in workspace */
+  /** All nodes in space */
   nodes: ExportedNode[];
 }
 
@@ -64,10 +64,10 @@ export interface CloneSummary {
 }
 
 /**
- * CloneService handles workspace export and local vault recreation
+ * CloneService handles space export and local vault recreation
  *
  * Workflow:
- * 1. Initiate export via CloneApi.exportWorkspace()
+ * 1. Initiate export via CloneApi.exportSpace()
  * 2. Poll export status via CloneApi.getExportStatus()
  * 3. Download exported ZIP via CloneApi.downloadExport()
  * 4. Extract ZIP to target directory
@@ -77,7 +77,7 @@ export interface CloneSummary {
  * Usage:
  * ```typescript
  * const cloneService = new CloneService(cloneApi);
- * const summary = await cloneService.cloneWorkspace('workspace-123', '/path/to/vault');
+ * const summary = await cloneService.cloneSpace('space-123', '/path/to/vault');
  * console.log(`Cloned ${summary.totalNodes} nodes`);
  * ```
  *
@@ -91,14 +91,14 @@ export class CloneService {
   constructor(private cloneApi: CloneApi) {}
 
   /**
-   * Initiate workspace export
+   * Initiate space export
    *
-   * @param workspaceId - Workspace ID
+   * @param spaceId - Space ID
    * @param includeGitHistory - Include Git history in export
    * @returns Export status with job ID
    */
-  async initiateExport(workspaceId: string, includeVersionHistory: boolean = false): Promise<ExportStatus> {
-    const response = await this.cloneApi.exportWorkspace(workspaceId, {
+  async initiateExport(spaceId: string, includeVersionHistory: boolean = false): Promise<ExportStatus> {
+    const response = await this.cloneApi.exportSpace(spaceId, {
       format: 'obsidian',
       includeVersionHistory
     });
@@ -115,14 +115,14 @@ export class CloneService {
   /**
    * Poll export status until complete or failed
    *
-   * @param workspaceId - Workspace ID
+   * @param spaceId - Space ID
    * @param exportJobId - Export job ID
    * @param pollInterval - Poll interval in milliseconds (default 1000)
    * @param maxAttempts - Maximum poll attempts (default 180)
    * @returns Final export status
    */
   async pollExportStatus(
-    workspaceId: string,
+    spaceId: string,
     exportJobId: string,
     pollInterval: number = this.defaultPollInterval,
     maxAttempts: number = this.defaultMaxAttempts
@@ -130,7 +130,7 @@ export class CloneService {
     let attempts = 0;
 
     while (attempts < maxAttempts) {
-      const response = await this.cloneApi.getExportStatus(workspaceId, exportJobId);
+      const response = await this.cloneApi.getExportStatus(spaceId, exportJobId);
       const responseData = (response.data as any).data;
       const status: ExportStatus = {
         exportJobId,
@@ -159,13 +159,13 @@ export class CloneService {
   /**
    * Download exported ZIP file
    *
-   * @param workspaceId - Workspace ID
+   * @param spaceId - Space ID
    * @param exportJobId - Export job ID
    * @param targetDir - Target directory to save ZIP
    * @returns Path to downloaded ZIP file
    */
-  async downloadExport(workspaceId: string, exportJobId: string, targetDir: string): Promise<string> {
-    const response = await this.cloneApi.downloadExport(workspaceId, exportJobId);
+  async downloadExport(spaceId: string, exportJobId: string, targetDir: string): Promise<string> {
+    const response = await this.cloneApi.downloadExport(spaceId, exportJobId);
     const zipPath = path.join(targetDir, 'export.zip');
 
     // Ensure directory exists
@@ -216,10 +216,10 @@ export class CloneService {
    * Creates folders, generates markdown files with UUIDs, handles canvas files
    *
    * @param targetDir - Target vault directory
-   * @param exportData - Exported workspace data
-   * @param workspaceSlug - Optional workspace slug for caching
+   * @param exportData - Exported space data
+   * @param spaceSlug - Optional space slug for caching
    */
-  async recreateVault(targetDir: string, exportData: ExportData, workspaceSlug?: string): Promise<void> {
+  async recreateVault(targetDir: string, exportData: ExportData, spaceSlug?: string): Promise<void> {
     // Ensure target directory exists
     await fs.mkdir(targetDir, { recursive: true });
 
@@ -244,20 +244,20 @@ export class CloneService {
         await fs.writeFile(filePath, contentWithUUID, 'utf-8');
       }
 
-      // Cache node mapping if workspace slug provided
-      if (workspaceSlug) {
-        await CacheManager.cacheNodeMapping(workspaceSlug, node.id, node.path);
+      // Cache node mapping if space slug provided
+      if (spaceSlug) {
+        await CacheManager.cacheNodeMapping(spaceSlug, node.id, node.path);
       }
     }
 
     // Update last sync time
-    if (workspaceSlug) {
-      await CacheManager.setLastSyncTime(workspaceSlug, new Date().toISOString());
+    if (spaceSlug) {
+      await CacheManager.setLastSyncTime(spaceSlug, new Date().toISOString());
     }
   }
 
   /**
-   * Clone entire workspace to local vault
+   * Clone entire space to local vault
    *
    * Orchestrates complete clone workflow:
    * 1. Initiate export
@@ -266,13 +266,13 @@ export class CloneService {
    * 4. Extract and recreate vault
    * 5. Cache mappings
    *
-   * @param workspaceSlug - Workspace slug
+   * @param spaceSlug - Space slug
    * @param targetPath - Target vault path
    * @param includeGitHistory - Include Git history
    * @returns Clone summary
    */
-  async cloneWorkspace(
-    workspaceSlug: string,
+  async cloneSpace(
+    spaceSlug: string,
     targetPath: string,
     includeVersionHistory: boolean = false
   ): Promise<CloneSummary> {
@@ -280,19 +280,19 @@ export class CloneService {
 
     try {
       // Step 1: Initiate export
-      const exportStatus = await this.initiateExport(workspaceSlug, includeVersionHistory);
+      const exportStatus = await this.initiateExport(spaceSlug, includeVersionHistory);
 
       // Step 2: Poll until complete
-      await this.pollExportStatus(workspaceSlug, exportStatus.exportJobId);
+      await this.pollExportStatus(spaceSlug, exportStatus.exportJobId);
 
       // Step 3: Download ZIP
-      const zipPath = await this.downloadExport(workspaceSlug, exportStatus.exportJobId, targetPath);
+      const zipPath = await this.downloadExport(spaceSlug, exportStatus.exportJobId, targetPath);
 
       // Step 4: Extract ZIP
       const exportData = await this.extractZip(zipPath, targetPath);
 
       // Step 5: Recreate vault
-      await this.recreateVault(targetPath, exportData, workspaceSlug);
+      await this.recreateVault(targetPath, exportData, spaceSlug);
 
       // Cleanup: Remove ZIP file
       await fs.unlink(zipPath).catch(() => {

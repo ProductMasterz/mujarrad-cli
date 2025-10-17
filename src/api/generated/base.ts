@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * Mujarrad Obsidian Mapper API
- * REST API for bidirectional synchronization between Obsidian vaults and Mujarrad workspaces.  This API extends the existing Mujarrad backend with endpoints for: - Uploading Obsidian vaults to Mujarrad workspaces - Cloning workspaces back to Obsidian format - Bidirectional sync with conflict resolution - Workspace template creation and instantiation - Git-based version history tracking  **Authentication**: All endpoints require JWT Bearer token (obtain via `/api/auth/login`).  **Base URL**: https://api.example.com 
+ * REST API for bidirectional synchronization between Obsidian vaults and Mujarrad spaces.  This API extends the existing Mujarrad backend with endpoints for: - Uploading Obsidian vaults to Mujarrad spaces - Cloning spaces back to Obsidian format - Bidirectional sync with conflict resolution - Space template creation and instantiation - Git-based version history tracking  **Authentication**: All endpoints require JWT Bearer token (obtain via `/api/auth/login`).  **Base URL**: https://api.example.com 
  *
  * The version of the OpenAPI document: 1.0.0
  * 

@@ -5,13 +5,13 @@ import cliProgress from 'cli-progress';
 import * as path from 'path';
 import { UploadService } from '../services/UploadService.js';
 import { UploadApi } from '../api/generated/api.js';
-import { SyncWorkspacesApi } from '../api/generated/index.js';
+import { SyncSpacesApi } from '../api/generated/index.js';
 import { Configuration } from '../api/generated/configuration.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { CredentialManager } from '../config/CredentialManager.js';
 import { Logger } from '../utils/Logger.js';
 import { VaultValidator } from '../utils/VaultValidator.js';
-import { WorkspaceValidator } from '../services/WorkspaceValidator.js';
+import { SpaceValidator } from '../services/SpaceValidator.js';
 import { RemoteNodeFetcher } from '../services/RemoteNodeFetcher.js';
 import { TransactionalDownloader } from '../services/TransactionalDownloader.js';
 import { VersionComparator } from '../services/VersionComparator.js';
@@ -19,19 +19,19 @@ import { LocalFileHasher } from '../utils/LocalFileHasher.js';
 import { VaultScanner } from '../filesystem/VaultScanner.js';
 import { ConflictResolver } from '../services/ConflictResolver.js';
 import { ConflictStrategy } from '../types/sync.js';
-import { WorkspaceNotFoundError, AccessDeniedError, WorkspaceValidationError } from '../errors/WorkspaceErrors.js';
+import { SpaceNotFoundError, AccessDeniedError, SpaceValidationError } from '../errors/SpaceErrors.js';
 
 /**
  * Setup init command with Commander.js
  *
  * Provides init commands:
- * - init: Initialize Obsidian vault upload to workspace
+ * - init: Initialize Obsidian vault upload to space
  *
  * Usage:
  * ```bash
- * mujarrad init <vault-path> --workspace <slug>
- * mujarrad init /path/to/vault -w my-workspace
- * mujarrad init . -w my-workspace --batch-size 100
+ * mujarrad init <vault-path> --space <slug>
+ * mujarrad init /path/to/vault -w my-space
+ * mujarrad init . -w my-space --batch-size 100
  * ```
  *
  * Features:
@@ -107,18 +107,18 @@ export function initCommand(program: Command, uploadService?: UploadService): vo
 
   program
     .command('init')
-    .description('Initialize Obsidian vault upload to workspace')
+    .description('Initialize Obsidian vault upload to space')
     .argument('<vault-path>', 'Path to Obsidian vault directory')
-    .requiredOption('-w, --workspace <slug>', 'Workspace slug')
+    .requiredOption('-w, --space <slug>', 'Space slug')
     .option('-b, --batch-size <size>', 'Number of files per batch', '50')
     .option('-s, --sync', 'Enable bidirectional sync (pull remote content before upload)', false)
     .option('--strategy <strategy>', 'Conflict resolution strategy: KEEP_LOCAL, KEEP_REMOTE, SKIP (only with --sync)', 'SKIP')
     .addHelpText('after', `
 Examples:
-  $ mujarrad init ./my-vault --workspace my-workspace
-    One-way upload (default): Upload local vault to workspace
+  $ mujarrad init ./my-vault --space my-space
+    One-way upload (default): Upload local vault to space
 
-  $ mujarrad init ./my-vault -w my-workspace --sync
+  $ mujarrad init ./my-vault -w my-space --sync
     Bidirectional sync: Pull remote content, then upload local changes
 
   $ mujarrad init ~/Documents/Obsidian/MyVault -w work-notes --sync
@@ -127,33 +127,33 @@ Examples:
   $ mujarrad init . -w project --batch-size 100 --sync
     Sync with larger batch size
 
-  $ mujarrad init ./my-vault -w my-workspace --sync --strategy KEEP_LOCAL
+  $ mujarrad init ./my-vault -w my-space --sync --strategy KEEP_LOCAL
     Sync and automatically keep local version for conflicts
 
-  $ mujarrad init ./my-vault -w my-workspace --sync --strategy KEEP_REMOTE
+  $ mujarrad init ./my-vault -w my-space --sync --strategy KEEP_REMOTE
     Sync and automatically keep remote version for conflicts
 
 Process (without --sync):
-  1. Verifies workspace exists and you have write access (fast check)
+  1. Verifies space exists and you have write access (fast check)
   2. Validates vault structure (must contain .obsidian folder)
   3. Scans vault for markdown and canvas files
-  4. Uploads files in batches to the workspace
+  4. Uploads files in batches to the space
 
 Process (with --sync):
-  1. Verifies workspace exists and you have write access (fast check)
-  2. Pulls remote content from workspace to local vault
+  1. Verifies space exists and you have write access (fast check)
+  2. Pulls remote content from space to local vault
   3. Validates vault structure (must contain .obsidian folder)
   4. Compares local and remote state (three-way merge)
   5. Displays sync summary (identical, local changes, remote changes, conflicts)
-  6. Uploads local changes in batches to the workspace
+  6. Uploads local changes in batches to the space
 
 Notes:
-  • Workspace must exist before uploading (create at https://www.mujarrad.com)
-  • Workspace slug must be 3-50 characters, lowercase alphanumeric with hyphens
+  • Space must exist before uploading (create at https://www.mujarrad.com)
+  • Space slug must be 3-50 characters, lowercase alphanumeric with hyphens
   • Default batch size is 50 files
   • Progress is tracked and can be resumed if interrupted
   • Automatically retries on network timeouts and server errors
-  • Pre-flight workspace verification prevents wasted processing time
+  • Pre-flight space verification prevents wasted processing time
   • --strategy flag only applies when --sync is enabled
   • Default strategy is SKIP (conflicts are skipped)
   • KEEP_LOCAL: Automatically keeps local version for all conflicts
@@ -163,7 +163,7 @@ Exit Codes:
   • 0: Success
   • 1: General error (authentication, network, validation)
   • 3: Vault validation failed
-  • 4: Workspace not found or access denied
+  • 4: Space not found or access denied
     `)
     .action(async (vaultPath: string, options: any) => {
       const spinner = ora();
@@ -182,9 +182,9 @@ Exit Codes:
         }
         spinner.succeed('Authenticated');
 
-        // Validate workspace BEFORE scanning vault (FR-001, US1)
-        // This provides fast feedback if workspace doesn't exist (FR-003)
-        spinner.start(chalk.blue('Verifying workspace...'));
+        // Validate space BEFORE scanning vault (FR-001, US1)
+        // This provides fast feedback if space doesn't exist (FR-003)
+        spinner.start(chalk.blue('Verifying space...'));
 
         const config = await new ConfigManager().load();
         const apiConfig = new Configuration({
@@ -192,45 +192,45 @@ Exit Codes:
           accessToken: token || undefined
         });
 
-        const workspaceApi = new SyncWorkspacesApi(apiConfig);
-        const workspaceValidator = new WorkspaceValidator(workspaceApi, logger);
+        const spaceApi = new SyncSpacesApi(apiConfig);
+        const spaceValidator = new SpaceValidator(spaceApi, logger);
 
         try {
-          const workspaceMetadata = await workspaceValidator.validateWorkspace(options.workspace);
+          const spaceMetadata = await spaceValidator.validateSpace(options.space);
 
-          // Display workspace verification success (FR-005)
+          // Display space verification success (FR-005)
           spinner.succeed(chalk.green(
-            `Workspace verified: ${chalk.white(workspaceMetadata.name)} ` +
-            chalk.gray(`(${workspaceMetadata.nodeCount} existing nodes)`)
+            `Space verified: ${chalk.white(spaceMetadata.name)} ` +
+            chalk.gray(`(${spaceMetadata.nodeCount} existing nodes)`)
           ));
 
-          logger.info('Workspace validation successful', {
-            workspaceSlug: options.workspace,
-            workspaceName: workspaceMetadata.name,
-            nodeCount: workspaceMetadata.nodeCount,
-            owner: workspaceMetadata.owner
+          logger.info('Space validation successful', {
+            spaceSlug: options.space,
+            spaceName: spaceMetadata.name,
+            nodeCount: spaceMetadata.nodeCount,
+            owner: spaceMetadata.owner
           });
         } catch (error: any) {
-          spinner.fail(chalk.red('Workspace verification failed'));
+          spinner.fail(chalk.red('Space verification failed'));
 
-          // Handle specific workspace validation errors (FR-003, FR-004)
-          if (error instanceof WorkspaceNotFoundError) {
-            console.error(chalk.red(`\n✗ Workspace '${options.workspace}' not found`));
-            console.log(chalk.gray('\nTip: Check the workspace slug or create a new workspace at https://www.mujarrad.com\n'));
-            process.exit(4); // Exit code 4 for workspace not found (FR-003)
+          // Handle specific space validation errors (FR-003, FR-004)
+          if (error instanceof SpaceNotFoundError) {
+            console.error(chalk.red(`\n✗ Space '${options.space}' not found`));
+            console.log(chalk.gray('\nTip: Check the space slug or create a new space at https://www.mujarrad.com\n'));
+            process.exit(4); // Exit code 4 for space not found (FR-003)
           } else if (error instanceof AccessDeniedError) {
-            console.error(chalk.red('\n✗ Access denied to workspace'));
-            console.log(chalk.yellow(`\nYou do not have write access to workspace '${options.workspace}'.`));
-            console.log(chalk.gray('Contact the workspace owner for permissions.\n'));
+            console.error(chalk.red('\n✗ Access denied to space'));
+            console.log(chalk.yellow(`\nYou do not have write access to space '${options.space}'.`));
+            console.log(chalk.gray('Contact the space owner for permissions.\n'));
             process.exit(4); // Exit code 4 for access denied
-          } else if (error instanceof WorkspaceValidationError) {
-            console.error(chalk.red(`\n✗ Workspace validation failed: ${error.message}`));
+          } else if (error instanceof SpaceValidationError) {
+            console.error(chalk.red(`\n✗ Space validation failed: ${error.message}`));
 
             if (error.message.includes('Authentication required')) {
               console.log(chalk.gray('\nRun "mujarrad auth login" to authenticate\n'));
               process.exit(1);
-            } else if (error.message.includes('Invalid workspace slug')) {
-              console.log(chalk.gray('\nWorkspace slug must be 3-50 characters, lowercase alphanumeric with hyphens\n'));
+            } else if (error.message.includes('Invalid space slug')) {
+              console.log(chalk.gray('\nSpace slug must be 3-50 characters, lowercase alphanumeric with hyphens\n'));
               process.exit(1);
             } else if (error.message.includes('timeout')) {
               console.log(chalk.gray('\nNetwork timeout occurred. Check your internet connection and try again.\n'));
@@ -251,14 +251,14 @@ Exit Codes:
 
           try {
             // Create RemoteNodeFetcher and TransactionalDownloader
-            const fetcher = new RemoteNodeFetcher(workspaceApi, logger);
+            const fetcher = new RemoteNodeFetcher(spaceApi, logger);
             const downloader = new TransactionalDownloader(logger);
 
             // Collect nodes (streaming for memory efficiency)
             const remoteNodes = [];
             let nodeCount = 0;
 
-            for await (const node of fetcher.fetchAllNodes(options.workspace)) {
+            for await (const node of fetcher.fetchAllNodes(options.space)) {
               remoteNodes.push(node);
               nodeCount++;
 
@@ -286,7 +286,7 @@ Exit Codes:
                 ));
 
                 logger.info('Remote content pull completed', {
-                  workspaceSlug: options.workspace,
+                  spaceSlug: options.space,
                   downloadedCount: downloadResult.downloadedCount,
                   totalBytes: downloadResult.totalBytes,
                   duration: downloadResult.duration
@@ -300,7 +300,7 @@ Exit Codes:
                 }
 
                 logger.error('Remote content download failed', {
-                  workspaceSlug: options.workspace,
+                  spaceSlug: options.space,
                   error: downloadResult.errorMessage,
                   rolledBack: downloadResult.rolledBack
                 });
@@ -308,14 +308,14 @@ Exit Codes:
                 process.exit(1);
               }
             } else {
-              spinner.succeed(chalk.gray('No remote content to pull (workspace is empty)'));
+              spinner.succeed(chalk.gray('No remote content to pull (space is empty)'));
             }
 
           } catch (error: any) {
             spinner.fail(chalk.red('Failed to pull remote content'));
 
             logger.error('Remote content pull failed', {
-              workspaceSlug: options.workspace,
+              spaceSlug: options.space,
               error: error.message,
               stack: error.stack
             });
@@ -385,7 +385,7 @@ Exit Codes:
             const vaultScanner = new VaultScanner(absoluteVaultPath);
             const fileHasher = new LocalFileHasher(logger);
             const comparator = new VersionComparator(logger);
-            const fetcher = new RemoteNodeFetcher(workspaceApi, logger);
+            const fetcher = new RemoteNodeFetcher(spaceApi, logger);
 
             // Scan local vault for files
             const scannedFiles = await vaultScanner.scan();
@@ -400,7 +400,7 @@ Exit Codes:
 
             // Fetch remote nodes
             const remoteNodes: any[] = [];
-            for await (const node of fetcher.fetchAllNodes(options.workspace)) {
+            for await (const node of fetcher.fetchAllNodes(options.space)) {
               remoteNodes.push(node);
             }
 
@@ -493,7 +493,7 @@ Exit Codes:
               }
 
               logger.info('Conflict resolution complete', {
-                workspaceSlug: options.workspace,
+                spaceSlug: options.space,
                 strategy,
                 totalConflicts: comparisonResult.conflicted.length,
                 resolved: resolvedCount,
@@ -504,7 +504,7 @@ Exit Codes:
             console.log(); // Empty line
 
             logger.info('Comparison summary', {
-              workspaceSlug: options.workspace,
+              spaceSlug: options.space,
               identical: comparisonResult.identical.length,
               localAhead: comparisonResult.localAhead.length,
               remoteAhead: comparisonResult.remoteAhead.length,
@@ -516,7 +516,7 @@ Exit Codes:
             console.error(chalk.red(`\n✗ Failed to compare local and remote state: ${error.message}\n`));
 
             logger.error('Comparison failed', {
-              workspaceSlug: options.workspace,
+              spaceSlug: options.space,
               error: error.message,
               stack: error.stack
             });
@@ -536,7 +536,7 @@ Exit Codes:
         const service = await getUploadService();
 
         // Start upload with progress tracking
-        console.log(chalk.blue(`\nInitializing vault upload to workspace: ${options.workspace}`));
+        console.log(chalk.blue(`\nInitializing vault upload to space: ${options.space}`));
         console.log(chalk.gray(`Batch size: ${batchSize}\n`));
 
         // Create progress bar
@@ -554,7 +554,7 @@ Exit Codes:
         const startTime = Date.now();
         const summary = await retryOn500(async () => {
           return await service.uploadVault(
-            options.workspace,
+            options.space,
             absoluteVaultPath,
             batchSize
           );
@@ -586,7 +586,7 @@ Exit Codes:
         if (summary.sessionId) {
           console.log(chalk.gray(`Session ID: ${summary.sessionId}`));
           logger.info('Upload completed', {
-            workspaceSlug: options.workspace,
+            spaceSlug: options.space,
             sessionId: summary.sessionId,
             nodesCreated: summary.totalNodesCreated,
             errors: summary.totalErrors,
@@ -616,12 +616,12 @@ Exit Codes:
           if (status === 401) {
             console.log(chalk.gray('\nAuthentication expired. Run "mujarrad auth login" to re-authenticate'));
           } else if (status === 404) {
-            console.log(chalk.gray(`\nWorkspace "${options.workspace}" not found. Check the workspace slug.`));
+            console.log(chalk.gray(`\nSpace "${options.space}" not found. Check the space slug.`));
           } else if (status === 403) {
             console.log(chalk.red('\n✗ Access denied'));
-            console.log(chalk.gray('You may not have permission to upload to this workspace.'));
+            console.log(chalk.gray('You may not have permission to upload to this space.'));
             console.log(chalk.yellow('\nTip: Try logging in with "mujarrad auth login" if you haven\'t already.'));
-            console.log(chalk.gray('If you\'re already logged in, contact the workspace owner for access.\n'));
+            console.log(chalk.gray('If you\'re already logged in, contact the space owner for access.\n'));
           } else if (status === 413) {
             console.log(chalk.gray('\nPayload too large. Try reducing the batch size with --batch-size'));
           } else if (status >= 500) {

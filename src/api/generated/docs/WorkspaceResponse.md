@@ -1,4 +1,4 @@
-# WorkspaceResponse
+# SpaceResponse
 
 
 ## Properties
@@ -11,16 +11,16 @@ Name | Type | Description | Notes
 **description** | **string** |  | [optional] [default to undefined]
 **gitRepositoryUrl** | **string** |  | [optional] [default to undefined]
 **gitBranch** | **string** |  | [optional] [default to 'main']
-**nodeCount** | **number** | Total number of nodes in workspace | [optional] [default to undefined]
+**nodeCount** | **number** | Total number of nodes in space | [optional] [default to undefined]
 **createdAt** | **string** |  | [default to undefined]
 **updatedAt** | **string** |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { WorkspaceResponse } from 'mujarrad-api-client';
+import { SpaceResponse } from 'mujarrad-api-client';
 
-const instance: WorkspaceResponse = {
+const instance: SpaceResponse = {
     id,
     ownerId,
     title,

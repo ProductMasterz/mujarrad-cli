@@ -1,37 +1,37 @@
-# WorkspacesApi
+# SpacesApi
 
 All URIs are relative to *https://api.example.com*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**createWorkspace**](#createworkspace) | **POST** /api/workspaces | Create new workspace|
-|[**deleteWorkspace**](#deleteworkspace) | **DELETE** /api/workspaces/{workspaceId} | Delete workspace|
-|[**getWorkspace**](#getworkspace) | **GET** /api/workspaces/{workspaceId} | Get workspace by ID|
-|[**instantiateTemplate**](#instantiatetemplate) | **POST** /api/workspaces/{workspaceId}/instantiate | Instantiate workspace from template|
-|[**listWorkspaces**](#listworkspaces) | **GET** /api/workspaces | List all workspaces|
-|[**updateWorkspace**](#updateworkspace) | **PATCH** /api/workspaces/{workspaceId} | Update workspace|
+|[**createSpace**](#createspace) | **POST** /api/spaces | Create new space|
+|[**deleteSpace**](#deletespace) | **DELETE** /api/spaces/{spaceId} | Delete space|
+|[**getSpace**](#getspace) | **GET** /api/spaces/{spaceId} | Get space by ID|
+|[**instantiateTemplate**](#instantiatetemplate) | **POST** /api/spaces/{spaceId}/instantiate | Instantiate space from template|
+|[**listSpaces**](#listspaces) | **GET** /api/spaces | List all spaces|
+|[**updateSpace**](#updatespace) | **PATCH** /api/spaces/{spaceId} | Update space|
 
-# **createWorkspace**
-> CreateWorkspace201Response createWorkspace(workspaceCreateRequest)
+# **createSpace**
+> CreateSpace201Response createSpace(spaceCreateRequest)
 
-Create empty workspace or from template.
+Create empty space or from template.
 
 ### Example
 
 ```typescript
 import {
-    WorkspacesApi,
+    SpacesApi,
     Configuration,
-    WorkspaceCreateRequest
+    SpaceCreateRequest
 } from 'mujarrad-api-client';
 
 const configuration = new Configuration();
-const apiInstance = new WorkspacesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
-let workspaceCreateRequest: WorkspaceCreateRequest; //
+let spaceCreateRequest: SpaceCreateRequest; //
 
-const { status, data } = await apiInstance.createWorkspace(
-    workspaceCreateRequest
+const { status, data } = await apiInstance.createSpace(
+    spaceCreateRequest
 );
 ```
 
@@ -39,12 +39,12 @@ const { status, data } = await apiInstance.createWorkspace(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **workspaceCreateRequest** | **WorkspaceCreateRequest**|  | |
+| **spaceCreateRequest** | **SpaceCreateRequest**|  | |
 
 
 ### Return type
 
-**CreateWorkspace201Response**
+**CreateSpace201Response**
 
 ### Authorization
 
@@ -59,32 +59,32 @@ const { status, data } = await apiInstance.createWorkspace(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | Workspace created successfully |  -  |
+|**201** | Space created successfully |  -  |
 |**400** | Invalid request parameters or payload |  -  |
 |**401** | Authentication required or token invalid |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **deleteWorkspace**
-> deleteWorkspace()
+# **deleteSpace**
+> deleteSpace()
 
-Soft delete workspace and all contained nodes, attributes, mappings.
+Soft delete space and all contained nodes, attributes, mappings.
 
 ### Example
 
 ```typescript
 import {
-    WorkspacesApi,
+    SpacesApi,
     Configuration
 } from 'mujarrad-api-client';
 
 const configuration = new Configuration();
-const apiInstance = new WorkspacesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 
-const { status, data } = await apiInstance.deleteWorkspace(
-    workspaceId
+const { status, data } = await apiInstance.deleteSpace(
+    spaceId
 );
 ```
 
@@ -92,7 +92,7 @@ const { status, data } = await apiInstance.deleteWorkspace(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type
@@ -112,33 +112,33 @@ void (empty response body)
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**204** | Workspace deleted successfully |  -  |
+|**204** | Space deleted successfully |  -  |
 |**401** | Authentication required or token invalid |  -  |
 |**403** | User does not have permission to access resource |  -  |
 |**404** | Resource not found |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getWorkspace**
-> CreateWorkspace201Response getWorkspace()
+# **getSpace**
+> CreateSpace201Response getSpace()
 
-Retrieve workspace details including node count and Git status.
+Retrieve space details including node count and Git status.
 
 ### Example
 
 ```typescript
 import {
-    WorkspacesApi,
+    SpacesApi,
     Configuration
 } from 'mujarrad-api-client';
 
 const configuration = new Configuration();
-const apiInstance = new WorkspacesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 
-const { status, data } = await apiInstance.getWorkspace(
-    workspaceId
+const { status, data } = await apiInstance.getSpace(
+    spaceId
 );
 ```
 
@@ -146,12 +146,12 @@ const { status, data } = await apiInstance.getWorkspace(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type
 
-**CreateWorkspace201Response**
+**CreateSpace201Response**
 
 ### Authorization
 
@@ -166,7 +166,7 @@ const { status, data } = await apiInstance.getWorkspace(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | Workspace retrieved successfully |  -  |
+|**200** | Space retrieved successfully |  -  |
 |**401** | Authentication required or token invalid |  -  |
 |**403** | User does not have permission to access resource |  -  |
 |**404** | Resource not found |  -  |
@@ -176,25 +176,25 @@ const { status, data } = await apiInstance.getWorkspace(
 # **instantiateTemplate**
 > InstantiateTemplate200Response instantiateTemplate(templateInstantiateRequest)
 
-Clone template into existing workspace, replacing placeholders with values.
+Clone template into existing space, replacing placeholders with values.
 
 ### Example
 
 ```typescript
 import {
-    WorkspacesApi,
+    SpacesApi,
     Configuration,
     TemplateInstantiateRequest
 } from 'mujarrad-api-client';
 
 const configuration = new Configuration();
-const apiInstance = new WorkspacesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 let templateInstantiateRequest: TemplateInstantiateRequest; //
 
 const { status, data } = await apiInstance.instantiateTemplate(
-    workspaceId,
+    spaceId,
     templateInstantiateRequest
 );
 ```
@@ -204,7 +204,7 @@ const { status, data } = await apiInstance.instantiateTemplate(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **templateInstantiateRequest** | **TemplateInstantiateRequest**|  | |
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type
@@ -232,27 +232,27 @@ const { status, data } = await apiInstance.instantiateTemplate(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **listWorkspaces**
-> ListWorkspaces200Response listWorkspaces()
+# **listSpaces**
+> ListSpaces200Response listSpaces()
 
-Retrieve all workspaces owned by authenticated user (excludes soft-deleted).
+Retrieve all spaces owned by authenticated user (excludes soft-deleted).
 
 ### Example
 
 ```typescript
 import {
-    WorkspacesApi,
+    SpacesApi,
     Configuration
 } from 'mujarrad-api-client';
 
 const configuration = new Configuration();
-const apiInstance = new WorkspacesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
 let page: number; //Page number (0-indexed) (optional) (default to 0)
 let size: number; //Page size (optional) (default to 20)
 let sort: 'createdAt' | 'asc' | 'createdAt' | 'desc' | 'updatedAt' | 'asc' | 'updatedAt' | 'desc' | 'title' | 'asc' | 'title' | 'desc'; //Sort field and direction (optional) (default to 'createdAt,desc')
 
-const { status, data } = await apiInstance.listWorkspaces(
+const { status, data } = await apiInstance.listSpaces(
     page,
     size,
     sort
@@ -270,7 +270,7 @@ const { status, data } = await apiInstance.listWorkspaces(
 
 ### Return type
 
-**ListWorkspaces200Response**
+**ListSpaces200Response**
 
 ### Authorization
 
@@ -285,34 +285,34 @@ const { status, data } = await apiInstance.listWorkspaces(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | Workspaces retrieved successfully |  -  |
+|**200** | Spaces retrieved successfully |  -  |
 |**401** | Authentication required or token invalid |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **updateWorkspace**
-> CreateWorkspace201Response updateWorkspace(workspaceUpdateRequest)
+# **updateSpace**
+> CreateSpace201Response updateSpace(spaceUpdateRequest)
 
-Update workspace title, description, or Git configuration.
+Update space title, description, or Git configuration.
 
 ### Example
 
 ```typescript
 import {
-    WorkspacesApi,
+    SpacesApi,
     Configuration,
-    WorkspaceUpdateRequest
+    SpaceUpdateRequest
 } from 'mujarrad-api-client';
 
 const configuration = new Configuration();
-const apiInstance = new WorkspacesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
-let workspaceUpdateRequest: WorkspaceUpdateRequest; //
+let spaceId: string; //Space UUID (default to undefined)
+let spaceUpdateRequest: SpaceUpdateRequest; //
 
-const { status, data } = await apiInstance.updateWorkspace(
-    workspaceId,
-    workspaceUpdateRequest
+const { status, data } = await apiInstance.updateSpace(
+    spaceId,
+    spaceUpdateRequest
 );
 ```
 
@@ -320,13 +320,13 @@ const { status, data } = await apiInstance.updateWorkspace(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **workspaceUpdateRequest** | **WorkspaceUpdateRequest**|  | |
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceUpdateRequest** | **SpaceUpdateRequest**|  | |
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type
 
-**CreateWorkspace201Response**
+**CreateSpace201Response**
 
 ### Authorization
 
@@ -341,7 +341,7 @@ const { status, data } = await apiInstance.updateWorkspace(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | Workspace updated successfully |  -  |
+|**200** | Space updated successfully |  -  |
 |**400** | Invalid request parameters or payload |  -  |
 |**401** | Authentication required or token invalid |  -  |
 |**403** | User does not have permission to access resource |  -  |

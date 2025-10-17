@@ -1,10 +1,10 @@
-import { TemplatesApi, WorkspaceTemplateResponse } from '../api/generated/api.js';
+import { TemplatesApi, SpaceTemplateResponse } from '../api/generated/api.js';
 import { Logger } from '../utils/Logger.js';
 
 /**
- * TemplateService - Workspace Template Management
+ * TemplateService - Space Template Management
  *
- * Handles workspace template operations:
+ * Handles space template operations:
  * - List available templates
  * - Get template details
  * - Search templates
@@ -35,15 +35,15 @@ export class TemplateService {
   }
 
   /**
-   * List available workspace templates
+   * List available space templates
    *
    * @param options - Filter options (tags, isPublic, scope, pagination)
-   * @returns Array of workspace templates
+   * @returns Array of space templates
    * @throws Error if API call fails
    */
-  async list(options: TemplateListOptions = {}): Promise<WorkspaceTemplateResponse[]> {
+  async list(options: TemplateListOptions = {}): Promise<SpaceTemplateResponse[]> {
     try {
-      this.logger.info('Listing workspace templates', { options });
+      this.logger.info('Listing space templates', { options });
 
       const { tags, isPublic, scope = 'public', page = 0, size = 20 } = options;
 
@@ -64,7 +64,7 @@ export class TemplateService {
       // Client-side filtering for isPublic if specified (API might not support this filter)
       let filteredTemplates = templates;
       if (isPublic !== undefined) {
-        filteredTemplates = templates.filter((t: WorkspaceTemplateResponse) => t.isPublic === isPublic);
+        filteredTemplates = templates.filter((t: SpaceTemplateResponse) => t.isPublic === isPublic);
       }
 
       this.logger.info(`Found ${filteredTemplates.length} templates`, {
@@ -88,12 +88,12 @@ export class TemplateService {
    * @returns Template with full details including context templates
    * @throws Error if template not found or API call fails
    */
-  async get(templateId: string): Promise<WorkspaceTemplateResponse> {
+  async get(templateId: string): Promise<SpaceTemplateResponse> {
     try {
       this.logger.info('Getting template details', { templateId });
 
       const response = await this.templatesApi.getTemplate(templateId);
-      // API response structure: { success, data: WorkspaceTemplateResponse, timestamp }
+      // API response structure: { success, data: SpaceTemplateResponse, timestamp }
       const template = (response.data as any).data || response.data;
 
       this.logger.info('Retrieved template', {
@@ -116,7 +116,7 @@ export class TemplateService {
    * @param query - Search query (partial name match)
    * @returns Array of matching templates
    */
-  async search(query: string): Promise<WorkspaceTemplateResponse[]> {
+  async search(query: string): Promise<SpaceTemplateResponse[]> {
     try {
       this.logger.info('Searching templates', { query });
 
@@ -124,7 +124,7 @@ export class TemplateService {
       const allTemplates = await this.list({ scope: 'public' });
 
       // Client-side filtering by name
-      const results = allTemplates.filter((template: WorkspaceTemplateResponse) =>
+      const results = allTemplates.filter((template: SpaceTemplateResponse) =>
         template.name.toLowerCase().includes(query.toLowerCase())
       );
 
@@ -147,7 +147,7 @@ export class TemplateService {
    * @param limit - Maximum number of templates to return (default: 10)
    * @returns Array of popular templates sorted by usageCount DESC
    */
-  async getPopular(limit: number = 10): Promise<WorkspaceTemplateResponse[]> {
+  async getPopular(limit: number = 10): Promise<SpaceTemplateResponse[]> {
     try {
       this.logger.info('Getting popular templates', { limit });
 

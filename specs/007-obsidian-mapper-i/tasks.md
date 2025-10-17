@@ -171,9 +171,9 @@ describe('API Client Generation', () => {
     expect(apiClient.authApi.refresh).toBeDefined();
   });
 
-  it('should have workspace API methods', () => {
-    expect(apiClient.workspacesApi.getWorkspaces).toBeDefined();
-    expect(apiClient.workspacesApi.createWorkspace).toBeDefined();
+  it('should have space API methods', () => {
+    expect(apiClient.spacesApi.getSpaces).toBeDefined();
+    expect(apiClient.spacesApi.createSpace).toBeDefined();
   });
 
   it('should have upload API methods', () => {
@@ -187,7 +187,7 @@ describe('API Client Generation', () => {
 - [X] openapi-generator-cli installed
 - [X] Generated client in src/api/generated/
 - [X] TypeScript types match OpenAPI schemas
-- [X] All 8 API categories accessible (Auth, Workspace, Template, Upload, Clone, Sync, Version, Sharing)
+- [X] All 8 API categories accessible (Auth, Space, Template, Upload, Clone, Sync, Version, Sharing)
 - [X] Tests pass for API client structure
 
 **Implementation Notes**:
@@ -245,7 +245,7 @@ Config schema:
 ```json
 {
   "apiBaseUrl": "https://api.example.com",
-  "defaultWorkspace": "my-workspace",
+  "defaultSpace": "my-space",
   "autoSync": false,
   "logLevel": "info"
 }
@@ -1231,17 +1231,17 @@ class MetadataManager {
 **User Story**: US-1 (Basic Upload and Clone)
 
 **Description**:
-Create CacheManager to store workspace structure and sync metadata locally.
+Create CacheManager to store space structure and sync metadata locally.
 
 **Tests** (write FIRST):
 ```typescript
 // tests/unit/utils/CacheManager.test.ts
 describe('CacheManager', () => {
-  it('should cache workspace structure', async () => {
-    const workspaceData = { id: 'uuid', name: 'Test', nodes: [] };
-    await CacheManager.cacheWorkspace('test-slug', workspaceData);
+  it('should cache space structure', async () => {
+    const spaceData = { id: 'uuid', name: 'Test', nodes: [] };
+    await CacheManager.cacheSpace('test-slug', spaceData);
 
-    const cached = await CacheManager.getWorkspace('test-slug');
+    const cached = await CacheManager.getSpace('test-slug');
     expect(cached.id).toBe('uuid');
   });
 
@@ -1260,26 +1260,26 @@ describe('CacheManager', () => {
     expect(filePath).toBe('folder/note.md');
   });
 
-  it('should clear cache for workspace', async () => {
-    await CacheManager.cacheWorkspace('test-slug', { id: 'uuid' });
-    await CacheManager.clearWorkspaceCache('test-slug');
+  it('should clear cache for space', async () => {
+    await CacheManager.cacheSpace('test-slug', { id: 'uuid' });
+    await CacheManager.clearSpaceCache('test-slug');
 
-    const cached = await CacheManager.getWorkspace('test-slug');
+    const cached = await CacheManager.getSpace('test-slug');
     expect(cached).toBeNull();
   });
 
   it('should handle cache directory creation', async () => {
-    const cacheDir = CacheManager.getCacheDir('new-workspace');
-    expect(cacheDir).toContain('.mujarrad/cache/new-workspace');
+    const cacheDir = CacheManager.getCacheDir('new-space');
+    expect(cacheDir).toContain('.mujarrad/cache/new-space');
 
-    await CacheManager.ensureCacheDir('new-workspace');
+    await CacheManager.ensureCacheDir('new-space');
     expect(fs.existsSync(cacheDir)).toBe(true);
   });
 });
 ```
 
 **Acceptance Criteria**:
-- [ ] Caches workspace structure in ~/.mujarrad/cache/{workspace-slug}/
+- [ ] Caches space structure in ~/.mujarrad/cache/{space-slug}/
 - [ ] Stores last sync timestamp
 - [ ] Stores node UUID → file path mappings
 - [ ] Provides cache invalidation methods
@@ -1289,18 +1289,18 @@ describe('CacheManager', () => {
 **Implementation Notes**:
 ```typescript
 class CacheManager {
-  private static getCachePath(workspaceSlug: string, fileName: string): string {
-    return path.join(os.homedir(), '.mujarrad', 'cache', workspaceSlug, fileName);
+  private static getCachePath(spaceSlug: string, fileName: string): string {
+    return path.join(os.homedir(), '.mujarrad', 'cache', spaceSlug, fileName);
   }
 
-  static async cacheWorkspace(workspaceSlug: string, data: any): Promise<void> {
-    const cachePath = this.getCachePath(workspaceSlug, 'workspace.json');
+  static async cacheSpace(spaceSlug: string, data: any): Promise<void> {
+    const cachePath = this.getCachePath(spaceSlug, 'space.json');
     await fs.mkdir(path.dirname(cachePath), { recursive: true });
     await fs.writeFile(cachePath, JSON.stringify(data, null, 2));
   }
 
-  static async getWorkspace(workspaceSlug: string): Promise<any> {
-    const cachePath = this.getCachePath(workspaceSlug, 'workspace.json');
+  static async getSpace(spaceSlug: string): Promise<any> {
+    const cachePath = this.getCachePath(spaceSlug, 'space.json');
     try {
       const content = await fs.readFile(cachePath, 'utf-8');
       return JSON.parse(content);
@@ -1309,8 +1309,8 @@ class CacheManager {
     }
   }
 
-  static async setLastSyncTime(workspaceSlug: string, timestamp: string): Promise<void> {
-    const cachePath = this.getCachePath(workspaceSlug, 'sync.json');
+  static async setLastSyncTime(spaceSlug: string, timestamp: string): Promise<void> {
+    const cachePath = this.getCachePath(spaceSlug, 'sync.json');
     await fs.writeFile(cachePath, JSON.stringify({ lastSync: timestamp }));
   }
 
@@ -1343,7 +1343,7 @@ describe('UploadService', () => {
     const mockResponse = { uploadSessionId: 'session-123', batchSize: 50 };
     jest.spyOn(apiClient.uploadApi, 'initUploadSession').mockResolvedValue(mockResponse);
 
-    const session = await UploadService.initSession('workspace-123', { totalFiles: 150 });
+    const session = await UploadService.initSession('space-123', { totalFiles: 150 });
     expect(session.uploadSessionId).toBe('session-123');
   });
 
@@ -1361,20 +1361,20 @@ describe('UploadService', () => {
     const mockResponse = { created: [{ nodeId: 'uuid-1' }], errors: [] };
     jest.spyOn(apiClient.uploadApi, 'uploadNodes').mockResolvedValue(mockResponse);
 
-    const result = await UploadService.uploadBatch('session-123', 'workspace-123', batch);
+    const result = await UploadService.uploadBatch('session-123', 'space-123', batch);
     expect(result.created).toHaveLength(1);
   });
 
   it('should handle upload errors gracefully', async () => {
     jest.spyOn(apiClient.uploadApi, 'uploadNodes').mockRejectedValue(new Error('Network error'));
-    await expect(UploadService.uploadBatch('session-123', 'workspace-123', [])).rejects.toThrow();
+    await expect(UploadService.uploadBatch('session-123', 'space-123', [])).rejects.toThrow();
   });
 
   it('should finalize upload session', async () => {
     const mockResponse = { success: true, totalNodesCreated: 150 };
     jest.spyOn(apiClient.uploadApi, 'completeUploadSession').mockResolvedValue(mockResponse);
 
-    const result = await UploadService.finalizeSession('session-123', 'workspace-123');
+    const result = await UploadService.finalizeSession('session-123', 'space-123');
     expect(result.success).toBe(true);
   });
 });
@@ -1391,18 +1391,18 @@ describe('UploadService', () => {
 **Implementation Notes**:
 ```typescript
 class UploadService {
-  async uploadVault(workspaceId: string, vaultPath: string): Promise<UploadSummary> {
+  async uploadVault(spaceId: string, vaultPath: string): Promise<UploadSummary> {
     const scanner = new VaultScanner(vaultPath);
     const files = await scanner.scan();
 
-    const session = await this.initSession(workspaceId, { totalFiles: files.length });
+    const session = await this.initSession(spaceId, { totalFiles: files.length });
     const batches = this.createBatches(files, session.batchSize);
 
     for (const batch of batches) {
-      await this.uploadBatch(session.uploadSessionId, workspaceId, batch);
+      await this.uploadBatch(session.uploadSessionId, spaceId, batch);
     }
 
-    return await this.finalizeSession(session.uploadSessionId, workspaceId);
+    return await this.finalizeSession(session.uploadSessionId, spaceId);
   }
 }
 ```
@@ -1424,22 +1424,22 @@ Create CLI command handler for vault upload.
 ```typescript
 // tests/integration/commands/upload.test.ts
 describe('upload command', () => {
-  it('should upload vault to workspace', async () => {
+  it('should upload vault to space', async () => {
     const testVaultPath = createTestVault({ 'note.md': '# Note' });
-    const result = await runCommand(['upload', '--workspace', 'test-workspace', testVaultPath]);
+    const result = await runCommand(['upload', '--space', 'test-space', testVaultPath]);
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('Upload complete');
   });
 
   it('should show progress during upload', async () => {
     const testVaultPath = createTestVault(Array(100).fill(null).map((_, i) => [`note${i}.md`, '# Note']));
-    const result = await runCommand(['upload', '--workspace', 'test-workspace', testVaultPath]);
+    const result = await runCommand(['upload', '--space', 'test-space', testVaultPath]);
     expect(result.output).toMatch(/\d+\/\d+/); // Progress indicator
   });
 
   it('should handle authentication errors', async () => {
     // Mock auth failure
-    const result = await runCommand(['upload', '--workspace', 'test', '/path']);
+    const result = await runCommand(['upload', '--space', 'test', '/path']);
     expect(result.exitCode).toBe(1);
     expect(result.output).toContain('Please login first');
   });
@@ -1447,7 +1447,7 @@ describe('upload command', () => {
 ```
 
 **Acceptance Criteria**:
-- [ ] `mujarrad upload <vault-path> --workspace <slug>` command
+- [ ] `mujarrad upload <vault-path> --space <slug>` command
 - [ ] Shows progress bar during upload
 - [ ] Logs upload session details
 - [ ] Handles errors with actionable messages
@@ -1457,11 +1457,11 @@ describe('upload command', () => {
 ```typescript
 program
   .command('upload <vault-path>')
-  .option('-w, --workspace <slug>', 'Workspace slug')
+  .option('-w, --space <slug>', 'Space slug')
   .action(async (vaultPath, options) => {
     await AuthService.ensureAuthenticated();
-    const workspaceId = await resolveWorkspaceId(options.workspace);
-    await UploadService.uploadVault(workspaceId, vaultPath);
+    const spaceId = await resolveSpaceId(options.space);
+    await UploadService.uploadVault(spaceId, vaultPath);
   });
 ```
 
@@ -1471,28 +1471,28 @@ program
 
 ## Phase 5: Clone Workflow (User Story 1 - Part 4)
 
-### Task 5.1: Implement CloneService (Workspace Export)
+### Task 5.1: Implement CloneService (Space Export)
 **Priority**: P1
 **Estimated effort**: 6 hours
 **Dependencies**: Task 1.1, Task 3.3, Task 3.4, Task 3.5
 **User Story**: US-1 (Basic Upload and Clone)
 
 **Description**:
-Create CloneService to export workspace and recreate Obsidian vault.
+Create CloneService to export space and recreate Obsidian vault.
 
 **Tests** (write FIRST):
 ```typescript
 // tests/unit/services/CloneService.test.ts
 describe('CloneService', () => {
-  it('should export workspace structure from API', async () => {
+  it('should export space structure from API', async () => {
     const mockResponse = {
-      workspace: { id: 'uuid', name: 'Test' },
+      space: { id: 'uuid', name: 'Test' },
       nodes: [{ id: 'node1', nodeType: 'REGULAR', title: 'Note', content: '# Note' }],
       attributes: []
     };
-    jest.spyOn(apiClient.cloneApi, 'exportWorkspace').mockResolvedValue(mockResponse);
+    jest.spyOn(apiClient.cloneApi, 'exportSpace').mockResolvedValue(mockResponse);
 
-    const data = await CloneService.exportWorkspace('workspace-123');
+    const data = await CloneService.exportSpace('space-123');
     expect(data.nodes).toHaveLength(1);
   });
 
@@ -1525,7 +1525,7 @@ describe('CloneService', () => {
 ```
 
 **Acceptance Criteria**:
-- [ ] Exports workspace via API
+- [ ] Exports space via API
 - [ ] Creates folder hierarchy
 - [ ] Generates markdown files with UUIDs
 - [ ] Reconstructs canvas files
@@ -1535,8 +1535,8 @@ describe('CloneService', () => {
 **Implementation Notes**:
 ```typescript
 class CloneService {
-  async cloneWorkspace(workspaceSlug: string, targetPath: string): Promise<void> {
-    const data = await apiClient.cloneApi.exportWorkspace(workspaceSlug);
+  async cloneSpace(spaceSlug: string, targetPath: string): Promise<void> {
+    const data = await apiClient.cloneApi.exportSpace(spaceSlug);
     await this.recreateVault(targetPath, data);
     await this.initGit(targetPath);
   }
@@ -1621,29 +1621,29 @@ class GitService {
 **User Story**: US-1 (Basic Upload and Clone)
 
 **Description**:
-Create CLI command handler for workspace cloning.
+Create CLI command handler for space cloning.
 
 **Tests** (write FIRST):
 ```typescript
 // tests/integration/commands/clone.test.ts
 describe('clone command', () => {
-  it('should clone workspace to local directory', async () => {
+  it('should clone space to local directory', async () => {
     const targetPath = '/tmp/test-clone';
-    const result = await runCommand(['clone', '--workspace', 'test-workspace', targetPath]);
+    const result = await runCommand(['clone', '--space', 'test-space', targetPath]);
     expect(result.exitCode).toBe(0);
     expect(fs.existsSync(targetPath)).toBe(true);
     expect(fs.existsSync(path.join(targetPath, '.git'))).toBe(true);
   });
 
   it('should show progress during clone', async () => {
-    const result = await runCommand(['clone', '--workspace', 'test', '/tmp/test']);
-    expect(result.output).toMatch(/Cloning workspace/);
+    const result = await runCommand(['clone', '--space', 'test', '/tmp/test']);
+    expect(result.output).toMatch(/Cloning space/);
   });
 });
 ```
 
 **Acceptance Criteria**:
-- [ ] `mujarrad clone <target-path> --workspace <slug>` command
+- [ ] `mujarrad clone <target-path> --space <slug>` command
 - [ ] Shows progress during clone
 - [ ] Initializes git repository
 - [ ] Tests pass for clone command
@@ -1652,10 +1652,10 @@ describe('clone command', () => {
 ```typescript
 program
   .command('clone <target-path>')
-  .option('-w, --workspace <slug>', 'Workspace slug')
+  .option('-w, --space <slug>', 'Space slug')
   .action(async (targetPath, options) => {
     await AuthService.ensureAuthenticated();
-    await CloneService.cloneWorkspace(options.workspace, targetPath);
+    await CloneService.cloneSpace(options.space, targetPath);
   });
 ```
 
@@ -1700,7 +1700,7 @@ describe('SyncService', () => {
     const mockResponse = { versionsCreated: 1 };
     jest.spyOn(apiClient.syncApi, 'pushChanges').mockResolvedValue(mockResponse);
 
-    const result = await SyncService.pushChanges('workspace-123', changes);
+    const result = await SyncService.pushChanges('space-123', changes);
     expect(result.versionsCreated).toBe(1);
   });
 
@@ -1729,7 +1729,7 @@ describe('SyncService', () => {
 ```typescript
 class SyncService {
   async detectChanges(vaultPath: string): Promise<Change[]> {
-    const lastSync = await CacheManager.getLastSyncTime(workspaceSlug);
+    const lastSync = await CacheManager.getLastSyncTime(spaceSlug);
     const diff = await execAsync(`git diff --name-status ${lastSync}..HEAD`, { cwd: vaultPath });
     const lines = diff.stdout.split('\n');
     return lines.map(line => {
@@ -1890,13 +1890,13 @@ Extend UploadService to handle canvas files with normalized visual data.
 describe('CanvasUploadService', () => {
   it('should create CONTEXT node for canvas', async () => {
     const canvasData = { title: 'My Canvas', nodes: [], edges: [] };
-    const result = await CanvasUploadService.uploadCanvas('workspace-123', 'session-123', canvasData);
+    const result = await CanvasUploadService.uploadCanvas('space-123', 'session-123', canvasData);
     expect(result.canvasNodeId).toBeDefined();
   });
 
   it('should create Mapping with canvas-wide config', async () => {
     const canvasData = { zoom: 1.5, viewX: 100, nodes: [] };
-    await CanvasUploadService.uploadCanvas('workspace-123', 'session-123', canvasData);
+    await CanvasUploadService.uploadCanvas('space-123', 'session-123', canvasData);
     // Verify Mapping created via API
   });
 
@@ -1906,7 +1906,7 @@ describe('CanvasUploadService', () => {
         { id: 'node1', file: 'note.md', x: 100, y: 200, width: 400, height: 300, color: '1' }
       ]
     };
-    const result = await CanvasUploadService.uploadCanvas('workspace-123', 'session-123', canvasData);
+    const result = await CanvasUploadService.uploadCanvas('space-123', 'session-123', canvasData);
     expect(result.nodeMappingsCreated).toBe(1);
   });
 
@@ -1916,7 +1916,7 @@ describe('CanvasUploadService', () => {
         { fromNode: 'node1', toNode: 'node2', fromSide: 'right', toSide: 'left', color: '2' }
       ]
     };
-    await CanvasUploadService.uploadCanvas('workspace-123', 'session-123', canvasData);
+    await CanvasUploadService.uploadCanvas('space-123', 'session-123', canvasData);
     // Verify Attribute created with properties JSONB
   });
 });
@@ -1930,7 +1930,7 @@ describe('CanvasUploadService', () => {
 - [ ] Tests pass for canvas upload
 
 **Implementation Notes**:
-Extend POST /api/workspaces/{workspaceId}/upload/canvas endpoint integration.
+Extend POST /api/spaces/{spaceId}/upload/canvas endpoint integration.
 
 **Related Requirements**: FR-003, FR-008, FR-009, FR-033 to FR-038
 
@@ -2003,7 +2003,7 @@ Query Mapping, NodeMappings, Attributes from export API and reconstruct .canvas 
 **User Story**: US-4 (Template System)
 
 **Description**:
-Create TemplateService to list and retrieve workspace templates.
+Create TemplateService to list and retrieve space templates.
 
 **Tests** (write FIRST):
 ```typescript
@@ -2067,12 +2067,12 @@ describe('TemplateCloneWorkflow', () => {
     expect(answers).toHaveProperty('year');
   });
 
-  it('should instantiate workspace from template', async () => {
-    const mockResponse = { workspaceId: 'new-workspace-id' };
+  it('should instantiate space from template', async () => {
+    const mockResponse = { spaceId: 'new-space-id' };
     jest.spyOn(apiClient.templatesApi, 'cloneFromTemplate').mockResolvedValue(mockResponse);
 
     const result = await TemplateCloneWorkflow.execute('template-id', { name: 'My Startup' });
-    expect(result.workspaceId).toBe('new-workspace-id');
+    expect(result.spaceId).toBe('new-space-id');
   });
 
   it('should include template config file in cloned vault', async () => {
@@ -2087,13 +2087,13 @@ describe('TemplateCloneWorkflow', () => {
 
 **Acceptance Criteria**:
 - [ ] Prompts for template placeholders
-- [ ] Instantiates workspace via API
+- [ ] Instantiates space via API
 - [ ] Clones template structure
 - [ ] Includes template.config.json
 - [ ] Tests pass for template clone workflow
 
 **Implementation Notes**:
-Integrate POST /api/workspaces/clone-from-template endpoint.
+Integrate POST /api/spaces/clone-from-template endpoint.
 
 **Related Requirements**: FR-056 to FR-071
 
@@ -2142,7 +2142,7 @@ program
 program
   .command('template clone <target-path>')
   .option('--template <id>', 'Template ID')
-  .option('--name <name>', 'Workspace name')
+  .option('--name <name>', 'Space name')
   .action(async (targetPath, options) => {
     await TemplateCloneWorkflow.execute(options.template, { name: options.name });
   });
@@ -2154,87 +2154,87 @@ program
 
 ## Phase 9: Additional Workflows & Features
 
-### Task 9.0: Implement Workspace Management CLI Commands
+### Task 9.0: Implement Space Management CLI Commands
 **Priority**: P2
 **Estimated effort**: 4 hours
 **Dependencies**: Task 1.1
-**User Story**: Foundation (Workspace Management)
+**User Story**: Foundation (Space Management)
 
 **Description**:
-Create CLI commands for workspace management (create, list, delete) to complement existing upload/clone/sync commands.
+Create CLI commands for space management (create, list, delete) to complement existing upload/clone/sync commands.
 
 **Tests** (write FIRST):
 ```typescript
-// tests/integration/commands/workspace.test.ts
-describe('workspace command', () => {
-  it('should create a new workspace', async () => {
-    const result = await runCommand(['workspace', 'create', '--name', 'My Project', '--slug', 'my-project']);
+// tests/integration/commands/space.test.ts
+describe('space command', () => {
+  it('should create a new space', async () => {
+    const result = await runCommand(['space', 'create', '--name', 'My Project', '--slug', 'my-project']);
     expect(result.exitCode).toBe(0);
-    expect(result.output).toContain('Workspace created');
+    expect(result.output).toContain('Space created');
     expect(result.output).toContain('my-project');
   });
 
-  it('should list all workspaces', async () => {
-    const result = await runCommand(['workspace', 'list']);
+  it('should list all spaces', async () => {
+    const result = await runCommand(['space', 'list']);
     expect(result.exitCode).toBe(0);
     expect(result.output).toMatch(/Name\s+Slug\s+Created/); // Table header
   });
 
-  it('should delete a workspace', async () => {
-    const result = await runCommand(['workspace', 'delete', '--workspace', 'test-workspace', '--confirm']);
+  it('should delete a space', async () => {
+    const result = await runCommand(['space', 'delete', '--space', 'test-space', '--confirm']);
     expect(result.exitCode).toBe(0);
-    expect(result.output).toContain('Workspace deleted');
+    expect(result.output).toContain('Space deleted');
   });
 
   it('should prompt for confirmation when deleting without --confirm flag', async () => {
-    const result = await runCommand(['workspace', 'delete', '--workspace', 'test-workspace']);
+    const result = await runCommand(['space', 'delete', '--space', 'test-space']);
     expect(result.output).toContain('Are you sure');
   });
 });
 
-// tests/unit/services/WorkspaceService.test.ts
-describe('WorkspaceService', () => {
-  it('should create workspace via API', async () => {
-    const mockResponse = { id: 'workspace-uuid', slug: 'my-project', name: 'My Project' };
-    jest.spyOn(apiClient.workspacesApi, 'createWorkspace').mockResolvedValue(mockResponse);
+// tests/unit/services/SpaceService.test.ts
+describe('SpaceService', () => {
+  it('should create space via API', async () => {
+    const mockResponse = { id: 'space-uuid', slug: 'my-project', name: 'My Project' };
+    jest.spyOn(apiClient.spacesApi, 'createSpace').mockResolvedValue(mockResponse);
 
-    const workspace = await WorkspaceService.create({ name: 'My Project', slug: 'my-project' });
-    expect(workspace.slug).toBe('my-project');
+    const space = await SpaceService.create({ name: 'My Project', slug: 'my-project' });
+    expect(space.slug).toBe('my-project');
   });
 
-  it('should list workspaces via API', async () => {
-    const mockResponse = { workspaces: [{ id: 'uuid1', name: 'Project 1' }, { id: 'uuid2', name: 'Project 2' }] };
-    jest.spyOn(apiClient.workspacesApi, 'listWorkspaces').mockResolvedValue(mockResponse);
+  it('should list spaces via API', async () => {
+    const mockResponse = { spaces: [{ id: 'uuid1', name: 'Project 1' }, { id: 'uuid2', name: 'Project 2' }] };
+    jest.spyOn(apiClient.spacesApi, 'listSpaces').mockResolvedValue(mockResponse);
 
-    const workspaces = await WorkspaceService.list();
-    expect(workspaces).toHaveLength(2);
+    const spaces = await SpaceService.list();
+    expect(spaces).toHaveLength(2);
   });
 
-  it('should delete workspace via API', async () => {
-    jest.spyOn(apiClient.workspacesApi, 'deleteWorkspace').mockResolvedValue({ success: true });
+  it('should delete space via API', async () => {
+    jest.spyOn(apiClient.spacesApi, 'deleteSpace').mockResolvedValue({ success: true });
 
-    await WorkspaceService.delete('workspace-id');
-    expect(apiClient.workspacesApi.deleteWorkspace).toHaveBeenCalledWith('workspace-id');
+    await SpaceService.delete('space-id');
+    expect(apiClient.spacesApi.deleteSpace).toHaveBeenCalledWith('space-id');
   });
 });
 ```
 
 **Acceptance Criteria**:
-- [ ] `mujarrad workspace create` command implemented
-- [ ] `mujarrad workspace list` command implemented
-- [ ] `mujarrad workspace delete` command implemented
-- [ ] WorkspaceService created with create/list/delete methods
+- [ ] `mujarrad space create` command implemented
+- [ ] `mujarrad space list` command implemented
+- [ ] `mujarrad space delete` command implemented
+- [ ] SpaceService created with create/list/delete methods
 - [ ] Confirmation prompt for delete operation
-- [ ] Tests pass for workspace commands
+- [ ] Tests pass for space commands
 
 **Implementation Notes**:
 ```typescript
-// src/services/WorkspaceService.ts
+// src/services/SpaceService.ts
 import { apiClient } from '../api/generated';
 
-export class WorkspaceService {
-  async create(params: { name: string; slug?: string; description?: string }): Promise<Workspace> {
-    const response = await apiClient.workspacesApi.createWorkspace({
+export class SpaceService {
+  async create(params: { name: string; slug?: string; description?: string }): Promise<Space> {
+    const response = await apiClient.spacesApi.createSpace({
       name: params.name,
       slug: params.slug || params.name.toLowerCase().replace(/\s+/g, '-'),
       description: params.description
@@ -2242,35 +2242,35 @@ export class WorkspaceService {
     return response.data;
   }
 
-  async list(): Promise<Workspace[]> {
-    const response = await apiClient.workspacesApi.listWorkspaces();
-    return response.data.workspaces;
+  async list(): Promise<Space[]> {
+    const response = await apiClient.spacesApi.listSpaces();
+    return response.data.spaces;
   }
 
-  async delete(workspaceId: string): Promise<void> {
-    await apiClient.workspacesApi.deleteWorkspace(workspaceId);
+  async delete(spaceId: string): Promise<void> {
+    await apiClient.spacesApi.deleteSpace(spaceId);
   }
 }
 
-// src/commands/workspace.ts
+// src/commands/space.ts
 program
-  .command('workspace create')
-  .option('--name <name>', 'Workspace name')
-  .option('--slug <slug>', 'Workspace slug (optional)')
-  .option('--description <description>', 'Workspace description (optional)')
+  .command('space create')
+  .option('--name <name>', 'Space name')
+  .option('--slug <slug>', 'Space slug (optional)')
+  .option('--description <description>', 'Space description (optional)')
   .action(async (options) => {
-    const workspace = await WorkspaceService.create(options);
-    console.log(chalk.green('✓ Workspace created:'));
-    console.log(`  Name: ${workspace.name}`);
-    console.log(`  Slug: ${workspace.slug}`);
-    console.log(`  ID: ${workspace.id}`);
+    const space = await SpaceService.create(options);
+    console.log(chalk.green('✓ Space created:'));
+    console.log(`  Name: ${space.name}`);
+    console.log(`  Slug: ${space.slug}`);
+    console.log(`  ID: ${space.id}`);
   });
 
 program
-  .command('workspace list')
+  .command('space list')
   .action(async () => {
-    const workspaces = await WorkspaceService.list();
-    console.table(workspaces.map(w => ({
+    const spaces = await SpaceService.list();
+    console.table(spaces.map(w => ({
       Name: w.name,
       Slug: w.slug,
       Created: new Date(w.createdAt).toLocaleDateString()
@@ -2278,24 +2278,24 @@ program
   });
 
 program
-  .command('workspace delete')
-  .option('--workspace <slug>', 'Workspace slug or ID')
+  .command('space delete')
+  .option('--space <slug>', 'Space slug or ID')
   .option('--confirm', 'Skip confirmation prompt')
   .action(async (options) => {
     if (!options.confirm) {
       const answer = await inquirer.prompt([{
         type: 'confirm',
         name: 'confirm',
-        message: `Are you sure you want to delete workspace "${options.workspace}"?`
+        message: `Are you sure you want to delete space "${options.space}"?`
       }]);
       if (!answer.confirm) return;
     }
-    await WorkspaceService.delete(options.workspace);
-    console.log(chalk.green('✓ Workspace deleted'));
+    await SpaceService.delete(options.space);
+    console.log(chalk.green('✓ Space deleted'));
   });
 ```
 
-**Related Requirements**: Workspace management APIs from openapi.yaml (GET /api/workspaces, POST /api/workspaces, DELETE /api/workspaces/{workspaceId})
+**Related Requirements**: Space management APIs from openapi.yaml (GET /api/spaces, POST /api/spaces, DELETE /api/spaces/{spaceId})
 
 ---
 
@@ -2488,11 +2488,11 @@ describe('Full Workflow E2E', () => {
   it('should complete upload → clone → sync cycle', async () => {
     // 1. Upload sample vault
     const sampleVaultPath = '/Users/mac/Developer/Software-Projects/Wider Projects/Wider-Mujarrad';
-    await runCommand(['upload', '--workspace', 'test', sampleVaultPath]);
+    await runCommand(['upload', '--space', 'test', sampleVaultPath]);
 
     // 2. Clone to new directory
     const clonePath = '/tmp/e2e-clone';
-    await runCommand(['clone', '--workspace', 'test', clonePath]);
+    await runCommand(['clone', '--space', 'test', clonePath]);
 
     // 3. Modify file
     fs.appendFileSync(path.join(clonePath, 'note.md'), '\nNew content');
@@ -2508,7 +2508,7 @@ describe('Full Workflow E2E', () => {
 
   it('should handle canvas upload and clone correctly', async () => {
     // Upload vault with canvas
-    // Clone workspace
+    // Clone space
     // Verify canvas reconstructed with correct visual properties
   });
 });
@@ -2594,13 +2594,13 @@ npm install -g mujarrad-cli
 
 ## Quick Start
 mujarrad auth login
-mujarrad upload ./my-vault --workspace my-workspace
-mujarrad clone ./new-vault --workspace my-workspace
+mujarrad upload ./my-vault --space my-space
+mujarrad clone ./new-vault --space my-space
 mujarrad sync ./my-vault --watch
 
 ## Commands
 - auth login/logout/status
-- workspace create/list/delete
+- space create/list/delete
 - upload <path>
 - clone <path>
 - sync <path> [--watch]
@@ -2732,9 +2732,9 @@ describe('CanvasNodeFileGenerator', () => {
   it('should generate file content with metadata and text', () => {
     const node = { id: 'node1', text: 'Key Partners\nContent here' };
     const generator = new CanvasNodeFileGenerator();
-    const content = generator.generateFileContent(node, 'workspace-uuid', 'node-uuid');
+    const content = generator.generateFileContent(node, 'space-uuid', 'node-uuid');
     expect(content).toContain('<!-- mujarrad-node-id: node-uuid -->');
-    expect(content).toContain('<!-- mujarrad-workspace-id: workspace-uuid -->');
+    expect(content).toContain('<!-- mujarrad-space-id: space-uuid -->');
     expect(content).toContain('<!-- mujarrad-generated-from: canvas-node-node1 -->');
     expect(content).toContain('Key Partners\nContent here');
   });
@@ -2769,10 +2769,10 @@ class CanvasNodeFileGenerator {
     return `${sanitized}.md`;
   }
 
-  generateFileContent(node: CanvasNode, workspaceId: string, nodeId: string): string {
+  generateFileContent(node: CanvasNode, spaceId: string, nodeId: string): string {
     const metadata = [
       `<!-- mujarrad-node-id: ${nodeId} -->`,
-      `<!-- mujarrad-workspace-id: ${workspaceId} -->`,
+      `<!-- mujarrad-space-id: ${spaceId} -->`,
       `<!-- mujarrad-generated-from: canvas-node-${node.id} -->`
     ].join('\n');
 
@@ -2813,7 +2813,7 @@ describe('CanvasToFileUploadWorkflow', () => {
       ]
     };
     const workflow = new CanvasToFileUploadWorkflow();
-    await workflow.generateFiles('/tmp/vault', canvasData, 'workspace-uuid');
+    await workflow.generateFiles('/tmp/vault', canvasData, 'space-uuid');
 
     expect(fs.existsSync('/tmp/vault/Key Partners.md')).toBe(true);
     const content = fs.readFileSync('/tmp/vault/Key Partners.md', 'utf-8');
@@ -2822,7 +2822,7 @@ describe('CanvasToFileUploadWorkflow', () => {
 
   it('should create REGULAR nodes for generated files', async () => {
     const workflow = new CanvasToFileUploadWorkflow();
-    const result = await workflow.uploadGeneratedFiles('workspace-123', 'session-123', generatedFiles);
+    const result = await workflow.uploadGeneratedFiles('space-123', 'session-123', generatedFiles);
     expect(result.nodesCreated).toBe(4);
   });
 
@@ -2850,7 +2850,7 @@ describe('CanvasToFileUploadWorkflow', () => {
 **Implementation Notes**:
 ```typescript
 class CanvasToFileUploadWorkflow {
-  async execute(vaultPath: string, workspaceId: string, sessionId: string): Promise<ConversionSummary> {
+  async execute(vaultPath: string, spaceId: string, sessionId: string): Promise<ConversionSummary> {
     // 1. Scan for canvas files
     // 2. For each canvas, detect nodes without files
     // 3. Generate markdown files
@@ -2887,14 +2887,14 @@ describe('upload command with canvas conversion', () => {
       })
     });
 
-    const result = await runCommand(['upload', '--workspace', 'test', '--convert-canvas-nodes', vaultPath]);
+    const result = await runCommand(['upload', '--space', 'test', '--convert-canvas-nodes', vaultPath]);
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('Generated 1 file from canvas nodes');
     expect(fs.existsSync(path.join(vaultPath, 'Key Partners.md'))).toBe(true);
   });
 
   it('should skip conversion when flag disabled', async () => {
-    const result = await runCommand(['upload', '--workspace', 'test', vaultPath]);
+    const result = await runCommand(['upload', '--space', 'test', vaultPath]);
     expect(result.output).not.toContain('Generated');
   });
 });
@@ -2910,17 +2910,17 @@ describe('upload command with canvas conversion', () => {
 ```typescript
 program
   .command('upload <vault-path>')
-  .option('-w, --workspace <slug>', 'Workspace slug')
+  .option('-w, --space <slug>', 'Space slug')
   .option('--convert-canvas-nodes', 'Generate files for canvas nodes without file references')
   .action(async (vaultPath, options) => {
     await AuthService.ensureAuthenticated();
-    const workspaceId = await resolveWorkspaceId(options.workspace);
+    const spaceId = await resolveSpaceId(options.space);
 
     if (options.convertCanvasNodes) {
-      await CanvasToFileUploadWorkflow.execute(vaultPath, workspaceId);
+      await CanvasToFileUploadWorkflow.execute(vaultPath, spaceId);
     }
 
-    await UploadService.uploadVault(workspaceId, vaultPath);
+    await UploadService.uploadVault(spaceId, vaultPath);
   });
 ```
 
@@ -3009,7 +3009,7 @@ describe('AutoContextCreator', () => {
       'Technical': ['API Spec.md']
     };
     const creator = new AutoContextCreator();
-    const contextNodes = await creator.createContextNodes(folderStructure, 'workspace-123');
+    const contextNodes = await creator.createContextNodes(folderStructure, 'space-123');
     expect(contextNodes).toHaveLength(2);
     expect(contextNodes[0]).toMatchObject({ nodeType: 'CONTEXT', title: 'Business', slug: 'business' });
   });
@@ -3076,7 +3076,7 @@ describe('AutoContextUploadWorkflow', () => {
   it('should upload CONTEXT nodes before REGULAR nodes', async () => {
     // NEEDS CLARIFICATION: Default enabled/disabled?
     const workflow = new AutoContextUploadWorkflow();
-    const result = await workflow.execute('workspace-123', 'session-123', files);
+    const result = await workflow.execute('space-123', 'session-123', files);
     expect(result.contextsCreated).toBeGreaterThan(0);
   });
 
@@ -3117,20 +3117,20 @@ Extend CloneService to recreate auto-generated folder hierarchy.
 // tests/unit/workflows/AutoContextCloneWorkflow.test.ts
 describe('AutoContextCloneWorkflow', () => {
   it('should recreate auto-generated folders during clone', async () => {
-    const workspaceData = {
+    const spaceData = {
       nodes: [
         { nodeType: 'CONTEXT', title: 'Business', slug: 'business', provenance: 'auto-generated' },
         { nodeType: 'REGULAR', title: 'Note', parentPath: 'business/' }
       ]
     };
     const workflow = new AutoContextCloneWorkflow();
-    await workflow.recreateFolders('/tmp/clone', workspaceData);
+    await workflow.recreateFolders('/tmp/clone', spaceData);
     expect(fs.existsSync('/tmp/clone/Business')).toBe(true);
     expect(fs.existsSync('/tmp/clone/Business/Note.md')).toBe(true);
   });
 
   it('should preserve folder hierarchy', async () => {
-    const workspaceData = {
+    const spaceData = {
       nodes: [
         { nodeType: 'CONTEXT', title: 'Projects' },
         { nodeType: 'CONTEXT', title: 'Active', parentPath: 'Projects/' },
@@ -3138,7 +3138,7 @@ describe('AutoContextCloneWorkflow', () => {
       ]
     };
     const workflow = new AutoContextCloneWorkflow();
-    await workflow.recreateFolders('/tmp/clone', workspaceData);
+    await workflow.recreateFolders('/tmp/clone', spaceData);
     expect(fs.existsSync('/tmp/clone/Projects/Active/Note.md')).toBe(true);
   });
 });
@@ -3171,14 +3171,14 @@ Add --auto-organize flag to upload command.
 describe('upload command with auto-context', () => {
   it('should create folders when flag enabled', async () => {
     const vaultPath = '/tmp/unorganized-vault';
-    const result = await runCommand(['upload', '--workspace', 'test', '--auto-organize', vaultPath]);
+    const result = await runCommand(['upload', '--space', 'test', '--auto-organize', vaultPath]);
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('Created 3 folders');
   });
 
   it('should skip organization when flag disabled', async () => {
     // NEEDS CLARIFICATION: Default behavior
-    const result = await runCommand(['upload', '--workspace', 'test', vaultPath]);
+    const result = await runCommand(['upload', '--space', 'test', vaultPath]);
     // Verify no auto-organization occurred
   });
 });

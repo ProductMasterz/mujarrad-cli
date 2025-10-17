@@ -3,16 +3,16 @@
 **Feature Branch**: `009-init-command-enhancement`
 **Created**: 2025-10-12
 **Status**: Draft
-**Input**: User description: "Init Command Enhancement: Add workspace verification, pull remote changes, compare differences, and conflict resolution"
+**Input**: User description: "Init Command Enhancement: Add space verification, pull remote changes, compare differences, and conflict resolution"
 
 ## Overview
 
-The `mujarrad init` command currently performs one-way vault upload without verifying workspace existence beforehand or handling bidirectional synchronization. This enhancement transforms init into a comprehensive initialization command that validates the target workspace exists, pulls any existing remote content, detects conflicts between local and remote states, and resolves them before completing the upload.
+The `mujarrad init` command currently performs one-way vault upload without verifying space existence beforehand or handling bidirectional synchronization. This enhancement transforms init into a comprehensive initialization command that validates the target space exists, pulls any existing remote content, detects conflicts between local and remote states, and resolves them before completing the upload.
 
 This enhancement addresses critical gaps identified in production usage where users experience:
-- Wasted processing time uploading to non-existent workspaces (only discovering failure after full scan)
-- Lost remote edits when initializing a vault to an existing workspace
-- Confusion about handling conflicts between local vault and remote workspace state
+- Wasted processing time uploading to non-existent spaces (only discovering failure after full scan)
+- Lost remote edits when initializing a vault to an existing space
+- Confusion about handling conflicts between local vault and remote space state
 - Lack of clarity about what happens to existing remote content during initialization
 
 ## Clarifications
@@ -31,61 +31,61 @@ This enhancement addresses critical gaps identified in production usage where us
 
 ## User Scenarios & Testing
 
-### User Story 1 - Pre-flight Workspace Validation (Priority: P1)
+### User Story 1 - Pre-flight Space Validation (Priority: P1)
 
-As a user initializing my Obsidian vault to Mujarrad, I want the system to verify the target workspace exists BEFORE scanning my vault, so I don't waste time processing thousands of files only to discover the workspace doesn't exist.
+As a user initializing my Obsidian vault to Mujarrad, I want the system to verify the target space exists BEFORE scanning my vault, so I don't waste time processing thousands of files only to discover the space doesn't exist.
 
 **Why this priority**: This is the most critical enhancement because it provides immediate feedback and prevents wasted processing time. It's also the simplest to implement and test independently, making it the ideal starting point.
 
-**Independent Test**: Can be fully tested by running `mujarrad init . --workspace nonexistent-workspace` and verifying it fails within 2 seconds with a clear error message before scanning any files.
+**Independent Test**: Can be fully tested by running `mujarrad init . --space nonexistent-space` and verifying it fails within 2 seconds with a clear error message before scanning any files.
 
 **Acceptance Scenarios**:
 
-1. **Given** I am authenticated and have a valid vault, **When** I run `mujarrad init . --workspace myworkspace` and the workspace exists, **Then** the system proceeds with vault scanning and displays "Workspace verified: myworkspace"
+1. **Given** I am authenticated and have a valid vault, **When** I run `mujarrad init . --space myspace` and the space exists, **Then** the system proceeds with vault scanning and displays "Space verified: myspace"
 
-2. **Given** I am authenticated and have a valid vault, **When** I run `mujarrad init . --workspace invalid-workspace` and the workspace does NOT exist, **Then** the system fails within 2 seconds with error "Workspace 'invalid-workspace' not found" without scanning any vault files
+2. **Given** I am authenticated and have a valid vault, **When** I run `mujarrad init . --space invalid-space` and the space does NOT exist, **Then** the system fails within 2 seconds with error "Space 'invalid-space' not found" without scanning any vault files
 
-3. **Given** I am authenticated, **When** I run `mujarrad init . --workspace restricted-workspace` and I don't have access, **Then** the system fails with error "Access denied to workspace 'restricted-workspace'. Contact the workspace owner for permissions"
+3. **Given** I am authenticated, **When** I run `mujarrad init . --space restricted-space` and I don't have access, **Then** the system fails with error "Access denied to space 'restricted-space'. Contact the space owner for permissions"
 
 ---
 
 ### User Story 2 - Pull Remote Changes Before Upload (Priority: P2)
 
-As a user initializing my vault to an EXISTING workspace that already has content, I want the system to pull any remote content from the workspace first, so I can see what already exists and avoid accidentally overwriting remote edits.
+As a user initializing my vault to an EXISTING space that already has content, I want the system to pull any remote content from the space first, so I can see what already exists and avoid accidentally overwriting remote edits.
 
-**Why this priority**: This prevents data loss for users who are initializing to an existing workspace with content. It's P2 because P1 (workspace validation) is a prerequisite, and this can be tested independently by creating a workspace with content, then initializing from an empty local vault.
+**Why this priority**: This prevents data loss for users who are initializing to an existing space with content. It's P2 because P1 (space validation) is a prerequisite, and this can be tested independently by creating a space with content, then initializing from an empty local vault.
 
-**Independent Test**: Can be fully tested by creating a workspace with 5 nodes via the web UI, then running `mujarrad init ./empty-vault --workspace existing-workspace --sync` and verifying the 5 remote nodes are pulled to the local vault before upload begins.
+**Independent Test**: Can be fully tested by creating a space with 5 nodes via the web UI, then running `mujarrad init ./empty-vault --space existing-space --sync` and verifying the 5 remote nodes are pulled to the local vault before upload begins.
 
 **Acceptance Scenarios**:
 
-1. **Given** I have an empty local vault and a workspace with 10 existing nodes, **When** I run `mujarrad init . --workspace myworkspace --sync`, **Then** the system pulls all 10 remote nodes to my local vault and displays "Pulled 10 remote nodes from workspace"
+1. **Given** I have an empty local vault and a space with 10 existing nodes, **When** I run `mujarrad init . --space myspace --sync`, **Then** the system pulls all 10 remote nodes to my local vault and displays "Pulled 10 remote nodes from space"
 
-2. **Given** I have a local vault with 5 nodes and a workspace with 3 different nodes, **When** I run `mujarrad init . --workspace myworkspace --sync`, **Then** the system pulls the 3 remote nodes to my local vault without deleting my 5 local nodes
+2. **Given** I have a local vault with 5 nodes and a space with 3 different nodes, **When** I run `mujarrad init . --space myspace --sync`, **Then** the system pulls the 3 remote nodes to my local vault without deleting my 5 local nodes
 
-3. **Given** the workspace is empty, **When** I run `mujarrad init . --workspace myworkspace --sync`, **Then** the system displays "No remote content to pull" and proceeds with upload
+3. **Given** the space is empty, **When** I run `mujarrad init . --space myspace --sync`, **Then** the system displays "No remote content to pull" and proceeds with upload
 
-4. **Given** I run init without the `--sync` flag, **When** I run `mujarrad init . --workspace myworkspace`, **Then** the system skips pulling remote changes and proceeds with one-way upload (backward compatibility)
+4. **Given** I run init without the `--sync` flag, **When** I run `mujarrad init . --space myspace`, **Then** the system skips pulling remote changes and proceeds with one-way upload (backward compatibility)
 
 ---
 
 ### User Story 3 - Compare Local and Remote State (Priority: P3)
 
-As a user initializing my vault with sync enabled, I want the system to compare my local files with remote workspace content and identify differences, so I understand what will change before any modifications are made.
+As a user initializing my vault with sync enabled, I want the system to compare my local files with remote space content and identify differences, so I understand what will change before any modifications are made.
 
 **Why this priority**: This provides transparency and control before any destructive operations. It's P3 because it builds on P1 (validation) and P2 (pull), and delivers value by showing users a diff summary.
 
-**Independent Test**: Can be fully tested by creating a workspace with node "A.md" (content: "remote version"), creating a local vault with "A.md" (content: "local version"), running `mujarrad init . --workspace test --sync`, and verifying the system displays "1 conflict detected: A.md (modified locally and remotely)"
+**Independent Test**: Can be fully tested by creating a space with node "A.md" (content: "remote version"), creating a local vault with "A.md" (content: "local version"), running `mujarrad init . --space test --sync`, and verifying the system displays "1 conflict detected: A.md (modified locally and remotely)"
 
 **Acceptance Scenarios**:
 
-1. **Given** I have local file "Note.md" with content "Local version" and remote node "Note.md" with content "Remote version", **When** I run `mujarrad init . --workspace myworkspace --sync`, **Then** the system displays "1 conflict: Note.md (modified locally and remotely)"
+1. **Given** I have local file "Note.md" with content "Local version" and remote node "Note.md" with content "Remote version", **When** I run `mujarrad init . --space myspace --sync`, **Then** the system displays "1 conflict: Note.md (modified locally and remotely)"
 
-2. **Given** I have local file "New.md" that doesn't exist remotely, **When** I run `mujarrad init . --workspace myworkspace --sync`, **Then** the system displays "1 new local file: New.md"
+2. **Given** I have local file "New.md" that doesn't exist remotely, **When** I run `mujarrad init . --space myspace --sync`, **Then** the system displays "1 new local file: New.md"
 
-3. **Given** I have a remote node "Old.md" that doesn't exist locally, **When** I run `mujarrad init . --workspace myworkspace --sync`, **Then** the system displays "1 remote-only file: Old.md (pulled to local vault)"
+3. **Given** I have a remote node "Old.md" that doesn't exist locally, **When** I run `mujarrad init . --space myspace --sync`, **Then** the system displays "1 remote-only file: Old.md (pulled to local vault)"
 
-4. **Given** I have local file "Same.md" and remote node "Same.md" with identical content, **When** I run `mujarrad init . --workspace myworkspace --sync`, **Then** the system displays "1 file unchanged: Same.md (skipped)"
+4. **Given** I have local file "Same.md" and remote node "Same.md" with identical content, **When** I run `mujarrad init . --space myspace --sync`, **Then** the system displays "1 file unchanged: Same.md (skipped)"
 
 ---
 
@@ -95,7 +95,7 @@ As a user initializing my vault with conflicts detected, I want to interactively
 
 **Why this priority**: This is tied to P3 (compare differences) because conflict resolution only matters after conflicts are detected. It's independently testable by setting up a known conflict scenario and verifying the interactive prompts work correctly.
 
-**Independent Test**: Can be fully tested by creating a conflict scenario (same file with different content locally and remotely), running `mujarrad init . --workspace test --sync`, and verifying the system prompts with options: "A) Keep local version, B) Keep remote version, C) Merge manually, D) Skip this file"
+**Independent Test**: Can be fully tested by creating a conflict scenario (same file with different content locally and remotely), running `mujarrad init . --space test --sync`, and verifying the system prompts with options: "A) Keep local version, B) Keep remote version, C) Merge manually, D) Skip this file"
 
 **Acceptance Scenarios**:
 
@@ -105,9 +105,9 @@ As a user initializing my vault with conflicts detected, I want to interactively
 
 3. **Given** I have a conflict on "Note.md", **When** the system prompts me and I choose "Skip this file", **Then** the system leaves both versions unchanged and logs the skipped file
 
-4. **Given** I have 5 conflicts, **When** I run `mujarrad init . --workspace myworkspace --sync --strategy KEEP_LOCAL`, **Then** the system auto-resolves all conflicts by keeping local versions without prompting me
+4. **Given** I have 5 conflicts, **When** I run `mujarrad init . --space myspace --sync --strategy KEEP_LOCAL`, **Then** the system auto-resolves all conflicts by keeping local versions without prompting me
 
-5. **Given** I have 5 conflicts, **When** I run `mujarrad init . --workspace myworkspace --sync --strategy KEEP_REMOTE`, **Then** the system auto-resolves all conflicts by keeping remote versions without prompting me
+5. **Given** I have 5 conflicts, **When** I run `mujarrad init . --space myspace --sync --strategy KEEP_REMOTE`, **Then** the system auto-resolves all conflicts by keeping remote versions without prompting me
 
 ---
 
@@ -125,8 +125,8 @@ As a user initializing my vault with conflicts detected, I want to interactively
 - What happens when a file is deleted remotely but exists locally?
   - System should display "File X was deleted remotely. Uploading local version" and proceed with upload
 
-- What happens when workspace verification fails due to network timeout?
-  - System should retry workspace verification 3 times with exponential backoff, then fail with "Unable to verify workspace: network timeout after 3 attempts"
+- What happens when space verification fails due to network timeout?
+  - System should retry space verification 3 times with exponential backoff, then fail with "Unable to verify space: network timeout after 3 attempts"
 
 - What happens when I run init with --sync but the vault is not Git-initialized?
   - System should display warning "Git repository not detected. Change tracking disabled. Proceeding with full comparison based on file hashes" and continue with hash-based comparison
@@ -135,18 +135,18 @@ As a user initializing my vault with conflicts detected, I want to interactively
 
 ### Functional Requirements
 
-#### Workspace Validation (P1)
+#### Space Validation (P1)
 
-- **FR-001**: System MUST verify target workspace exists via GET request to `/api/workspaces/{slug}` before scanning local vault
-- **FR-002**: System MUST complete workspace verification within 5 seconds
-- **FR-003**: System MUST fail with exit code 4 and clear error message if workspace does not exist
-- **FR-004**: System MUST check user has upload permissions to workspace (403 Forbidden should abort)
-- **FR-005**: System MUST display workspace metadata after successful verification (name, owner, node count)
+- **FR-001**: System MUST verify target space exists via GET request to `/api/spaces/{slug}` before scanning local vault
+- **FR-002**: System MUST complete space verification within 5 seconds
+- **FR-003**: System MUST fail with exit code 4 and clear error message if space does not exist
+- **FR-004**: System MUST check user has upload permissions to space (403 Forbidden should abort)
+- **FR-005**: System MUST display space metadata after successful verification (name, owner, node count)
 
 #### Remote Content Pull (P2)
 
 - **FR-006**: System MUST support optional `--sync` flag to enable bidirectional synchronization during init
-- **FR-007**: When `--sync` is enabled, system MUST query remote workspace for all existing nodes before upload
+- **FR-007**: When `--sync` is enabled, system MUST query remote space for all existing nodes before upload
 - **FR-008**: System MUST query backend version history API to retrieve common ancestor information for files that exist both locally and remotely
 - **FR-009**: System MUST detect if both local and remote versions have diverged from common ancestor by comparing current hashes against ancestor hash from version history
 - **FR-010**: System MUST treat diverged versions as conflicts requiring user resolution
@@ -185,21 +185,21 @@ As a user initializing my vault with conflicts detected, I want to interactively
 #### Backward Compatibility
 
 - **FR-036**: System MUST maintain existing `mujarrad init` behavior (one-way upload without sync) when `--sync` flag is omitted
-- **FR-037**: System MUST support all existing flags (`--workspace`, `--batch-size`) with same behavior
+- **FR-037**: System MUST support all existing flags (`--space`, `--batch-size`) with same behavior
 
 ### Non-Functional Requirements
 
-- **NFR-001**: Workspace validation MUST complete within 5 seconds on standard broadband connection (10 Mbps)
+- **NFR-001**: Space validation MUST complete within 5 seconds on standard broadband connection (10 Mbps)
 - **NFR-002**: Remote content pull MUST download at least 100 KB/second (approximately 100 markdown files/second)
 - **NFR-003**: Conflict resolution prompts MUST timeout after 120 seconds of user inactivity, skip the conflicted file, and continue sync with remaining files
-- **NFR-004**: System MUST handle workspaces with up to 10,000 remote nodes without memory issues (streaming download)
+- **NFR-004**: System MUST handle spaces with up to 10,000 remote nodes without memory issues (streaming download)
 - **NFR-005**: All file operations MUST be atomic (no partial writes) using temporary files and rename strategy
 
 ### Key Entities
 
-- **Workspace Metadata**: Represents remote workspace state including slug, name, owner, node count, and user permissions. Retrieved via GET `/api/workspaces/{slug}`
+- **Space Metadata**: Represents remote space state including slug, name, owner, node count, and user permissions. Retrieved via GET `/api/spaces/{slug}`
 
-- **Remote Node**: Represents a file/note that exists in the remote workspace, including UUID, title, content, file path, hash, and last modified timestamp
+- **Remote Node**: Represents a file/note that exists in the remote space, including UUID, title, content, file path, hash, and last modified timestamp
 
 - **Local File**: Represents a markdown/canvas file in the local Obsidian vault, including absolute path, relative path, content, hash, and modification timestamp
 
@@ -211,15 +211,15 @@ As a user initializing my vault with conflicts detected, I want to interactively
 
 ### Measurable Outcomes
 
-- **SC-001**: Users receive workspace validation feedback within 2 seconds for non-existent workspaces (before vault scanning begins)
+- **SC-001**: Users receive space validation feedback within 2 seconds for non-existent spaces (before vault scanning begins)
 
-- **SC-002**: Users initializing to existing workspaces with 500+ nodes can pull all remote content within 60 seconds
+- **SC-002**: Users initializing to existing spaces with 500+ nodes can pull all remote content within 60 seconds
 
 - **SC-003**: Users can detect conflicts between local and remote state with 100% accuracy (no false positives or false negatives)
 
 - **SC-004**: Users can resolve up to 100 conflicts interactively in under 10 minutes (average 6 seconds per conflict decision)
 
-- **SC-005**: 95% of init operations complete successfully when workspace exists and user has permissions
+- **SC-005**: 95% of init operations complete successfully when space exists and user has permissions
 
 - **SC-006**: Zero data loss occurs during initialization with sync enabled (all local and remote content preserved unless explicitly chosen otherwise)
 
@@ -228,8 +228,8 @@ As a user initializing my vault with conflicts detected, I want to interactively
 ## Assumptions
 
 - Users understand the difference between one-way upload (`mujarrad init`) and bidirectional sync (`mujarrad init --sync`)
-- The backend API provides GET `/api/workspaces/{slug}` endpoint for workspace verification (may need backend development)
-- The backend API provides GET `/api/workspaces/{slug}/nodes` endpoint for listing all nodes (may need backend development)
+- The backend API provides GET `/api/spaces/{slug}` endpoint for space verification (may need backend development)
+- The backend API provides GET `/api/spaces/{slug}/nodes` endpoint for listing all nodes (may need backend development)
 - Users have sufficient disk space to store pulled remote content (assuming average Obsidian vault size < 1 GB)
 - Git is optional; if not present, system falls back to hash-based comparison
 - Interactive conflict resolution is suitable for up to 100 conflicts; larger scenarios require batch strategies
@@ -237,8 +237,8 @@ As a user initializing my vault with conflicts detected, I want to interactively
 
 ## Dependencies
 
-- Backend API must support workspace metadata retrieval (GET `/api/workspaces/{slug}`)
-- Backend API must support listing all workspace nodes (GET `/api/workspaces/{slug}/nodes`) with pagination
+- Backend API must support space metadata retrieval (GET `/api/spaces/{slug}`)
+- Backend API must support listing all space nodes (GET `/api/spaces/{slug}/nodes`) with pagination
 - Backend API must support downloading individual node content by UUID (GET `/api/nodes/{uuid}/content`)
 - Backend API must support node version history retrieval (GET `/api/nodes/{uuid}/versions`) to provide common ancestor information for divergence detection
 - Backend API must track and store all node versions with timestamps and content hashes
@@ -251,4 +251,4 @@ As a user initializing my vault with conflicts detected, I want to interactively
 - Real-time synchronization during init (only snapshot comparison at init time)
 - Resolving conflicts based on timestamp "last-write-wins" without user input (always explicit user choice)
 - Syncing Obsidian configuration files (`.obsidian/` folder remains local-only)
-- Supporting workspaces with more than 10,000 nodes in initial release (will paginate and potentially timeout)
+- Supporting spaces with more than 10,000 nodes in initial release (will paginate and potentially timeout)

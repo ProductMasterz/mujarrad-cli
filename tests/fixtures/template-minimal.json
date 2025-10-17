@@ -1,7 +1,7 @@
 {
   "id": "template-uuid-minimal-001",
   "creatorId": "user-uuid-test",
-  "sourceWorkspaceId": "workspace-uuid-minimal-source",
+  "sourceSpaceId": "space-uuid-minimal-source",
   "name": "Minimal Template",
   "description": "Simple template with no context templates for testing edge cases",
   "tags": ["test"],

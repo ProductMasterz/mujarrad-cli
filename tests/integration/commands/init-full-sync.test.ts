@@ -4,7 +4,7 @@
  * Task: T048 - Integration test for complete sync flow
  *
  * Tests entire sync workflow:
- * 1. Workspace validation
+ * 1. Space validation
  * 2. Pull remote content
  * 3. Vault validation
  * 4. Comparison (three-way merge)
@@ -51,7 +51,7 @@ describe('Init Command - Complete Sync Flow (Integration)', () => {
     describe('Complete sync flow with realistic data', () => {
         it('should execute all phases in correct order (150 files scenario)', async () => {
             // This test verifies the complete workflow:
-            // Phase 1: Workspace validation (pre-flight check)
+            // Phase 1: Space validation (pre-flight check)
             // Phase 2: Pull remote content (if --sync enabled)
             // Phase 3: Vault validation
             // Phase 4: Compare local and remote state
@@ -108,7 +108,7 @@ describe('Init Command - Complete Sync Flow (Integration)', () => {
         it('should execute phases in exact order', async () => {
             // Verify phase execution order:
             // 1. Authentication check
-            // 2. Workspace validation (pre-flight)
+            // 2. Space validation (pre-flight)
             // 3. Remote content pull (if --sync)
             // 4. Vault structure validation
             // 5. Local and remote comparison
@@ -122,7 +122,7 @@ describe('Init Command - Complete Sync Flow (Integration)', () => {
             // Test backward compatibility:
             // Without --sync flag, should execute:
             // 1. Authentication check
-            // 2. Workspace validation
+            // 2. Space validation
             // 3. Vault validation
             // 4. Upload (no pull, no compare, no resolve)
 
@@ -131,9 +131,9 @@ describe('Init Command - Complete Sync Flow (Integration)', () => {
     });
 
     describe('Error handling between phases', () => {
-        it('should stop at workspace validation if workspace not found', async () => {
+        it('should stop at space validation if space not found', async () => {
             // Test early exit:
-            // 1. Workspace validation fails (404)
+            // 1. Space validation fails (404)
             // 2. Exit immediately with code 4
             // 3. No subsequent phases execute
             // 4. User sees clear error message
@@ -143,7 +143,7 @@ describe('Init Command - Complete Sync Flow (Integration)', () => {
 
         it('should stop at vault validation if vault invalid', async () => {
             // Test early exit:
-            // 1. Workspace validation succeeds
+            // 1. Space validation succeeds
             // 2. Vault validation fails (no .obsidian folder)
             // 3. Exit immediately with code 3
             // 4. No comparison or upload phases execute

@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**workspaceId** | **string** | Workspace to create template from | [default to undefined]
+**spaceId** | **string** | Space to create template from | [default to undefined]
 **name** | **string** |  | [default to undefined]
 **description** | **string** |  | [optional] [default to undefined]
 **tags** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 import { TemplateCreateRequest } from 'mujarrad-api-client';
 
 const instance: TemplateCreateRequest = {
-    workspaceId,
+    spaceId,
     name,
     description,
     tags,

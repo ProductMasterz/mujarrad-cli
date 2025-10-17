@@ -4,7 +4,7 @@
  * Tests template functionality:
  * - List available templates (public/private/all)
  * - Filter templates by tags
- * - Clone workspace from template
+ * - Clone space from template
  * - Placeholder substitution
  * - Progress tracking
  * - Error handling
@@ -78,7 +78,7 @@ describe('Template Command', () => {
     it('should register template parent command', () => {
       const cmd = program.commands.find(c => c.name() === 'template');
       expect(cmd).toBeDefined();
-      expect(cmd!.description()).toContain('Manage workspace templates');
+      expect(cmd!.description()).toContain('Manage space templates');
     });
 
     it('should register template list subcommand', () => {
@@ -98,7 +98,7 @@ describe('Template Command', () => {
       const templateCmd = program.commands.find(c => c.name() === 'template');
       const cloneCmd = templateCmd!.commands.find(c => c.name() === 'clone');
       expect(cloneCmd).toBeDefined();
-      expect(cloneCmd!.description()).toContain('Clone workspace from template');
+      expect(cloneCmd!.description()).toContain('Clone space from template');
     });
   });
 
@@ -299,12 +299,12 @@ describe('Template Command', () => {
         expect(true).toBe(true);
       });
 
-      it('should pass workspace name to workflow', () => {
+      it('should pass space name to workflow', () => {
         // options.name should be passed
         expect(true).toBe(true);
       });
 
-      it('should pass workspace description to workflow', () => {
+      it('should pass space description to workflow', () => {
         // options.description should be passed if provided
         expect(true).toBe(true);
       });
@@ -322,7 +322,7 @@ describe('Template Command', () => {
 
       it('should display clone summary on completion', () => {
         // Should show:
-        // - Workspace ID
+        // - Space ID
         // - Nodes cloned
         // - Vault location
         // - Duration
@@ -364,12 +364,12 @@ describe('Template Command', () => {
 
     describe('Logging', () => {
       it('should log clone initiation', () => {
-        // Log: template ID, workspace name
+        // Log: template ID, space name
         expect(true).toBe(true);
       });
 
       it('should log clone completion', () => {
-        // Log: workspace ID, statistics, duration
+        // Log: space ID, statistics, duration
         expect(true).toBe(true);
       });
 
@@ -426,7 +426,7 @@ describe('Template Command', () => {
       expect(true).toBe(true);
     });
 
-    it('should handle special characters in workspace name', () => {
+    it('should handle special characters in space name', () => {
       // Should properly encode/handle special chars
       expect(true).toBe(true);
     });

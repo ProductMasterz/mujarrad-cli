@@ -13,12 +13,12 @@ import { Logger } from '../utils/Logger.js';
  * Setup sync command with Commander.js
  *
  * Provides bidirectional sync command:
- * - sync: Synchronize local changes with remote workspace
+ * - sync: Synchronize local changes with remote space
  *
  * Usage:
  * ```bash
  * mujarrad sync
- * mujarrad sync --workspace my-workspace
+ * mujarrad sync --space my-space
  * ```
  *
  * Features:
@@ -35,22 +35,22 @@ export function syncCommand(program: Command): void {
 
   program
     .command('sync')
-    .description('Synchronize local vault with Mujarrad workspace')
-    .option('-w, --workspace <slug>', 'Workspace slug to sync')
+    .description('Synchronize local vault with Mujarrad space')
+    .option('-w, --space <slug>', 'Space slug to sync')
     .addHelpText('after', `
 Examples:
   $ mujarrad sync
-    Sync current directory with default workspace
+    Sync current directory with default space
 
-  $ mujarrad sync --workspace my-workspace
-    Sync current directory with specific workspace
+  $ mujarrad sync --space my-space
+    Sync current directory with specific space
 
 Notes:
   • Must be run from a Git-initialized vault directory
   • Detects changes using git diff
   • Pushes local changes to Mujarrad
   • Resolves conflicts interactively
-  • Default workspace can be set in config
+  • Default space can be set in config
     `)
     .action(async (options: any) => {
       const spinner = ora();
@@ -68,12 +68,12 @@ Notes:
         }
         spinner.succeed('Authenticated');
 
-        // Get workspace slug
-        const workspaceSlug = options.workspace || await getDefaultWorkspace();
-        if (!workspaceSlug) {
+        // Get space slug
+        const spaceSlug = options.space || await getDefaultSpace();
+        if (!spaceSlug) {
           spinner.fail();
-          console.error(chalk.red('\n✗ No workspace specified'));
-          console.log(chalk.gray('Use --workspace flag or set default workspace\n'));
+          console.error(chalk.red('\n✗ No space specified'));
+          console.log(chalk.gray('Use --space flag or set default space\n'));
           process.exit(1);
         }
 
@@ -90,12 +90,12 @@ Notes:
         // Get current directory as vault path
         const vaultPath = process.cwd();
 
-        console.log(chalk.blue(`\nSyncing workspace: ${workspaceSlug}`));
+        console.log(chalk.blue(`\nSyncing space: ${spaceSlug}`));
         console.log(chalk.gray(`Vault path: ${vaultPath}\n`));
 
         // Detect local changes
         spinner.start('Detecting local changes...');
-        const changes = await syncService.detectChanges(vaultPath, workspaceSlug);
+        const changes = await syncService.detectChanges(vaultPath, spaceSlug);
         spinner.succeed(`Found ${changes.length} local change(s)`);
 
         if (changes.length === 0) {
@@ -105,7 +105,7 @@ Notes:
 
         // Push changes to backend
         spinner.start('Pushing changes to Mujarrad...');
-        const pushResult = await syncService.pushChanges(workspaceSlug, changes);
+        const pushResult = await syncService.pushChanges(spaceSlug, changes);
         spinner.succeed(`Created ${pushResult.versionsCreated} version(s)`);
 
         // Handle conflicts if any
@@ -123,12 +123,12 @@ Notes:
 
         // Complete sync
         const now = new Date().toISOString();
-        await syncService.completeSync(workspaceSlug, now);
+        await syncService.completeSync(spaceSlug, now);
 
         console.log(chalk.green(`\n✓ Sync complete!\n`));
 
         logger.info('Sync completed', {
-          workspaceSlug,
+          spaceSlug,
           changesCount: changes.length,
           versionsCreated: pushResult.versionsCreated,
           conflictsResolved: pushResult.conflicts?.length || 0
@@ -148,7 +148,7 @@ Notes:
           if (status === 401) {
             console.log(chalk.gray('\nAuthentication expired. Run "mujarrad auth login" to re-authenticate'));
           } else if (status === 404) {
-            console.log(chalk.gray(`\nWorkspace "${options.workspace}" not found`));
+            console.log(chalk.gray(`\nSpace "${options.space}" not found`));
           } else if (status >= 500) {
             console.log(chalk.gray('\nServer error. Please try again later.'));
           }
@@ -160,10 +160,10 @@ Notes:
     });
 }
 
-async function getDefaultWorkspace(): Promise<string | null> {
+async function getDefaultSpace(): Promise<string | null> {
   try {
     const config = await new ConfigManager().load();
-    return config.defaultWorkspace || null;
+    return config.defaultSpace || null;
   } catch {
     return null;
   }

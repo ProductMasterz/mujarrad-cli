@@ -54,29 +54,29 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**getCurrentUser**](docs/AuthenticationApi.md#getcurrentuser) | **GET** /api/auth/me | Get current user
 *AuthenticationApi* | [**loginUser**](docs/AuthenticationApi.md#loginuser) | **POST** /api/auth/login | User login
 *AuthenticationApi* | [**registerUser**](docs/AuthenticationApi.md#registeruser) | **POST** /api/auth/register | Register new user
-*CloneApi* | [**downloadExport**](docs/CloneApi.md#downloadexport) | **GET** /api/workspaces/{workspaceId}/export/download | Download exported files
-*CloneApi* | [**exportWorkspace**](docs/CloneApi.md#exportworkspace) | **POST** /api/workspaces/{workspaceId}/export | Export workspace to Obsidian format
-*CloneApi* | [**getExportStatus**](docs/CloneApi.md#getexportstatus) | **GET** /api/workspaces/{workspaceId}/export/status | Check export progress
-*SharingApi* | [**shareWorkspace**](docs/SharingApi.md#shareworkspace) | **POST** /api/workspaces/{workspaceId}/share | Share workspace (Future)
-*SyncApi* | [**applySyncChanges**](docs/SyncApi.md#applysyncchanges) | **POST** /api/workspaces/{workspaceId}/sync/apply | Apply sync changes
-*SyncApi* | [**detectSyncChanges**](docs/SyncApi.md#detectsyncchanges) | **POST** /api/workspaces/{workspaceId}/sync/detect | Detect sync changes
-*TemplatesApi* | [**createTemplate**](docs/TemplatesApi.md#createtemplate) | **POST** /api/templates | Create template from workspace
+*CloneApi* | [**downloadExport**](docs/CloneApi.md#downloadexport) | **GET** /api/spaces/{spaceId}/export/download | Download exported files
+*CloneApi* | [**exportSpace**](docs/CloneApi.md#exportspace) | **POST** /api/spaces/{spaceId}/export | Export space to Obsidian format
+*CloneApi* | [**getExportStatus**](docs/CloneApi.md#getexportstatus) | **GET** /api/spaces/{spaceId}/export/status | Check export progress
+*SharingApi* | [**shareSpace**](docs/SharingApi.md#sharespace) | **POST** /api/spaces/{spaceId}/share | Share space (Future)
+*SyncApi* | [**applySyncChanges**](docs/SyncApi.md#applysyncchanges) | **POST** /api/spaces/{spaceId}/sync/apply | Apply sync changes
+*SyncApi* | [**detectSyncChanges**](docs/SyncApi.md#detectsyncchanges) | **POST** /api/spaces/{spaceId}/sync/detect | Detect sync changes
+*TemplatesApi* | [**createTemplate**](docs/TemplatesApi.md#createtemplate) | **POST** /api/templates | Create template from space
 *TemplatesApi* | [**deleteTemplate**](docs/TemplatesApi.md#deletetemplate) | **DELETE** /api/templates/{templateId} | Delete template
 *TemplatesApi* | [**getTemplate**](docs/TemplatesApi.md#gettemplate) | **GET** /api/templates/{templateId} | Get template details
-*TemplatesApi* | [**instantiateTemplate**](docs/TemplatesApi.md#instantiatetemplate) | **POST** /api/workspaces/{workspaceId}/instantiate | Instantiate workspace from template
-*TemplatesApi* | [**listTemplates**](docs/TemplatesApi.md#listtemplates) | **GET** /api/templates | List workspace templates
-*UploadApi* | [**getUploadLog**](docs/UploadApi.md#getuploadlog) | **GET** /api/workspaces/{workspaceId}/upload/log | Download upload log
-*UploadApi* | [**getUploadStatus**](docs/UploadApi.md#getuploadstatus) | **GET** /api/workspaces/{workspaceId}/upload/status | Check upload progress
-*UploadApi* | [**uploadBatch**](docs/UploadApi.md#uploadbatch) | **POST** /api/workspaces/{workspaceId}/upload/batch | Batch upload files to workspace
+*TemplatesApi* | [**instantiateTemplate**](docs/TemplatesApi.md#instantiatetemplate) | **POST** /api/spaces/{spaceId}/instantiate | Instantiate space from template
+*TemplatesApi* | [**listTemplates**](docs/TemplatesApi.md#listtemplates) | **GET** /api/templates | List space templates
+*UploadApi* | [**getUploadLog**](docs/UploadApi.md#getuploadlog) | **GET** /api/spaces/{spaceId}/upload/log | Download upload log
+*UploadApi* | [**getUploadStatus**](docs/UploadApi.md#getuploadstatus) | **GET** /api/spaces/{spaceId}/upload/status | Check upload progress
+*UploadApi* | [**uploadBatch**](docs/UploadApi.md#uploadbatch) | **POST** /api/spaces/{spaceId}/upload/batch | Batch upload files to space
 *VersionHistoryApi* | [**getNodeVersion**](docs/VersionHistoryApi.md#getnodeversion) | **GET** /api/nodes/{nodeId}/versions/{versionId} | Get specific version
 *VersionHistoryApi* | [**listNodeVersions**](docs/VersionHistoryApi.md#listnodeversions) | **GET** /api/nodes/{nodeId}/versions | List node version history
 *VersionHistoryApi* | [**rollbackNode**](docs/VersionHistoryApi.md#rollbacknode) | **POST** /api/nodes/{nodeId}/rollback | Rollback to previous version
-*WorkspacesApi* | [**createWorkspace**](docs/WorkspacesApi.md#createworkspace) | **POST** /api/workspaces | Create new workspace
-*WorkspacesApi* | [**deleteWorkspace**](docs/WorkspacesApi.md#deleteworkspace) | **DELETE** /api/workspaces/{workspaceId} | Delete workspace
-*WorkspacesApi* | [**getWorkspace**](docs/WorkspacesApi.md#getworkspace) | **GET** /api/workspaces/{workspaceId} | Get workspace by ID
-*WorkspacesApi* | [**instantiateTemplate**](docs/WorkspacesApi.md#instantiatetemplate) | **POST** /api/workspaces/{workspaceId}/instantiate | Instantiate workspace from template
-*WorkspacesApi* | [**listWorkspaces**](docs/WorkspacesApi.md#listworkspaces) | **GET** /api/workspaces | List all workspaces
-*WorkspacesApi* | [**updateWorkspace**](docs/WorkspacesApi.md#updateworkspace) | **PATCH** /api/workspaces/{workspaceId} | Update workspace
+*SpacesApi* | [**createSpace**](docs/SpacesApi.md#createspace) | **POST** /api/spaces | Create new space
+*SpacesApi* | [**deleteSpace**](docs/SpacesApi.md#deletespace) | **DELETE** /api/spaces/{spaceId} | Delete space
+*SpacesApi* | [**getSpace**](docs/SpacesApi.md#getspace) | **GET** /api/spaces/{spaceId} | Get space by ID
+*SpacesApi* | [**instantiateTemplate**](docs/SpacesApi.md#instantiatetemplate) | **POST** /api/spaces/{spaceId}/instantiate | Instantiate space from template
+*SpacesApi* | [**listSpaces**](docs/SpacesApi.md#listspaces) | **GET** /api/spaces | List all spaces
+*SpacesApi* | [**updateSpace**](docs/SpacesApi.md#updatespace) | **PATCH** /api/spaces/{spaceId} | Update space
 
 
 ### Documentation For Models
@@ -85,15 +85,15 @@ Class | Method | HTTP request | Description
  - [ApplySyncChangesRequest](docs/ApplySyncChangesRequest.md)
  - [ApplySyncChangesRequestChangesInner](docs/ApplySyncChangesRequestChangesInner.md)
  - [CreateTemplate201Response](docs/CreateTemplate201Response.md)
- - [CreateWorkspace201Response](docs/CreateWorkspace201Response.md)
+ - [CreateSpace201Response](docs/CreateSpace201Response.md)
  - [DetectSyncChanges200Response](docs/DetectSyncChanges200Response.md)
  - [DetectSyncChangesRequest](docs/DetectSyncChangesRequest.md)
  - [DetectSyncChangesRequestLocalFilesInner](docs/DetectSyncChangesRequestLocalFilesInner.md)
  - [ErrorResponse](docs/ErrorResponse.md)
  - [ErrorResponseError](docs/ErrorResponseError.md)
- - [ExportWorkspace202Response](docs/ExportWorkspace202Response.md)
- - [ExportWorkspace202ResponseAllOfData](docs/ExportWorkspace202ResponseAllOfData.md)
- - [ExportWorkspaceRequest](docs/ExportWorkspaceRequest.md)
+ - [ExportSpace202Response](docs/ExportSpace202Response.md)
+ - [ExportSpace202ResponseAllOfData](docs/ExportSpace202ResponseAllOfData.md)
+ - [ExportSpaceRequest](docs/ExportSpaceRequest.md)
  - [GetExportStatus200Response](docs/GetExportStatus200Response.md)
  - [GetExportStatus200ResponseAllOfData](docs/GetExportStatus200ResponseAllOfData.md)
  - [GetNodeVersion200Response](docs/GetNodeVersion200Response.md)
@@ -103,8 +103,8 @@ Class | Method | HTTP request | Description
  - [ListNodeVersions200ResponseAllOfData](docs/ListNodeVersions200ResponseAllOfData.md)
  - [ListTemplates200Response](docs/ListTemplates200Response.md)
  - [ListTemplates200ResponseAllOfData](docs/ListTemplates200ResponseAllOfData.md)
- - [ListWorkspaces200Response](docs/ListWorkspaces200Response.md)
- - [ListWorkspaces200ResponseAllOfData](docs/ListWorkspaces200ResponseAllOfData.md)
+ - [ListSpaces200Response](docs/ListSpaces200Response.md)
+ - [ListSpaces200ResponseAllOfData](docs/ListSpaces200ResponseAllOfData.md)
  - [LoginUserRequest](docs/LoginUserRequest.md)
  - [NodeVersionResponse](docs/NodeVersionResponse.md)
  - [NodeVersionResponseGitMetadata](docs/NodeVersionResponseGitMetadata.md)
@@ -112,7 +112,7 @@ Class | Method | HTTP request | Description
  - [RollbackNode200Response](docs/RollbackNode200Response.md)
  - [RollbackNode200ResponseAllOfData](docs/RollbackNode200ResponseAllOfData.md)
  - [RollbackNodeRequest](docs/RollbackNodeRequest.md)
- - [ShareWorkspaceRequest](docs/ShareWorkspaceRequest.md)
+ - [ShareSpaceRequest](docs/ShareSpaceRequest.md)
  - [SuccessResponse](docs/SuccessResponse.md)
  - [SyncChangesResponse](docs/SyncChangesResponse.md)
  - [SyncChangesResponseConflictsInner](docs/SyncChangesResponseConflictsInner.md)
@@ -124,10 +124,10 @@ Class | Method | HTTP request | Description
  - [TemplateInstantiateRequest](docs/TemplateInstantiateRequest.md)
  - [UploadBatch202Response](docs/UploadBatch202Response.md)
  - [UploadSessionResponse](docs/UploadSessionResponse.md)
- - [WorkspaceCreateRequest](docs/WorkspaceCreateRequest.md)
- - [WorkspaceResponse](docs/WorkspaceResponse.md)
- - [WorkspaceTemplateResponse](docs/WorkspaceTemplateResponse.md)
- - [WorkspaceUpdateRequest](docs/WorkspaceUpdateRequest.md)
+ - [SpaceCreateRequest](docs/SpaceCreateRequest.md)
+ - [SpaceResponse](docs/SpaceResponse.md)
+ - [SpaceTemplateResponse](docs/SpaceTemplateResponse.md)
+ - [SpaceUpdateRequest](docs/SpaceUpdateRequest.md)
 
 
 <a id="documentation-for-authorization"></a>

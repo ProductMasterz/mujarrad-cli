@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import { TemplateService } from '../services/TemplateService.js';
 import { TemplateCloneWorkflow } from '../workflows/TemplateCloneWorkflow.js';
-import { TemplatesApi, WorkspacesApi, CloneApi } from '../api/generated/api.js';
+import { TemplatesApi, SpacesApi, CloneApi } from '../api/generated/api.js';
 import { CloneService } from '../services/CloneService.js';
 import { Configuration } from '../api/generated/configuration.js';
 import { ConfigManager } from '../config/ConfigManager.js';
@@ -16,8 +16,8 @@ import { Logger } from '../utils/Logger.js';
  * Setup template command with Commander.js
  *
  * Provides template commands:
- * - template list: List available workspace templates
- * - template clone: Clone workspace from template
+ * - template list: List available space templates
+ * - template clone: Clone space from template
  *
  * Usage:
  * ```bash
@@ -29,7 +29,7 @@ import { Logger } from '../utils/Logger.js';
  *
  * Features:
  * - List public and private templates
- * - Clone workspace from template with placeholders
+ * - Clone space from template with placeholders
  * - Progress tracking during clone
  * - Error handling with actionable messages
  *
@@ -77,17 +77,17 @@ export function templateCommand(
       accessToken: token || undefined
     });
     const templatesApi = new TemplatesApi(apiConfig);
-    const workspacesApi = new WorkspacesApi(apiConfig);
+    const spacesApi = new SpacesApi(apiConfig);
     const cloneApi = new CloneApi(apiConfig);
     const cloneService = new CloneService(cloneApi);
 
-    return new TemplateCloneWorkflow(templatesApi, workspacesApi, cloneService);
+    return new TemplateCloneWorkflow(templatesApi, spacesApi, cloneService);
   };
 
   // Create template parent command
   const templateCmd = program
     .command('template')
-    .description('Manage workspace templates')
+    .description('Manage space templates')
     .addHelpText('after', `
 Examples:
   $ mujarrad template list
@@ -97,12 +97,12 @@ Examples:
     List all available templates (public and private)
 
   $ mujarrad template clone ./vault -t bmc-template-uuid -n "My Startup"
-    Clone workspace from Business Model Canvas template
+    Clone space from Business Model Canvas template
 
 Notes:
   • Public templates are available to all users
   • Private templates are only visible to their creators
-  • Template cloning creates a new workspace with pre-filled content
+  • Template cloning creates a new space with pre-filled content
   • Use template list to find template IDs
     `);
 
@@ -110,7 +110,7 @@ Notes:
   templateCmd
     .command('list')
     .alias('ls')
-    .description('List available workspace templates')
+    .description('List available space templates')
     .option('--scope <scope>', 'Filter by scope (public, private, all)', 'public')
     .option('--tags <tags>', 'Filter by tags (comma-separated)')
     .action(async (options: any) => {
@@ -151,7 +151,7 @@ Notes:
 
         console.table(formattedTemplates);
 
-        console.log(chalk.gray(`\nUse "mujarrad template clone" to create a workspace from a template\n`));
+        console.log(chalk.gray(`\nUse "mujarrad template clone" to create a space from a template\n`));
 
         logger.info('Listed templates', {
           count: templates.length,
@@ -192,11 +192,11 @@ Notes:
   // Template clone command
   templateCmd
     .command('clone')
-    .description('Clone workspace from template')
+    .description('Clone space from template')
     .argument('<target-path>', 'Target vault directory path')
     .requiredOption('-t, --template <id>', 'Template ID to clone from')
-    .requiredOption('-n, --name <name>', 'Name for the new workspace')
-    .option('-d, --description <description>', 'Description for the new workspace')
+    .requiredOption('-n, --name <name>', 'Name for the new space')
+    .option('-d, --description <description>', 'Description for the new space')
     .action(async (targetPath: string, options: any) => {
       const spinner = ora();
 
@@ -238,19 +238,19 @@ Notes:
 
         // Start clone
         console.log(chalk.blue(`\nCloning from template: ${options.template}`));
-        console.log(chalk.gray(`Workspace name: ${options.name}`));
+        console.log(chalk.gray(`Space name: ${options.name}`));
         if (options.description) {
           console.log(chalk.gray(`Description: ${options.description}`));
         }
         console.log();
 
-        spinner.start('Creating workspace from template...');
+        spinner.start('Creating space from template...');
 
         const result = await workflow.execute(
           options.template,
           {
-            workspaceName: options.name,
-            workspaceDescription: options.description,
+            spaceName: options.name,
+            spaceDescription: options.description,
             placeholders: {} // TODO: Add interactive placeholder prompt in future
           },
           absoluteTargetPath
@@ -266,15 +266,15 @@ Notes:
 
         const duration = Math.round(result.duration / 1000);
         console.log(chalk.green(`✓ Template clone complete! (${duration}s)`));
-        console.log(chalk.gray(`\nWorkspace ID: ${chalk.white(result.workspaceId)}`));
+        console.log(chalk.gray(`\nSpace ID: ${chalk.white(result.spaceId)}`));
         console.log(chalk.gray(`Nodes cloned: ${chalk.white(result.totalNodes.toString())}`));
         console.log(chalk.gray(`Vault location: ${absoluteTargetPath}`));
         console.log(chalk.gray('\nYou can now open this folder in Obsidian\n'));
 
         logger.info('Template clone completed', {
           templateId: options.template,
-          workspaceId: result.workspaceId,
-          workspaceSlug: result.workspaceSlug,
+          spaceId: result.spaceId,
+          spaceSlug: result.spaceSlug,
           targetPath: absoluteTargetPath,
           nodesCloned: result.totalNodes,
           duration
@@ -299,7 +299,7 @@ Notes:
             console.log(chalk.red('\n✗ Access denied'));
             console.log(chalk.gray('You may not have permission to use this template.'));
             console.log(chalk.yellow('\nTip: Try logging in with "mujarrad auth login" if you haven\'t already.'));
-            console.log(chalk.gray('If you\'re already logged in, contact the workspace owner for access.\n'));
+            console.log(chalk.gray('If you\'re already logged in, contact the space owner for access.\n'));
           } else if (status >= 500) {
             console.log(chalk.red('\n✗ Server error after multiple retries'));
             console.log(chalk.gray('The server is experiencing issues. Please try again later.'));

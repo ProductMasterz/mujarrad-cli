@@ -11,8 +11,8 @@
  * 5. Prompt user for confirmation before destructive operations
  *
  * Independent Test (from tasks.md):
- * Create workspace with "A.md" (content: "remote version"), create local vault
- * with "A.md" (content: "local version"), run `mujarrad init . --workspace test --sync`,
+ * Create space with "A.md" (content: "remote version"), create local vault
+ * with "A.md" (content: "local version"), run `mujarrad init . --space test --sync`,
  * verify system displays "1 conflict detected: A.md (modified locally and remotely)".
  */
 
@@ -24,7 +24,7 @@ import { Logger } from '../../../src/utils/Logger.js';
 import { VersionComparator } from '../../../src/services/VersionComparator.js';
 import { RemoteNodeFetcher } from '../../../src/services/RemoteNodeFetcher.js';
 import { VaultScanner } from '../../../src/filesystem/VaultScanner.js';
-import { SyncWorkspacesApi } from '../../../src/api/generated/index.js';
+import { SyncSpacesApi } from '../../../src/api/generated/index.js';
 import { Configuration } from '../../../src/api/generated/configuration.js';
 import type { RemoteNode, LocalFile } from '../../../src/types/sync.js';
 
@@ -52,10 +52,10 @@ describe('Init Command - Comparison Phase (Integration)', () => {
             basePath: baseURL,
             accessToken: mockToken
         });
-        const workspaceApi = new SyncWorkspacesApi(apiConfig);
+        const spaceApi = new SyncSpacesApi(apiConfig);
 
         comparator = new VersionComparator(logger);
-        fetcher = new RemoteNodeFetcher(workspaceApi, logger);
+        fetcher = new RemoteNodeFetcher(spaceApi, logger);
         scanner = new VaultScanner(logger);
 
         // Mock HTTP requests
@@ -76,7 +76,7 @@ describe('Init Command - Comparison Phase (Integration)', () => {
     describe('Independent Test - Conflict Detection', () => {
         /**
          * Independent Test from tasks.md:
-         * Create workspace with "A.md" (content: "remote version"),
+         * Create space with "A.md" (content: "remote version"),
          * create local vault with "A.md" (content: "local version"),
          * verify system displays "1 conflict detected: A.md"
          */
@@ -101,7 +101,7 @@ describe('Init Command - Comparison Phase (Integration)', () => {
             ];
 
             nock(baseURL)
-                .get('/api/workspaces/test/nodes')
+                .get('/api/spaces/test/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, {
                     data: remoteNodes,
@@ -242,7 +242,7 @@ describe('Init Command - Comparison Phase (Integration)', () => {
             ];
 
             nock(baseURL)
-                .get('/api/workspaces/test/nodes')
+                .get('/api/spaces/test/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, {
                     data: remoteNodes,
@@ -295,9 +295,9 @@ describe('Init Command - Comparison Phase (Integration)', () => {
             fs.writeFileSync(path.join(tempVaultDir, 'local-only-2.md'), 'local content 2', 'utf8');
             fs.writeFileSync(path.join(tempVaultDir, 'local-only-3.md'), 'local content 3', 'utf8');
 
-            // Mock empty remote workspace
+            // Mock empty remote space
             nock(baseURL)
-                .get('/api/workspaces/test/nodes')
+                .get('/api/spaces/test/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, {
                     data: [],
@@ -369,7 +369,7 @@ describe('Init Command - Comparison Phase (Integration)', () => {
             ];
 
             nock(baseURL)
-                .get('/api/workspaces/test/nodes')
+                .get('/api/spaces/test/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, {
                     data: remoteNodes,
@@ -444,7 +444,7 @@ describe('Init Command - Comparison Phase (Integration)', () => {
             ];
 
             nock(baseURL)
-                .get('/api/workspaces/test/nodes')
+                .get('/api/spaces/test/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, {
                     data: remoteNodes,
@@ -517,7 +517,7 @@ describe('Init Command - Comparison Phase (Integration)', () => {
 
             // Mock paginated response (2 pages of 500 each)
             nock(baseURL)
-                .get('/api/workspaces/test/nodes')
+                .get('/api/spaces/test/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .query({ limit: 100 })
                 .reply(200, {
@@ -526,7 +526,7 @@ describe('Init Command - Comparison Phase (Integration)', () => {
                 });
 
             nock(baseURL)
-                .get('/api/workspaces/test/nodes')
+                .get('/api/spaces/test/nodes')
                 .query({ cursor: 'cursor-1', limit: 100 })
                 .reply(200, {
                     data: remoteNodes.slice(100),

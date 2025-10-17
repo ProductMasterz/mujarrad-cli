@@ -1,0 +1,374 @@
+openapi: 3.0.3
+info:
+  title: Mujarrad Space Creation API
+  description: |
+    API contract for automatic space creation feature in Mujarrad CLI.
+
+    **Purpose**: This contract defines the POST /api/spaces endpoint required for
+    the "Init Command Auto-Create Space" feature (spec 010).
+
+    **Backend Implementation Note**: This is a REFERENCE contract for the CLI to
+    validate against. Actual backend implementation must follow the Mujarrad Backend
+    Constitution Principle I (API-First Design).
+
+    **CLI Usage**: The mujarrad CLI will call this endpoint when `mujarrad init`
+    is run with a non-existent space slug (unless --no-auto-create is provided).
+  version: 1.0.0
+  contact:
+    name: Mujarrad Team
+    url: https://www.mujarrad.com
+
+servers:
+  - url: https://api.mujarrad.com
+    description: Production API
+  - url: https://staging-api.mujarrad.com
+    description: Staging API
+  - url: http://localhost:8080
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/spaces:
+    post:
+      summary: Create a new space
+      description: |
+        Creates a new space for the authenticated user.
+
+        **Auto-Creation Flow**:
+        1. CLI validates slug client-side (regex, length, reserved check)
+        2. CLI checks space existence via GET /api/spaces/{slug}
+        3. If 404 returned, CLI calls this endpoint to create space
+        4. CLI re-validates existence after creation
+
+        **Slug Validation**:
+        - Pattern: ^[a-z0-9-]+$
+        - Length: 1-50 characters
+        - Reserved slugs: admin, api, auth, system, public, private, space, space, user, settings
+
+        **Default Values**:
+        - displayName: defaults to slug if not provided
+        - description: defaults to empty string if not provided
+        - isPublic: defaults to false if not provided
+      operationId: createSpace
+      tags:
+        - Spaces
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpaceCreationRequest'
+            examples:
+              basicSpace:
+                summary: Basic space (minimal fields)
+                value:
+                  slug: my-knowledge-base
+                  displayName: my-knowledge-base
+                  description: ""
+                  isPublic: false
+              fullMetadata:
+                summary: Space with full metadata
+                value:
+                  slug: project-notes
+                  displayName: "Project Notes"
+                  description: "Notes and documentation for active projects"
+                  isPublic: false
+      responses:
+        '201':
+          description: Space created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceCreationSuccessResponse'
+              examples:
+                created:
+                  summary: Successful creation
+                  value:
+                    success: true
+                    data:
+                      spaceId: 550e8400-e29b-41d4-a716-446655440000
+                      slug: my-knowledge-base
+                      displayName: my-knowledge-base
+                      description: ""
+                      createdAt: "2025-10-17T10:30:45.000Z"
+                      owner:
+                        userId: 660e8400-e29b-41d4-a716-446655440111
+                        username: john.doe
+                    timestamp: "2025-10-17T10:30:45.123Z"
+        '400':
+          description: Invalid request (slug validation failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidSlug:
+                  summary: Invalid slug format
+                  value:
+                    success: false
+                    error:
+                      code: INVALID_SLUG_FORMAT
+                      message: "Slug must contain only lowercase letters, numbers, and hyphens"
+                      details:
+                        slug: "My Space!"
+                        pattern: "^[a-z0-9-]+$"
+                      timestamp: "2025-10-17T10:30:45.123Z"
+                slugTooLong:
+                  summary: Slug exceeds max length
+                  value:
+                    success: false
+                    error:
+                      code: SLUG_TOO_LONG
+                      message: "Slug must be 50 characters or less"
+                      details:
+                        slug: "this-is-a-very-long-slug-that-exceeds-the-fifty-character-maximum-limit-for-space-slugs"
+                        maxLength: 50
+                      timestamp: "2025-10-17T10:30:45.123Z"
+                reservedSlug:
+                  summary: Slug is reserved
+                  value:
+                    success: false
+                    error:
+                      code: RESERVED_SLUG
+                      message: "Slug 'admin' is reserved by the system"
+                      details:
+                        slug: admin
+                        reservedSlugs: ["admin", "api", "auth", "system"]
+                      timestamp: "2025-10-17T10:30:45.123Z"
+        '401':
+          description: Unauthorized (authentication required)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Missing or invalid token
+                  value:
+                    success: false
+                    error:
+                      code: UNAUTHORIZED
+                      message: "Authentication required. Please login"
+                      timestamp: "2025-10-17T10:30:45.123Z"
+        '403':
+          description: Forbidden (account limit reached or permission denied)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                accountLimit:
+                  summary: Account space limit reached
+                  value:
+                    success: false
+                    error:
+                      code: ACCOUNT_LIMIT_REACHED
+                      message: "Account space limit reached"
+                      details:
+                        currentSpaces: 5
+                        maxSpaces: 5
+                        upgradeUrl: "https://www.mujarrad.com/pricing"
+                      timestamp: "2025-10-17T10:30:45.123Z"
+        '409':
+          description: Conflict (slug already taken)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                slugTaken:
+                  summary: Slug already exists
+                  value:
+                    success: false
+                    error:
+                      code: SLUG_ALREADY_TAKEN
+                      message: "Space slug 'my-knowledge-base' is already taken"
+                      details:
+                        slug: my-knowledge-base
+                      timestamp: "2025-10-17T10:30:45.123Z"
+        '500':
+          description: Internal server error (retry recommended)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Transient server error
+                  value:
+                    success: false
+                    error:
+                      code: INTERNAL_SERVER_ERROR
+                      message: "An internal error occurred. Please try again"
+                      timestamp: "2025-10-17T10:30:45.123Z"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained via mujarrad auth login.
+        CLI retrieves token from system keychain and includes in Authorization header.
+
+  schemas:
+    SpaceCreationRequest:
+      type: object
+      required:
+        - slug
+      properties:
+        slug:
+          type: string
+          pattern: ^[a-z0-9-]+$
+          minLength: 1
+          maxLength: 50
+          description: |
+            URL-safe identifier for the space.
+            Must be lowercase alphanumeric with hyphens only.
+            Cannot be reserved system slug.
+          example: my-knowledge-base
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: |
+            Human-readable name shown in UI.
+            Defaults to slug if not provided.
+          example: My Knowledge Base
+        description:
+          type: string
+          maxLength: 500
+          description: |
+            Brief description of space purpose.
+            Defaults to empty string if not provided.
+          example: Personal notes and research
+        isPublic:
+          type: boolean
+          description: |
+            Visibility setting for the space.
+            Defaults to false (private) if not provided.
+          default: false
+
+    SpaceCreationSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          description: Indicates successful operation
+        data:
+          $ref: '#/components/schemas/SpaceData'
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp of response
+          example: "2025-10-17T10:30:45.123Z"
+
+    SpaceData:
+      type: object
+      required:
+        - spaceId
+        - slug
+        - displayName
+        - description
+        - createdAt
+        - owner
+      properties:
+        spaceId:
+          type: string
+          format: uuid
+          description: Unique identifier for the created space
+          example: 550e8400-e29b-41d4-a716-446655440000
+        slug:
+          type: string
+          pattern: ^[a-z0-9-]+$
+          description: URL-safe identifier (matches request slug)
+          example: my-knowledge-base
+        displayName:
+          type: string
+          description: Human-readable name
+          example: My Knowledge Base
+        description:
+          type: string
+          description: Space description (may be empty)
+          example: Personal notes and research
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp when space was created
+          example: "2025-10-17T10:30:45.000Z"
+        owner:
+          $ref: '#/components/schemas/OwnerInfo'
+
+    OwnerInfo:
+      type: object
+      required:
+        - userId
+        - username
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: Owner's user ID
+          example: 660e8400-e29b-41d4-a716-446655440111
+        username:
+          type: string
+          description: Owner's username
+          example: john.doe
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          description: Indicates failed operation
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+
+    ErrorDetail:
+      type: object
+      required:
+        - code
+        - message
+        - timestamp
+      properties:
+        code:
+          type: string
+          enum:
+            - INVALID_SLUG_FORMAT
+            - SLUG_TOO_LONG
+            - RESERVED_SLUG
+            - UNAUTHORIZED
+            - ACCOUNT_LIMIT_REACHED
+            - SLUG_ALREADY_TAKEN
+            - INTERNAL_SERVER_ERROR
+          description: Machine-readable error code
+          example: SLUG_ALREADY_TAKEN
+        message:
+          type: string
+          description: Human-readable error message
+          example: Space slug 'my-knowledge-base' is already taken
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error context (optional)
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp when error occurred
+          example: "2025-10-17T10:30:45.123Z"
+
+tags:
+  - name: Spaces
+    description: Space management operations

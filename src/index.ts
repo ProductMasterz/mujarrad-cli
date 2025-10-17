@@ -80,14 +80,14 @@ async function main() {
 
     program
       .name('mujarrad')
-      .description('Obsidian Knowledge Graph Integration with Mujarrad\n\nSync your Obsidian vaults with Mujarrad workspaces for knowledge graph visualization and collaboration.')
+      .description('Obsidian Knowledge Graph Integration with Mujarrad\n\nSync your Obsidian vaults with Mujarrad spaces for knowledge graph visualization and collaboration.')
       .version(getVersion(), '-V, --version', 'Display version information')
       .addHelpText('after', `
 Examples:
   $ mujarrad auth login
-  $ mujarrad init ./my-vault --workspace my-workspace
-  $ mujarrad clone my-workspace ./local-folder
-  $ mujarrad sync ./my-vault --workspace my-workspace
+  $ mujarrad init ./my-vault --space my-space
+  $ mujarrad clone my-space ./local-folder
+  $ mujarrad sync ./my-vault --space my-space
 
 Documentation:
   Visit https://www.mujarrad.com for complete documentation

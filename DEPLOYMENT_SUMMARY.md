@@ -244,9 +244,9 @@ All commands verified and working in v1.1.0-alpha.3:
 mujarrad version              # Display detailed version information
 mujarrad auth [command]       # Authentication commands
 mujarrad init [options]       # Initialize Obsidian vault upload
-mujarrad clone [options]      # Clone workspace to Obsidian vault
-mujarrad sync [options]       # Synchronize local vault with workspace
-mujarrad template [command]   # Manage workspace templates
+mujarrad clone [options]      # Clone space to Obsidian vault
+mujarrad sync [options]       # Synchronize local vault with space
+mujarrad template [command]   # Manage space templates
 ```
 
 ---

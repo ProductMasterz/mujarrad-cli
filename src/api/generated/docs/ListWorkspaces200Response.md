@@ -1,4 +1,4 @@
-# ListWorkspaces200Response
+# ListSpaces200Response
 
 
 ## Properties
@@ -6,15 +6,15 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [default to undefined]
-**data** | [**ListWorkspaces200ResponseAllOfData**](ListWorkspaces200ResponseAllOfData.md) |  | [default to undefined]
+**data** | [**ListSpaces200ResponseAllOfData**](ListSpaces200ResponseAllOfData.md) |  | [default to undefined]
 **timestamp** | **string** |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { ListWorkspaces200Response } from 'mujarrad-api-client';
+import { ListSpaces200Response } from 'mujarrad-api-client';
 
-const instance: ListWorkspaces200Response = {
+const instance: ListSpaces200Response = {
     success,
     data,
     timestamp,

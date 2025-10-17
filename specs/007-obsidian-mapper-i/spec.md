@@ -3,18 +3,18 @@
 **Feature Branch**: `007-obsidian-mapper-i`
 **Created**: 2025-10-09
 **Status**: Draft
-**Input**: User description: "Obsidian Mapper - I need to be able to make obsidian files to Mujarrad nodes, Obsidian edges or links to Mujarrad Attributes, and Obsidian Canvas to Mujarrad Graph (which happens dynamically) through considering all obsidian canvas nodes as Mujarrad nodes (whether those nodes were files or just canvas nodes) as well as considering the canvas nodes wire connections aka edges as Mujarad Attributes. Please notice that the canvas visual information like sizes, positions, colors, etc all of that will be preserved in the Mujarrad nodes that has a node-type:cotnext. Which means Obsidian Canvas will be mapped to Mujarrad context and the canvas data will be saved in the context content as is and then will be retrieved back when we clone the Mujarrad workspace locally. The obsidian vault will be mapped to Mujarrad workspacce. When we clone Mujarrad workspace we open the cloned files in Obsidian, this means that each node will be converted to Obsidian files, the hierarchial information where folders of obsidian will be mapped to Mujarrad contexts that contains the nodes (obsidian file after cloning the workspace). The cloning will be made using a Mujarrad CLI tool that will be created in another proejct that will be public on Github and distributed through npm (and of course pip and npx). The user can use CLI to upload updates, each node/obsidian files has to have direct mapping to the UUID of Mujarrad node as well as the canvas that will preserve context. The metadata that will preserve this information we can hide it some how if this is possible so that the user can't see it or miss up with. Once a project being cloned the CLI tool will initialize git rightaway so that all edits would be tracked. The history of the changes on each file will be uploaded as node history mapped to the Mujarrad's node versions entity. Now you understand the pattern continue the specs by looking at the value I am going to provide as a sample data so that you consider covering other aspects that I missed if there are any and of course to be able to write the requirements based on real project not just conceptualization about it. Here is the obsidian sample valut: '/Users/mac/Developer/Software-Projects/Wider Projects/Wider-Mujarrad' Before you do anything create a new branch"
+**Input**: User description: "Obsidian Mapper - I need to be able to make obsidian files to Mujarrad nodes, Obsidian edges or links to Mujarrad Attributes, and Obsidian Canvas to Mujarrad Graph (which happens dynamically) through considering all obsidian canvas nodes as Mujarrad nodes (whether those nodes were files or just canvas nodes) as well as considering the canvas nodes wire connections aka edges as Mujarad Attributes. Please notice that the canvas visual information like sizes, positions, colors, etc all of that will be preserved in the Mujarrad nodes that has a node-type:cotnext. Which means Obsidian Canvas will be mapped to Mujarrad context and the canvas data will be saved in the context content as is and then will be retrieved back when we clone the Mujarrad space locally. The obsidian vault will be mapped to Mujarrad workspacce. When we clone Mujarrad space we open the cloned files in Obsidian, this means that each node will be converted to Obsidian files, the hierarchial information where folders of obsidian will be mapped to Mujarrad contexts that contains the nodes (obsidian file after cloning the space). The cloning will be made using a Mujarrad CLI tool that will be created in another proejct that will be public on Github and distributed through npm (and of course pip and npx). The user can use CLI to upload updates, each node/obsidian files has to have direct mapping to the UUID of Mujarrad node as well as the canvas that will preserve context. The metadata that will preserve this information we can hide it some how if this is possible so that the user can't see it or miss up with. Once a project being cloned the CLI tool will initialize git rightaway so that all edits would be tracked. The history of the changes on each file will be uploaded as node history mapped to the Mujarrad's node versions entity. Now you understand the pattern continue the specs by looking at the value I am going to provide as a sample data so that you consider covering other aspects that I missed if there are any and of course to be able to write the requirements based on real project not just conceptualization about it. Here is the obsidian sample valut: '/Users/mac/Developer/Software-Projects/Wider Projects/Wider-Mujarrad' Before you do anything create a new branch"
 
 ## Execution Flow (main)
 ```
 1. Parse user description from Input
-   → Bidirectional sync between Obsidian vaults and Mujarrad workspaces
+   → Bidirectional sync between Obsidian vaults and Mujarrad spaces
 2. Extract key concepts from description
    → Identified: Obsidian files, Canvas nodes, Markdown links, JSONB metadata, Git history, CLI tool
 3. For each unclear aspect:
    → Mark with [NEEDS CLARIFICATION: specific question]
 4. Fill User Scenarios & Testing section
-   → User uploads Obsidian vault, syncs changes, clones workspace
+   → User uploads Obsidian vault, syncs changes, clones space
 5. Generate Functional Requirements
    → Each requirement must be testable
    → Mark ambiguous requirements
@@ -51,8 +51,8 @@
 - Q: How should broken wikilinks be reported during upload? (FR-053) → A: Log to `~/.mujarrad/logs/upload-{session-id}.log` with source file path, line number, broken target, timestamp. Display summary at end with total count and log location. Create Attribute anyway but mark with "broken" flag in properties JSONB.
 - Q: What structural deviations from templates are allowed? (FR-066) → A: Users may freely add/remove nodes, modify content, add/remove relationships, reorganize layouts after cloning. Template reference persists for AI contextual mapping but does NOT enforce constraints. Templates are starting points, not rigid schemas.
 - Q: How should upload resume work after interruptions? (FR-051) → A: Hash comparison approach (Option C). On resume, CLI computes SHA-256 file hashes for all vault files and queries backend API to check which nodes already exist (by hash). CLI skips files already uploaded and continues with remaining files. Slower resume than session-based approach but requires no backend session persistence or state management. Stateless, simpler implementation suitable for MVP.
-- Q: Should the .obsidian configuration folder be synced to Mujarrad? → A: Yes, sync as special workspace metadata. Upload `.obsidian` folder contents to Workspace.properties JSONB field under "obsidianConfig" key. Clone operation recreates `.obsidian` folder from metadata. Enables consistent Obsidian setup (plugins, themes, workspace layout) across devices.
-- Q: How should users be notified when templates are updated after workspace creation? → A: No version notifications in MVP (Option C - templates immutable after cloning). Users wanting latest template version must create new workspace and manually migrate content. Future roadmap includes passive sync notifications (Option A) and explicit check commands (Option B), requiring conflict resolution, mapping logic, and data consistency management.
+- Q: Should the .obsidian configuration folder be synced to Mujarrad? → A: Yes, sync as special space metadata. Upload `.obsidian` folder contents to Space.properties JSONB field under "obsidianConfig" key. Clone operation recreates `.obsidian` folder from metadata. Enables consistent Obsidian setup (plugins, themes, space layout) across devices.
+- Q: How should users be notified when templates are updated after space creation? → A: No version notifications in MVP (Option C - templates immutable after cloning). Users wanting latest template version must create new space and manually migrate content. Future roadmap includes passive sync notifications (Option A) and explicit check commands (Option B), requiring conflict resolution, mapping logic, and data consistency management.
 - Q: How should generated files be named during canvas-to-file conversion? (FR-074) → A: Use canvas node text content as filename. Extract first line of canvas node text, sanitize for filesystem compatibility, add .md extension (e.g., node text "Key Partners" → "Key Partners.md"). If canvas node text is empty, fallback to canvas node ID with prefix (e.g., "canvas-node-a3f2e1b4.md"). Natural, user-friendly naming that reflects content.
 - Q: What content should be placed in generated markdown files? (FR-078) → A: Combine hidden metadata with canvas node text content (Options A + C). Generated files contain: (1) hidden Mujarrad metadata as HTML comment at top, (2) canvas node's full text content as file body, preserving all text from the canvas node. Ensures no information loss while maintaining metadata tracking. If canvas node has no text, file contains only metadata (empty body).
 
@@ -75,17 +75,17 @@ Throughout this specification:
 
 ### Template System Terminology
 
-3. **Workspace Template** (MVP terminology): A predefined knowledge graph structure that serves as a blueprint for creating new workspaces. In future versions, this will be referred to as "Space Template."
+3. **Space Template** (MVP terminology): A predefined knowledge graph structure that serves as a blueprint for creating new spaces. In future versions, this will be referred to as "Space Template."
 
 4. **Context Template**: A reusable structure representing a specific framework, process, paradigm, or structured pattern (e.g., Business Model Canvas, SWOT Analysis). Context templates define the visual canvas layout and the semantic relationships between nodes.
 
 5. **Space Template** (future terminology): A collection of context templates forming a complete knowledge graph template. This represents structured knowledge frameworks that can be cloned and serve as contextual maps for AI operations.
 
-6. **Template Configuration File**: Configuration defining the visual representation, canvas layout, node structure, and semantic relationships within a template. This file enables templates to act as "mirrors" indicating which knowledge graph structure a workspace follows.
+6. **Template Configuration File**: Configuration defining the visual representation, canvas layout, node structure, and semantic relationships within a template. This file enables templates to act as "mirrors" indicating which knowledge graph structure a space follows.
 
 **Template Purpose**: Templates serve dual purposes:
-- **Boilerplate/Cloning**: Users can clone templates to start with pre-structured workspaces, allowing them to focus on filling in data rather than creating structure
-- **AI Contextual Mapping**: Templates act as standard contextual maps that AI models can fetch to understand the workspace structure and operate autonomously on the data
+- **Boilerplate/Cloning**: Users can clone templates to start with pre-structured spaces, allowing them to focus on filling in data rather than creating structure
+- **AI Contextual Mapping**: Templates act as standard contextual maps that AI models can fetch to understand the space structure and operate autonomously on the data
 
 ---
 
@@ -93,7 +93,7 @@ Throughout this specification:
 
 | Obsidian Concept | Type/Structure | Mujarrad Mapping | Entity Type | Storage Details |
 |---|---|---|---|---|
-| **Vault (root directory)** | Directory | Workspace | `Workspace` | Workspace.slug, Workspace.name |
+| **Vault (root directory)** | Directory | Space | `Space` | Space.slug, Space.name |
 | **Note (.md file)** | Markdown file | Node | `Node` | `nodeType=REGULAR`<br/>Content → `Node.content`<br/>UUID embedded as hidden metadata in file |
 | **Folder** | Directory | Node | `Node` | `nodeType=CONTEXT`<br/>No content stored<br/>CONTAINS children via Attributes |
 | **Canvas file (.canvas)** | JSON file | Node + Mapping | `Node` (CONTEXT) + `Mapping` | `nodeType=CONTEXT`<br/>Canvas config → `Mapping.configuration`<br/>Visual layout normalized in mapping tables |
@@ -105,8 +105,8 @@ Throughout this specification:
 | **Git commit** | Version control | NodeVersion | `NodeVersion` | Each commit → new NodeVersion<br/>Commit hash, author, message stored |
 | **Canvas visual properties** | JSON properties | NodeMapping.metadata + Mapping.configuration | `NodeMapping` + `Mapping` | **Per-node visual props** → `NodeMapping.metadata` {x, y, width, height, color}<br/>**Canvas-wide config** → `Mapping.configuration` {zoom, viewX, viewY} |
 | **Hidden metadata (UUID)** | File metadata | Foreign key | N/A | Links local file to `Node.id`<br/>Format TBD (frontmatter/HTML comment) |
-| **Template config file** | JSON/YAML file | WorkspaceTemplate metadata | `WorkspaceTemplate` | Visual config, structure definition<br/>Template-to-workspace linkage |
-| **Workspace Template** | Predefined structure | WorkspaceTemplate | `WorkspaceTemplate` | Blueprint for workspace creation<br/>Collection of context templates |
+| **Template config file** | JSON/YAML file | SpaceTemplate metadata | `SpaceTemplate` | Visual config, structure definition<br/>Template-to-space linkage |
+| **Space Template** | Predefined structure | SpaceTemplate | `SpaceTemplate` | Blueprint for space creation<br/>Collection of context templates |
 | **Context Template** | Framework structure | ContextTemplate | `ContextTemplate` or Node | Canvas layout + semantic relationships<br/>Reusable knowledge patterns |
 
 ### Mapping Flow Examples
@@ -173,20 +173,20 @@ Node (nodeType=CONTEXT) + Mapping + NodeMappings
 7. Combine canvas config + nodes + edges → write .canvas file
 ```
 
-#### Template Clone Flow: WorkspaceTemplate → Workspace
+#### Template Clone Flow: SpaceTemplate → Space
 
 ```
-WorkspaceTemplate: "Business Model Canvas Framework"
+SpaceTemplate: "Business Model Canvas Framework"
    ↓
 1. User selects template via CLI
 2. System retrieves template structure (context templates + config)
-3. Create new Workspace instance
-4. For each ContextTemplate in WorkspaceTemplate:
+3. Create new Space instance
+4. For each ContextTemplate in SpaceTemplate:
    - Clone CONTEXT Node structure (canvas layout)
    - Clone placeholder REGULAR Nodes (empty or with guidance text)
    - Clone Attribute relationships (structure)
    - Preserve visual configuration (colors, positions, sizes)
-5. Link workspace to template (template reference metadata)
+5. Link space to template (template reference metadata)
 6. Generate Obsidian vault with template structure
 7. Include template config file for AI contextual mapping
 ```
@@ -200,8 +200,8 @@ WorkspaceTemplate: "Business Model Canvas Framework"
 | **Note renamed in Obsidian** | File renamed, wikilinks may break | Node.slug updated, Attributes remain intact via UUID |
 | **Folder moved** | Directory relocated | CONTAINS Attributes updated to new parent CONTEXT Node |
 | **Wikilink with path** | `[[Folder/Note]]` | Resolve path through CONTEXT hierarchy, create Attribute to target Node |
-| **Template cloning** | CLI clone from template | Instantiate WorkspaceTemplate → new Workspace with structure + config file |
-| **Workspace follows template** | Template config file present | Workspace metadata references WorkspaceTemplate for AI contextual mapping |
+| **Template cloning** | CLI clone from template | Instantiate SpaceTemplate → new Space with structure + config file |
+| **Space follows template** | Template config file present | Space metadata references SpaceTemplate for AI contextual mapping |
 
 ---
 
@@ -217,8 +217,8 @@ As a knowledge worker, I want to upload my Obsidian vault to Mujarrad and clone 
 
 **Acceptance Scenarios**:
 
-1. **Given** a user has an existing Obsidian vault with notes (.md files) and folders, **When** they run the CLI upload command with their workspace credentials, **Then** the system creates corresponding Mujarrad Nodes and contexts preserving the complete folder hierarchy
-2. **Given** a Mujarrad workspace contains Nodes organized in folder structures, **When** a user runs the CLI clone command, **Then** the system recreates the folder hierarchy locally, generates Obsidian note files for each REGULAR Node with hidden metadata mappings to UUID, and initializes a Git repository tracking all files
+1. **Given** a user has an existing Obsidian vault with notes (.md files) and folders, **When** they run the CLI upload command with their space credentials, **Then** the system creates corresponding Mujarrad Nodes and contexts preserving the complete folder hierarchy
+2. **Given** a Mujarrad space contains Nodes organized in folder structures, **When** a user runs the CLI clone command, **Then** the system recreates the folder hierarchy locally, generates Obsidian note files for each REGULAR Node with hidden metadata mappings to UUID, and initializes a Git repository tracking all files
 3. **Given** an Obsidian note contains wikilinks `[[Another Note]]`, **When** uploaded to Mujarrad, **Then** the system creates an Attribute relationship between the source and target Mujarrad Nodes
 4. **Given** cloned notes contain wikilinks, **When** rendered in Obsidian, **Then** all wikilinks resolve correctly to their target files
 
@@ -230,14 +230,14 @@ As a knowledge worker, I want to edit notes locally and sync changes to Mujarrad
 
 **Why this priority**: Sync is essential for the MVP - without it, users must manually upload after every change, making the tool impractical for daily use.
 
-**Independent Test**: Clone workspace, edit 5 notes, commit changes via Git, run sync command, verify NodeVersions created in Mujarrad with correct Git metadata.
+**Independent Test**: Clone space, edit 5 notes, commit changes via Git, run sync command, verify NodeVersions created in Mujarrad with correct Git metadata.
 
 **Acceptance Scenarios**:
 
-1. **Given** a user has cloned a Mujarrad workspace locally, **When** they edit an Obsidian note and run the sync command, **Then** the system creates a new NodeVersion in Mujarrad, updates the Node entity, and preserves the Git commit history
-2. **Given** a user has made multiple Git commits to their cloned workspace note files, **When** they run the sync command, **Then** the system creates NodeVersion entries for each note change corresponding to Git commit history
+1. **Given** a user has cloned a Mujarrad space locally, **When** they edit an Obsidian note and run the sync command, **Then** the system creates a new NodeVersion in Mujarrad, updates the Node entity, and preserves the Git commit history
+2. **Given** a user has made multiple Git commits to their cloned space note files, **When** they run the sync command, **Then** the system creates NodeVersion entries for each note change corresponding to Git commit history
 3. **Given** a user creates a new note in their cloned vault, **When** they sync, **Then** the system creates a new REGULAR-type Mujarrad Node with embedded metadata
-4. **Given** a user has edited files locally while another user edited the same workspace remotely, **When** they sync, **Then** the system detects conflicts and provides resolution options (strategy determined by Conflict Resolution clarification)
+4. **Given** a user has edited files locally while another user edited the same space remotely, **When** they sync, **Then** the system detects conflicts and provides resolution options (strategy determined by Conflict Resolution clarification)
 
 ---
 
@@ -253,24 +253,24 @@ As a business strategist, I want to upload Obsidian canvases with visual layouts
 
 1. **Given** a user has a canvas file (.canvas) containing canvas nodes (where each canvas node has a "file" attribute pointing to a note), **When** they upload to Mujarrad, **Then** the system creates a CONTEXT-type Mujarrad Node, creates NodeMapping entries with visual properties, and creates Attributes for all canvas edges
 2. **Given** a canvas contains canvas nodes with different colors and positions (where each canvas node references a note via "file" attribute), **When** uploaded to Mujarrad, **Then** the system normalizes visual data into NodeMapping.metadata (per-node) and Mapping.configuration (canvas-wide)
-3. **Given** a Mujarrad workspace contains canvas CONTEXT Nodes with Mappings and NodeMappings, **When** cloned to Obsidian, **Then** the system reconstructs .canvas files with all visual properties preserved (position accuracy within 1 pixel)
+3. **Given** a Mujarrad space contains canvas CONTEXT Nodes with Mappings and NodeMappings, **When** cloned to Obsidian, **Then** the system reconstructs .canvas files with all visual properties preserved (position accuracy within 1 pixel)
 4. **Given** a canvas contains edges connecting nodes, **When** uploaded, **Then** the system stores edge visual properties in Attribute.properties JSONB and reconstructs them accurately on clone
 
 ---
 
 ### User Story 4 - Template System for Knowledge Frameworks (Priority: P3)
 
-As a business consultant, I want to clone workspaces from templates (e.g., Business Model Canvas), so that I can quickly start new projects with proven frameworks.
+As a business consultant, I want to clone spaces from templates (e.g., Business Model Canvas), so that I can quickly start new projects with proven frameworks.
 
 **Why this priority**: Templates are a powerful feature but not essential for MVP. Users can create their own structures manually initially.
 
-**Independent Test**: List available templates, clone "Business Model Canvas" template, verify workspace contains pre-structured canvas with 9 components and template config file.
+**Independent Test**: List available templates, clone "Business Model Canvas" template, verify space contains pre-structured canvas with 9 components and template config file.
 
 **Acceptance Scenarios**:
 
-1. **Given** a user wants to start a new business model project, **When** they run the CLI command to clone from a "Business Model Canvas" template, **Then** the system creates a new workspace with pre-structured canvas layouts, placeholder nodes for all components, visual configuration preserved, and a template config file
-2. **Given** a workspace was created from a template and contains a template config file, **When** an AI model needs to operate on the workspace data, **Then** the system provides the template structure as a contextual map
-3. **Given** a user has cloned a workspace from a template and edited some nodes, **When** they sync changes back to Mujarrad, **Then** the system preserves the template reference metadata while updating the modified node content
+1. **Given** a user wants to start a new business model project, **When** they run the CLI command to clone from a "Business Model Canvas" template, **Then** the system creates a new space with pre-structured canvas layouts, placeholder nodes for all components, visual configuration preserved, and a template config file
+2. **Given** a space was created from a template and contains a template config file, **When** an AI model needs to operate on the space data, **Then** the system provides the template structure as a contextual map
+3. **Given** a user has cloned a space from a template and edited some nodes, **When** they sync changes back to Mujarrad, **Then** the system preserves the template reference metadata while updating the modified node content
 4. **Given** templates are updated with new versions, **When** users check for updates, **Then** the system notifies them of newer template versions (versioning strategy determined by Template Versioning clarification)
 
 ---
@@ -302,7 +302,7 @@ As a user with unorganized notes, I want the system to suggest folder structures
 **Acceptance Scenarios**:
 
 1. **Given** a user uploads multiple markdown files without any existing folder structure, **When** auto-context creation is enabled, **Then** the system analyzes file organization needs, creates CONTEXT-type Mujarrad Nodes representing folders, and establishes CONTAINS relationships
-2. **Given** a user clones a workspace that contains auto-generated folders, **When** the clone operation completes, **Then** the local Obsidian vault contains all generated files in proper folder hierarchy with hidden metadata intact
+2. **Given** a user clones a space that contains auto-generated folders, **When** the clone operation completes, **Then** the local Obsidian vault contains all generated files in proper folder hierarchy with hidden metadata intact
 3. **Given** files need categorization, **When** system creates folders, **Then** folders are named intelligently (merge conflicts resolved per Conflict Resolution clarification) [NEEDS CLARIFICATION: File clustering algorithm - AI categorization analyzing content, filename pattern matching, manual user tagging, or unsupervised clustering?]
 
 ---
@@ -393,7 +393,7 @@ As a user with unorganized notes, I want the system to suggest folder structures
   - System should allow cycles as per FR-007 cyclic graph support, except for Context→Node CONTAINS relationships
 
 - **Template Versioning and Lifecycle** - How does the system handle template-related operations?
-  - MVP approach: Templates are immutable after workspace creation. No version update notifications or automatic migration. Users wanting latest template must create new workspace and manually migrate content. Template versions use semantic versioning (1.0.0). Future versions will add passive notifications during sync and explicit `mujarrad template:check-updates` command. Structural deviations allowed (see FR-066). Manual template config modifications sync to Mujarrad as workspace changes, not template updates.
+  - MVP approach: Templates are immutable after space creation. No version update notifications or automatic migration. Users wanting latest template must create new space and manually migrate content. Template versions use semantic versioning (1.0.0). Future versions will add passive notifications during sync and explicit `mujarrad template:check-updates` command. Structural deviations allowed (see FR-066). Manual template config modifications sync to Mujarrad as space changes, not template updates.
 
 - What happens when a user tries to clone a template that has been deleted or archived?
   - System should return clear error message and suggest available templates
@@ -482,7 +482,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 │                          ↕                                   │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │              Spring Boot REST APIs                      │ │
-│  │  - /api/workspaces                                      │ │
+│  │  - /api/spaces                                      │ │
 │  │  - /api/nodes                                           │ │
 │  │  - /api/attributes                                      │ │
 │  │  - /api/mappings                                        │ │
@@ -493,7 +493,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 │                          ↕                                   │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │              PostgreSQL Database                        │ │
-│  │  - Workspaces, Nodes, Attributes                        │ │
+│  │  - Spaces, Nodes, Attributes                        │ │
 │  │  - Mappings, NodeMappings                               │ │
 │  │  - NodeVersions, Users                                  │ │
 │  └────────────────────────────────────────────────────────┘ │
@@ -542,10 +542,10 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 - **Purpose**: Invalidate tokens
 - **Headers**: `Authorization: Bearer <token>`
 
-#### 2. Workspace APIs
+#### 2. Space APIs
 
-**GET /api/workspaces**
-- **Purpose**: List user's workspaces
+**GET /api/spaces**
+- **Purpose**: List user's spaces
 - **Headers**: `Authorization: Bearer <token>`
 - **Query Params**:
   - `page` (optional, default: 0)
@@ -553,11 +553,11 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 - **Response**:
   ```json
   {
-    "workspaces": [
+    "spaces": [
       {
         "id": "uuid",
-        "name": "My Workspace",
-        "slug": "my-workspace",
+        "name": "My Space",
+        "slug": "my-space",
         "templateId": "uuid or null",
         "createdAt": "2025-10-09T10:00:00Z",
         "updatedAt": "2025-10-09T15:30:00Z"
@@ -568,30 +568,30 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
-**POST /api/workspaces**
-- **Purpose**: Create new workspace
+**POST /api/spaces**
+- **Purpose**: Create new space
 - **Request Body**:
   ```json
   {
-    "name": "My New Workspace",
-    "slug": "my-new-workspace",
+    "name": "My New Space",
+    "slug": "my-new-space",
     "templateId": "uuid or null"
   }
   ```
-- **Response**: Created workspace object with id
+- **Response**: Created space object with id
 
-**GET /api/workspaces/{workspaceId}**
-- **Purpose**: Get workspace details
-- **Response**: Full workspace object with metadata
+**GET /api/spaces/{spaceId}**
+- **Purpose**: Get space details
+- **Response**: Full space object with metadata
 
-**DELETE /api/workspaces/{workspaceId}**
-- **Purpose**: Delete workspace (soft delete)
+**DELETE /api/spaces/{spaceId}**
+- **Purpose**: Delete space (soft delete)
 - **Response**: 204 No Content
 
 #### 3. Template APIs
 
 **GET /api/templates**
-- **Purpose**: List available workspace templates
+- **Purpose**: List available space templates
 - **Query Params**:
   - `category` (optional): filter by category
 - **Response**:
@@ -611,21 +611,21 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
-**POST /api/workspaces/clone-from-template**
-- **Purpose**: Create workspace from template
+**POST /api/spaces/clone-from-template**
+- **Purpose**: Create space from template
 - **Request Body**:
   ```json
   {
     "templateId": "uuid",
-    "workspaceName": "My Startup",
-    "workspaceSlug": "my-startup"
+    "spaceName": "My Startup",
+    "spaceSlug": "my-startup"
   }
   ```
-- **Response**: Created workspace with structure
+- **Response**: Created space with structure
 
 #### 4. Upload APIs
 
-**POST /api/workspaces/{workspaceId}/upload/init**
+**POST /api/spaces/{spaceId}/upload/init**
 - **Purpose**: Initialize upload session
 - **Request Body**:
   ```json
@@ -643,7 +643,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
-**POST /api/workspaces/{workspaceId}/upload/nodes**
+**POST /api/spaces/{spaceId}/upload/nodes**
 - **Purpose**: Upload batch of nodes (notes/folders)
 - **Request Body**:
   ```json
@@ -681,7 +681,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
-**POST /api/workspaces/{workspaceId}/upload/canvas**
+**POST /api/spaces/{spaceId}/upload/canvas**
 - **Purpose**: Upload canvas with normalized visual data
 - **Request Body**:
   ```json
@@ -727,7 +727,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   ```
 - **Response**: Created canvas node, mapping, and node mappings
 
-**POST /api/workspaces/{workspaceId}/upload/attributes**
+**POST /api/spaces/{spaceId}/upload/attributes**
 - **Purpose**: Upload wikilinks and relationships
 - **Request Body**:
   ```json
@@ -743,7 +743,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
-**POST /api/workspaces/{workspaceId}/upload/complete**
+**POST /api/spaces/{spaceId}/upload/complete**
 - **Purpose**: Finalize upload session
 - **Request Body**:
   ```json
@@ -761,7 +761,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
-**POST /api/workspaces/{workspaceId}/nodes/exists-by-hash**
+**POST /api/spaces/{spaceId}/nodes/exists-by-hash**
 - **Purpose**: Check which files already exist by hash (for upload resume)
 - **Request Body**:
   ```json
@@ -783,15 +783,15 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 
 #### 5. Clone APIs
 
-**GET /api/workspaces/{workspaceId}/export**
-- **Purpose**: Export workspace structure for cloning
+**GET /api/spaces/{spaceId}/export**
+- **Purpose**: Export space structure for cloning
 - **Response**:
   ```json
   {
-    "workspace": {
+    "space": {
       "id": "uuid",
-      "name": "My Workspace",
-      "slug": "my-workspace",
+      "name": "My Space",
+      "slug": "my-space",
       "templateId": "uuid or null"
     },
     "nodes": [
@@ -835,7 +835,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   ```
 - **Note**: CLI reconstructs Obsidian vault from this data
 
-**GET /api/workspaces/{workspaceId}/export/incremental**
+**GET /api/spaces/{spaceId}/export/incremental**
 - **Purpose**: Export only changes since last sync
 - **Query Params**:
   - `since`: ISO timestamp of last sync
@@ -843,7 +843,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 
 #### 6. Sync APIs
 
-**POST /api/workspaces/{workspaceId}/sync/init**
+**POST /api/spaces/{spaceId}/sync/init**
 - **Purpose**: Initialize sync session
 - **Request Body**:
   ```json
@@ -861,7 +861,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
-**POST /api/workspaces/{workspaceId}/sync/push**
+**POST /api/spaces/{spaceId}/sync/push**
 - **Purpose**: Push local changes to Mujarrad
 - **Request Body**:
   ```json
@@ -888,13 +888,13 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
-**GET /api/workspaces/{workspaceId}/sync/pull**
+**GET /api/spaces/{spaceId}/sync/pull**
 - **Purpose**: Pull remote changes
 - **Query Params**:
   - `syncSessionId`: uuid
 - **Response**: Changes to apply locally
 
-**POST /api/workspaces/{workspaceId}/sync/complete**
+**POST /api/spaces/{spaceId}/sync/complete**
 - **Purpose**: Finalize sync session
 - **Request Body**:
   ```json
@@ -929,8 +929,8 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 
 #### 8. Sharing APIs
 
-**POST /api/workspaces/{workspaceId}/share**
-- **Purpose**: Share workspace with user
+**POST /api/spaces/{spaceId}/share**
+- **Purpose**: Share space with user
 - **Request Body**:
   ```json
   {
@@ -939,8 +939,8 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
   }
   ```
 
-**GET /api/workspaces/{workspaceId}/members**
-- **Purpose**: List workspace members
+**GET /api/spaces/{spaceId}/members**
+- **Purpose**: List space members
 
 ### CLI Requirements
 
@@ -949,7 +949,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 - **FR-CLI-001**: CLI MUST store authentication tokens securely in `~/.mujarrad/credentials.json` with file permissions 600
 - **FR-CLI-002**: CLI MUST automatically refresh tokens when expired using refresh token
 - **FR-CLI-003**: CLI MUST prompt user for credentials if no valid token exists
-- **FR-CLI-004**: CLI MUST support multiple workspace authentication profiles
+- **FR-CLI-004**: CLI MUST support multiple space authentication profiles
 
 #### File System Operations
 
@@ -962,7 +962,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 
 #### Git Integration
 
-- **FR-CLI-011**: CLI MUST initialize git repository in cloned workspace directory
+- **FR-CLI-011**: CLI MUST initialize git repository in cloned space directory
 - **FR-CLI-012**: CLI MUST create git commits for all cloned files
 - **FR-CLI-013**: CLI MUST use `git log` to detect file changes since last sync
 - **FR-CLI-014**: CLI MUST use `git diff` to extract changed content
@@ -978,7 +978,7 @@ The Mujarrad CLI tool acts as a **frontend tier** that communicates with the Muj
 
 #### Local Caching
 
-- **FR-CLI-021**: CLI MUST cache workspace structure locally in `~/.mujarrad/cache/{workspace-slug}/`
+- **FR-CLI-021**: CLI MUST cache space structure locally in `~/.mujarrad/cache/{space-slug}/`
 - **FR-CLI-022**: CLI MUST store last sync timestamp locally for incremental sync
 - **FR-CLI-023**: CLI MUST store node UUID → file path mappings for quick lookup
 
@@ -1007,8 +1007,8 @@ All APIs MUST follow these standards:
 {
   "success": false,
   "error": {
-    "code": "WORKSPACE_NOT_FOUND",
-    "message": "Workspace with slug 'my-workspace' not found",
+    "code": "SPACE_NOT_FOUND",
+    "message": "Space with slug 'my-space' not found",
     "details": {},
     "timestamp": "2025-10-09T16:00:00Z"
   }
@@ -1033,13 +1033,13 @@ All APIs MUST follow these standards:
 ### Measurable Outcomes
 
 - **SC-001**: Users can upload a 1000-file vault (with mixed notes, folders, and canvases) in under 5 minutes
-- **SC-002**: 100% preservation of canvas visual layout with position accuracy within 1 pixel when cloning workspace back to Obsidian
+- **SC-002**: 100% preservation of canvas visual layout with position accuracy within 1 pixel when cloning space back to Obsidian
 - **SC-003**: Sync operation detects 99% of file changes within 10 seconds of Git commit
 - **SC-004**: Zero data loss during upload/sync operations (content, metadata, relationships)
-- **SC-005**: 95% of users successfully clone workspace on first attempt without errors or manual intervention
-- **SC-006**: Template-based workspace creation completes in under 30 seconds for templates with up to 50 nodes
+- **SC-005**: 95% of users successfully clone space on first attempt without errors or manual intervention
+- **SC-006**: Template-based space creation completes in under 30 seconds for templates with up to 50 nodes
 - **SC-007**: AI models can parse template structure and contextual map in under 2 seconds
-- **SC-008**: Bidirectional sync maintains 100% consistency between local Obsidian vault and Mujarrad workspace
+- **SC-008**: Bidirectional sync maintains 100% consistency between local Obsidian vault and Mujarrad space
 - **SC-009**: System handles vaults with up to 10,000 files without performance degradation
 - **SC-010**: Wikilink resolution accuracy of 99% for all supported link formats (standard, nested paths, aliases)
 - **SC-011**: Canvas-to-file conversion creates valid markdown files with proper metadata for 100% of canvas nodes
@@ -1056,7 +1056,7 @@ All APIs MUST follow these standards:
 - **FR-001**: System MUST map each Obsidian note (.md file) to a Mujarrad Node entity with nodeType=REGULAR
 - **FR-002**: System MUST map each Obsidian folder to a Mujarrad Node entity with nodeType=CONTEXT
 - **FR-003**: System MUST map each Obsidian Canvas file (.canvas) to a Mujarrad Node entity with nodeType=CONTEXT
-- **FR-004**: System MUST map the Obsidian vault root directory to a Mujarrad Workspace entity
+- **FR-004**: System MUST map the Obsidian vault root directory to a Mujarrad Space entity
 - **FR-005**: System MUST map Obsidian wikilinks `[[Target]]` to Mujarrad Attribute entities with appropriate relationship type
 - **FR-006**: System MUST map markdown standard links `[text](target.md)` to Mujarrad Attribute entities
 - **FR-007**: System MUST map canvas node wire connections (edges) to Mujarrad Attribute entities between corresponding Mujarrad Nodes
@@ -1070,12 +1070,12 @@ All APIs MUST follow these standards:
 #### Metadata Preservation & Mapping
 
 - **FR-012**: System MUST embed Mujarrad Node UUID in each Obsidian note file as hidden metadata
-- **FR-013**: System MUST embed Mujarrad Workspace UUID in vault configuration as hidden metadata
-- **FR-013a**: System MUST upload `.obsidian` folder contents (plugins, themes, settings, workspace layout) to Workspace.properties JSONB field under "obsidianConfig" key during vault upload. System MUST recreate `.obsidian` folder structure from Workspace.properties during clone operation to maintain consistent Obsidian configuration across devices
+- **FR-013**: System MUST embed Mujarrad Space UUID in vault configuration as hidden metadata
+- **FR-013a**: System MUST upload `.obsidian` folder contents (plugins, themes, settings, space layout) to Space.properties JSONB field under "obsidianConfig" key during vault upload. System MUST recreate `.obsidian` folder structure from Space.properties during clone operation to maintain consistent Obsidian configuration across devices
 - **FR-014**: System MUST decompose Canvas JSON structure into normalized database entities: Node (canvas container), Mapping (canvas config), NodeMappings (visual layout per node), Attributes (edges with visual properties)
 - **FR-015**: System MUST store all canvas node visual properties in `NodeMapping.metadata` as JSONB: {canvasNodeId, x, y, width, height, color, fileReference}
 - **FR-016**: Hidden metadata MUST use HTML comments format (`<!-- mujarrad-node-id: uuid -->`) that does not render visibly in Obsidian reading mode, with a centralized mapping file acting as database in user-readable format. System MUST use serialization/hidden code approach to prevent user mistakes and MUST preserve existing Obsidian frontmatter when present.
-- **FR-017**: System MUST validate metadata integrity before sync operations (UUID exists, workspace matches, no corruption)
+- **FR-017**: System MUST validate metadata integrity before sync operations (UUID exists, space matches, no corruption)
 
 #### Mujarrad to Obsidian Mapping (Clone Operation)
 
@@ -1112,7 +1112,7 @@ All APIs MUST follow these standards:
 #### Authentication & Authorization
 
 - **FR-040**: CLI tool MUST authenticate users before allowing upload/sync/clone operations. System MUST support multiple authentication methods (API token, username/password, OAuth 2.0) with API token being the only available method in first release.
-- **FR-041**: System MUST verify user has workspace access permissions before clone operation
+- **FR-041**: System MUST verify user has space access permissions before clone operation
 - **FR-042**: System MUST verify user has write permissions before sync/upload operations
 - **FR-043**: System MUST associate all created/modified entities with authenticated user (createdBy, modifiedBy fields)
 
@@ -1120,38 +1120,38 @@ All APIs MUST follow these standards:
 
 - **FR-044**: System MUST validate Canvas JSON structure before creating CONTEXT-type Mujarrad Nodes
 - **FR-045**: System MUST validate all file references in canvas nodes (via "file" attribute) exist in vault before upload
-- **FR-046**: System MUST validate workspace slug uniqueness before clone operation creates local directory
-- **FR-047**: System MUST prevent sync if metadata UUID does not match existing workspace Mujarrad Nodes
+- **FR-046**: System MUST validate space slug uniqueness before clone operation creates local directory
+- **FR-047**: System MUST prevent sync if metadata UUID does not match existing space Mujarrad Nodes
 - **FR-048**: System MUST validate note file encoding and reject unsupported formats. UTF-8 encoding is REQUIRED for all markdown files. System MUST reject files with other encodings (e.g., UTF-16, ISO-8859-1, Windows-1252) with a clear error message indicating the file path and detected encoding, instructing users to convert to UTF-8 before upload.
 
 #### Error Handling & Recovery
 
 - **FR-049**: System MUST provide clear error messages when metadata is missing or corrupted
 - **FR-050**: System MUST rollback partial uploads if any note file fails during batch upload
-- **FR-051**: System MUST provide resume capability for interrupted uploads using hash-based comparison. When resuming an interrupted upload, CLI MUST compute SHA-256 file hashes for all files in the vault and query the backend API (via new endpoint `/api/workspaces/{workspaceId}/nodes/exists-by-hash`) to determine which files have already been uploaded. Backend MUST return list of existing file hashes. CLI MUST skip files that already exist (matching hash) and upload only remaining files. This stateless approach requires no backend session persistence but involves hash computation overhead on resume. CLI MUST display progress showing "Checking {X} files against existing nodes..." followed by "Resuming upload: {Y} files remaining".
+- **FR-051**: System MUST provide resume capability for interrupted uploads using hash-based comparison. When resuming an interrupted upload, CLI MUST compute SHA-256 file hashes for all files in the vault and query the backend API (via new endpoint `/api/spaces/{spaceId}/nodes/exists-by-hash`) to determine which files have already been uploaded. Backend MUST return list of existing file hashes. CLI MUST skip files that already exist (matching hash) and upload only remaining files. This stateless approach requires no backend session persistence but involves hash computation overhead on resume. CLI MUST display progress showing "Checking {X} files against existing nodes..." followed by "Resuming upload: {Y} files remaining".
 - **FR-052**: System MUST handle Git initialization failures by cleaning up partial clone and reporting error
 - **FR-053**: System MUST detect and report broken wikilinks during upload without failing entire operation. Broken wikilinks (links to non-existent files) MUST be logged to `~/.mujarrad/logs/upload-{session-id}.log` with the following information: (1) source file path, (2) line number, (3) broken link target, (4) timestamp. At upload completion, CLI MUST display a summary showing total broken links found and log file location. The system MUST create the Attribute relationship anyway (preserving the user's intent), but mark it with a "broken" flag in Attribute.properties JSONB for potential future resolution.
 
 #### Template System Requirements
 
-- **FR-054**: System MUST support creation and storage of WorkspaceTemplate entities containing pre-defined knowledge graph structures
-- **FR-055**: System MUST allow users to list available workspace templates via CLI command
-- **FR-056**: System MUST enable users to clone a workspace from a template, creating a new Workspace instance with template structure
-- **FR-057**: System MUST apply clone requirements FR-018 to FR-024 when instantiating a workspace from a template (folder hierarchy, note generation, canvas reconstruction, wikilink conversion, Git initialization)
+- **FR-054**: System MUST support creation and storage of SpaceTemplate entities containing pre-defined knowledge graph structures
+- **FR-055**: System MUST allow users to list available space templates via CLI command
+- **FR-056**: System MUST enable users to clone a space from a template, creating a new Space instance with template structure
+- **FR-057**: System MUST apply clone requirements FR-018 to FR-024 when instantiating a space from a template (folder hierarchy, note generation, canvas reconstruction, wikilink conversion, Git initialization)
 - **FR-058**: System MUST include template-specific placeholder content in generated notes when cloning from template
-- **FR-059**: System MUST copy WorkspaceTemplate source structure including ContextTemplates to new Workspace instance during template clone
+- **FR-059**: System MUST copy SpaceTemplate source structure including ContextTemplates to new Space instance during template clone
 - **FR-060**: Template clone MUST preserve canvas visual configuration (colors, positions, sizes) per FR-021 visual property reconstruction requirements
-- **FR-061**: System MUST generate template configuration file in cloned Obsidian vault indicating workspace follows template
-- **FR-062**: System MUST store template reference metadata in Workspace entity linking to source WorkspaceTemplate
-- **FR-063**: System MUST include template configuration file during workspace clone to Obsidian vault
+- **FR-061**: System MUST generate template configuration file in cloned Obsidian vault indicating space follows template
+- **FR-062**: System MUST store template reference metadata in Space entity linking to source SpaceTemplate
+- **FR-063**: System MUST include template configuration file during space clone to Obsidian vault
 - **FR-064**: System MUST provide API/interface for AI models to retrieve template structure as contextual map
-- **FR-065**: System MUST maintain template reference when user syncs changes from template-based workspace
-- **FR-066**: System MUST allow structural deviations from template while preserving template reference metadata. Users MAY freely add new nodes, remove placeholder nodes, modify node content, add/remove relationships, and reorganize canvas layouts after cloning from a template. The template reference (Workspace.templateId) MUST persist regardless of modifications, enabling AI models to use the original template structure as a contextual map while understanding that the workspace content has evolved. The system MUST NOT enforce template constraints after initial clone - templates serve as starting points, not rigid schemas.
-- **FR-067**: WorkspaceTemplate MUST contain one or more ContextTemplate entities representing frameworks/patterns
+- **FR-065**: System MUST maintain template reference when user syncs changes from template-based space
+- **FR-066**: System MUST allow structural deviations from template while preserving template reference metadata. Users MAY freely add new nodes, remove placeholder nodes, modify node content, add/remove relationships, and reorganize canvas layouts after cloning from a template. The template reference (Space.templateId) MUST persist regardless of modifications, enabling AI models to use the original template structure as a contextual map while understanding that the space content has evolved. The system MUST NOT enforce template constraints after initial clone - templates serve as starting points, not rigid schemas.
+- **FR-067**: SpaceTemplate MUST contain one or more ContextTemplate entities representing frameworks/patterns
 - **FR-068**: ContextTemplate MUST define canvas layout structure, node types, and semantic relationship types
 - **FR-069**: Template configuration file MUST be in structured format (JSON or YAML) containing template metadata and structure definition
 - **FR-070**: System MUST validate template structure before allowing clone operation
-- **FR-071**: System MUST support template metadata including name, description, category, version, and framework type. Template versions follow semantic versioning (e.g., 1.0.0, 1.1.0, 2.0.0). MVP does NOT support version update notifications or automatic migration - templates are immutable after workspace creation. Users wanting latest template version must create new workspace from updated template and manually migrate content. Future versions will support passive sync notifications and explicit update check commands with conflict resolution logic.
+- **FR-071**: System MUST support template metadata including name, description, category, version, and framework type. Template versions follow semantic versioning (e.g., 1.0.0, 1.1.0, 2.0.0). MVP does NOT support version update notifications or automatic migration - templates are immutable after space creation. Users wanting latest template version must create new space from updated template and manually migrate content. Future versions will support passive sync notifications and explicit update check commands with conflict resolution logic.
 
 #### Canvas-to-File Conversion
 
@@ -1161,7 +1161,7 @@ All APIs MUST follow these standards:
 - **FR-075**: Generated files MUST contain embedded Mujarrad node UUID metadata in hidden format
 - **FR-076**: System MUST create REGULAR-type Mujarrad Nodes for each generated file
 - **FR-077**: System MUST create NodeMapping entries linking canvas CONTEXT node to generated file nodes with visual properties preserved in metadata
-- **FR-078**: Generated files MUST include hidden Mujarrad metadata as HTML comment at the top, followed by the canvas node's full text content as the file body. Format: `<!-- mujarrad-node-id: {uuid} -->\n<!-- mujarrad-workspace-id: {uuid} -->\n<!-- mujarrad-generated-from: canvas-node-{canvasNodeId} -->\n\n{canvas node text content}`. If canvas node contains no text, file body remains empty (contains only metadata comments). This approach preserves all canvas node information while maintaining metadata tracking.
+- **FR-078**: Generated files MUST include hidden Mujarrad metadata as HTML comment at the top, followed by the canvas node's full text content as the file body. Format: `<!-- mujarrad-node-id: {uuid} -->\n<!-- mujarrad-space-id: {uuid} -->\n<!-- mujarrad-generated-from: canvas-node-{canvasNodeId} -->\n\n{canvas node text content}`. If canvas node contains no text, file body remains empty (contains only metadata comments). This approach preserves all canvas node information while maintaining metadata tracking.
 - **FR-079**: System MUST update canvas JSON to include file references for newly generated files
 - **FR-080**: System MUST preserve all visual properties (x, y, width, height, color) for canvas nodes in NodeMapping.metadata JSONB
 - **FR-081**: System MUST maintain canvas-to-node mappings bidirectionally (canvas node ID ↔ generated file UUID)
@@ -1179,7 +1179,7 @@ All APIs MUST follow these standards:
 
 #### Metadata Provisioning for Generated Content
 
-- **FR-090**: All generated files MUST contain complete Mujarrad node metadata: node UUID, workspace UUID, node type, creation timestamp
+- **FR-090**: All generated files MUST contain complete Mujarrad node metadata: node UUID, space UUID, node type, creation timestamp
 - **FR-091**: All generated CONTEXT nodes MUST contain provenance metadata indicating auto-generation vs manual creation
 - **FR-092**: Generated files MUST include reference to originating canvas node ID when created from canvas-to-file conversion
 - **FR-093**: System MUST embed metadata in non-visible format compatible with Obsidian rendering (format determined by FR-016 clarification)
@@ -1191,7 +1191,7 @@ All APIs MUST follow these standards:
 - **FR-096**: Canvas-to-file conversion MUST integrate with existing upload workflow defined in earlier requirements
 - **FR-097**: Auto-generated files MUST support all existing sync operations (edit detection, version control, Git integration)
 - **FR-098**: Auto-generated contexts MUST support all existing clone operations (folder recreation, hierarchy preservation)
-- **FR-099**: Generated content MUST be compatible with template system (workspace templates can include auto-generated placeholders)
+- **FR-099**: Generated content MUST be compatible with template system (space templates can include auto-generated placeholders)
 - **FR-100**: System MUST maintain backward compatibility with existing workflows that don't use auto-generation features
 
 ### Non-Functional Requirements
@@ -1199,10 +1199,10 @@ All APIs MUST follow these standards:
 #### Performance Requirements
 
 - **NFR-001**: Upload operation MUST handle 1000-file vaults within 5 minutes under these baseline conditions: (1) average file size 50KB, (2) network upload speed ≥10 Mbps, (3) backend API response time <500ms per batch request, (4) client machine with 4GB RAM and modern CPU. Performance may degrade with slower networks, larger files (>200KB average), or resource-constrained environments.
-- **NFR-002**: Clone operation MUST complete within 3 minutes for workspaces containing 1000 nodes
+- **NFR-002**: Clone operation MUST complete within 3 minutes for spaces containing 1000 nodes
 - **NFR-003**: Sync operation MUST detect and process file changes within 10 seconds of Git commit
 - **NFR-004**: API response time MUST be under 500ms for 95% of requests (excluding large file transfers)
-- **NFR-005**: System MUST support concurrent sync operations from up to 10 users per workspace without deadlocks
+- **NFR-005**: System MUST support concurrent sync operations from up to 10 users per space without deadlocks
 
 #### Scalability Requirements
 
@@ -1226,7 +1226,7 @@ All APIs MUST follow these standards:
 - **NFR-017**: All API communication MUST use HTTPS/TLS 1.2 or higher
 - **NFR-018**: User credentials MUST NOT be stored in plaintext anywhere in the system
 - **NFR-019**: Hidden metadata UUIDs MUST be cryptographically validated to prevent tampering
-- **NFR-020**: System MUST enforce workspace-level access control (users cannot access workspaces they don't own/share)
+- **NFR-020**: System MUST enforce space-level access control (users cannot access spaces they don't own/share)
 
 #### Usability Requirements
 
@@ -1254,7 +1254,7 @@ All APIs MUST follow these standards:
 
 ### Key Entities
 
-- **Obsidian Vault**: A directory containing note files (.md), folders, canvas files (.canvas), and Obsidian configuration; maps to Mujarrad Workspace
+- **Obsidian Vault**: A directory containing note files (.md), folders, canvas files (.canvas), and Obsidian configuration; maps to Mujarrad Space
 
 - **Obsidian Note**: Individual .md files containing markdown content, optional frontmatter, and wikilinks; maps to Mujarrad Node (nodeType=REGULAR)
 
@@ -1276,13 +1276,13 @@ All APIs MUST follow these standards:
 
 - **Folder Hierarchy**: Tree structure of nested folders; represented by CONTEXT Nodes with CONTAINS Attributes forming parent-child relationships
 
-- **Workspace Template** (MVP terminology for Space Template): A blueprint entity containing pre-defined knowledge graph structure including context templates, node structures, and relationship patterns. Serves as source for cloning new workspaces and as contextual map for AI operations.
+- **Space Template** (MVP terminology for Space Template): A blueprint entity containing pre-defined knowledge graph structure including context templates, node structures, and relationship patterns. Serves as source for cloning new spaces and as contextual map for AI operations.
 
 - **Context Template**: A reusable framework structure representing specific paradigms (e.g., Business Model Canvas, SWOT Analysis, Design Thinking). Contains canvas layout definition, placeholder nodes, semantic relationships, and visual configuration.
 
-- **Template Configuration File**: JSON or YAML file stored in cloned Obsidian vault containing template metadata, structure definition, and reference to source WorkspaceTemplate. Enables AI models to understand workspace organization.
+- **Template Configuration File**: JSON or YAML file stored in cloned Obsidian vault containing template metadata, structure definition, and reference to source SpaceTemplate. Enables AI models to understand space organization.
 
-- **Template Reference Metadata**: Foreign key relationship in Workspace entity linking to source WorkspaceTemplate, indicating workspace follows specific knowledge graph structure. Preserved during sync operations even when content deviates from template.
+- **Template Reference Metadata**: Foreign key relationship in Space entity linking to source SpaceTemplate, indicating space follows specific knowledge graph structure. Preserved during sync operations even when content deviates from template.
 
 - **Canvas Node Without File**: A canvas node element in Obsidian canvas JSON that lacks a "file" attribute reference; triggers file generation during upload
 
@@ -1290,7 +1290,7 @@ All APIs MUST follow these standards:
 
 - **Auto-Generated Context**: A CONTEXT-type Mujarrad Node (representing a folder) automatically created by the system to organize uploaded files; includes CONTAINS relationships to child nodes
 
-- **File-to-Node Metadata Mapping**: Hidden metadata embedded in generated markdown files linking local file to Mujarrad node UUID, workspace, and generation provenance
+- **File-to-Node Metadata Mapping**: Hidden metadata embedded in generated markdown files linking local file to Mujarrad node UUID, space, and generation provenance
 
 - **Canvas-to-File Conversion**: Process of detecting canvas nodes without files, generating corresponding markdown files, creating Mujarrad nodes, and establishing NodeMapping relationships
 
@@ -1398,7 +1398,7 @@ Based on analysis of `/Users/mac/Developer/Software-Projects/Wider Projects/Wide
 
 **Special Files:**
 - `Canvases Config.md`: Contains JSON configuration schemas documenting canvas aesthetics
-- `.obsidian` folder: Obsidian configuration (plugins, settings, workspace layout) - synced as workspace metadata in Workspace.properties JSONB field to enable consistent setup across devices
+- `.obsidian` folder: Obsidian configuration (plugins, settings, space layout) - synced as space metadata in Space.properties JSONB field to enable consistent setup across devices
 
 **File Naming:**
 - Spaces in filenames common: `Business Model Canvas - Overview.md`

@@ -7,7 +7,7 @@
 
 ## Summary
 
-Implement a TypeScript CLI tool that enables bidirectional synchronization between Obsidian vaults (local markdown files, folders, canvas visualizations) and Mujarrad workspaces (cloud-based knowledge graph storage). The CLI handles local file system operations, Git version control, Obsidian format parsing (markdown, canvas JSON), and REST API communication with the existing Mujarrad Spring Boot backend. Key features include: vault upload with batch processing, workspace cloning to local Obsidian format, incremental sync with Git integration, canvas visual preservation via JSONB storage, template-based workspace creation, and automatic content generation (canvas-to-file conversion, auto-context folder creation).
+Implement a TypeScript CLI tool that enables bidirectional synchronization between Obsidian vaults (local markdown files, folders, canvas visualizations) and Mujarrad spaces (cloud-based knowledge graph storage). The CLI handles local file system operations, Git version control, Obsidian format parsing (markdown, canvas JSON), and REST API communication with the existing Mujarrad Spring Boot backend. Key features include: vault upload with batch processing, space cloning to local Obsidian format, incremental sync with Git integration, canvas visual preservation via JSONB storage, template-based space creation, and automatic content generation (canvas-to-file conversion, auto-context folder creation).
 
 ## Technical Context
 
@@ -100,7 +100,7 @@ src/
 │   └── MetadataEmbedder.ts  # UUID injection as HTML comments
 ├── services/                 # Business logic services
 │   ├── UploadService.ts     # Batch upload orchestration
-│   ├── CloneService.ts      # Workspace-to-vault conversion
+│   ├── CloneService.ts      # Space-to-vault conversion
 │   ├── SyncService.ts       # Bidirectional sync logic
 │   ├── GitService.ts        # Git operations (init, commit, log, diff)
 │   ├── AuthService.ts       # Token management, refresh logic
@@ -130,8 +130,8 @@ tests/
 
 ~/.mujarrad/                  # User data directory (created by CLI)
 ├── credentials.json         # JWT tokens (600 permissions)
-├── cache/                   # Local workspace cache
-│   └── {workspace-slug}/
+├── cache/                   # Local space cache
+│   └── {space-slug}/
 │       ├── structure.json   # Cached node/attribute structure
 │       └── last-sync.txt    # Last sync timestamp
 └── logs/                    # Operation logs

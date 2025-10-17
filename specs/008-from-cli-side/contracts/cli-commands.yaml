@@ -107,9 +107,9 @@ commands:
   # ENHANCED COMMAND: mujarrad upload (renamed to init with upload functionality)
   # ============================================================================
   - name: init
-    command: mujarrad init <vault-path> --workspace <slug> [options]
+    command: mujarrad init <vault-path> --space <slug> [options]
     description: |
-      Initialize and upload an Obsidian vault to Mujarrad workspace.
+      Initialize and upload an Obsidian vault to Mujarrad space.
       Performs vault scanning, validation, and upload in a single operation.
       This replaces the previous 'upload' command with combined init+upload flow.
 
@@ -121,14 +121,14 @@ commands:
         validation: Must be a valid directory containing .md or .canvas files
 
     options:
-      - name: --workspace
+      - name: --space
         type: string
         required: true
         alias: -w
-        description: Workspace slug to upload to (must exist on server)
+        description: Space slug to upload to (must exist on server)
         examples:
-          - "--workspace my-workspace"
-          - "-w my-workspace"
+          - "--space my-space"
+          - "-w my-space"
 
       - name: --dry-run
         type: boolean
@@ -152,13 +152,13 @@ commands:
       2: Authentication required (run 'mujarrad auth login' first)
 
     examples:
-      - command: mujarrad init ./my-vault --workspace personal
-        description: Initialize and upload vault to 'personal' workspace
+      - command: mujarrad init ./my-vault --space personal
+        description: Initialize and upload vault to 'personal' space
 
-      - command: mujarrad init ~/Documents/Obsidian --workspace work --dry-run
+      - command: mujarrad init ~/Documents/Obsidian --space work --dry-run
         description: Validate vault without uploading
 
-      - command: mujarrad init ./vault -w my-workspace --no-progress
+      - command: mujarrad init ./vault -w my-space --no-progress
         description: Upload with progress indicators disabled (CI/CD friendly)
 
     output_format: |
@@ -169,13 +169,13 @@ commands:
         ✓ Validation complete
 
       Upload phase:
-        📤 Uploading to workspace: my-workspace
+        📤 Uploading to space: my-space
         Progress: [████████████████████] 150/150 files (100%)
 
         ✓ Upload complete
         Files: 150 uploaded, 0 failed
         Time: 45.2s
-        Workspace URL: https://mujarrad.com/workspaces/my-workspace
+        Space URL: https://mujarrad.com/spaces/my-space
 
   # ============================================================================
   # ENHANCED COMMAND: mujarrad --version (with alpha warnings)
@@ -227,9 +227,9 @@ commands:
           status     Check authentication status
 
         init         Initialize and upload Obsidian vault
-        clone        Clone workspace to local vault
-        sync         Synchronize vault with workspace
-        template     Manage workspace templates
+        clone        Clone space to local vault
+        sync         Synchronize vault with space
+        template     Manage space templates
         logs         Log management commands
           export     Export logs as compressed archive
 
@@ -246,9 +246,9 @@ commands:
         $ mujarrad auth login --email user@example.com
 
         # Initialize and upload vault
-        $ mujarrad init ./my-vault --workspace personal
+        $ mujarrad init ./my-vault --space personal
 
-        # Clone workspace to local directory
+        # Clone space to local directory
         $ mujarrad clone personal ./local-vault
 
         # Export logs for debugging
@@ -288,18 +288,18 @@ commands:
           mujarrad init - Initialize and upload Obsidian vault
 
           USAGE
-            $ mujarrad init <vault-path> --workspace <slug> [options]
+            $ mujarrad init <vault-path> --space <slug> [options]
 
           ARGUMENTS
             vault-path    Path to Obsidian vault directory
 
           OPTIONS
-            --workspace, -w <slug>    Workspace to upload to (required)
+            --space, -w <slug>    Space to upload to (required)
             --dry-run                 Validate without uploading
             --no-progress             Disable progress indicators
 
           EXAMPLES
-            $ mujarrad init ./my-vault --workspace personal
+            $ mujarrad init ./my-vault --space personal
             $ mujarrad init ~/vault -w work --dry-run
 
           For more information, visit:
@@ -357,14 +357,14 @@ global_behavior:
     location: ~/.mujarrad/config.json
     schema:
       apiBaseUrl: string (default: https://mujarrad.onrender.com)
-      defaultWorkspace: string (optional)
+      defaultSpace: string (optional)
       autoSync: boolean (default: false)
       logLevel: string (default: info)
       disclaimerAcknowledgment: object (optional)
 
     environment_overrides:
       MUJARRAD_API_BASE_URL: Override API base URL
-      MUJARRAD_DEFAULT_WORKSPACE: Override default workspace
+      MUJARRAD_DEFAULT_SPACE: Override default space
       MUJARRAD_AUTO_SYNC: Override auto-sync setting
       MUJARRAD_LOG_LEVEL: Override log level
       MUJARRAD_ACCEPT_DISCLAIMER: Auto-accept disclaimer (for CI/CD)

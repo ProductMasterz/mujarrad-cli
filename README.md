@@ -50,8 +50,8 @@ This CLI is in **active alpha development**. While core functionality is stable 
 
 **What's Stable**:
 - ✅ Authentication (login, logout, registration)
-- ✅ Upload workflow (vault to workspace)
-- ✅ Clone workflow (workspace to vault)
+- ✅ Upload workflow (vault to space)
+- ✅ Clone workflow (space to vault)
 - ✅ Sync workflow (bidirectional synchronization)
 - ✅ Template system (list and clone)
 - ✅ Canvas support (visual preservation)
@@ -184,12 +184,12 @@ npx mujarrad-cli [command]
 mujarrad auth login
 ```
 
-**Unlock** your workspace with secure credentials.
+**Unlock** your space with secure credentials.
 
 ### 2. Upload & Transform
 
 ```bash
-mujarrad upload ./my-vault --workspace my-workspace
+mujarrad upload ./my-vault --space my-space
 ```
 
 **Distill** your Obsidian vault into **structured**, **intelligent** data.
@@ -197,7 +197,7 @@ mujarrad upload ./my-vault --workspace my-workspace
 ### 3. Clone & Recreate
 
 ```bash
-mujarrad clone ./new-vault --workspace my-workspace
+mujarrad clone ./new-vault --space my-space
 ```
 
 **Realize** your knowledge graph anywhere, anytime.
@@ -252,27 +252,27 @@ Mujarrad CLI is **engineered** with a **5-layer abstraction**—each **layer** *
 ### Authentication
 
 ```bash
-mujarrad auth login          # Unlock your workspace
+mujarrad auth login          # Unlock your space
 mujarrad auth logout         # Secure logout
 mujarrad auth status         # Check authentication state
 ```
 
-### Workspace Management
+### Space Management
 
 ```bash
-mujarrad workspace create    # Build new workspace
-mujarrad workspace list      # View all workspaces
-mujarrad workspace delete    # Remove workspace
+mujarrad space create    # Build new space
+mujarrad space list      # View all spaces
+mujarrad space delete    # Remove space
 ```
 
 ### Data Operations
 
 ```bash
-# Upload: Transform local vaults into structured workspaces
-mujarrad upload <vault-path> --workspace <slug>
+# Upload: Transform local vaults into structured spaces
+mujarrad upload <vault-path> --space <slug>
 
-# Clone: Recreate workspaces as local vaults
-mujarrad clone <target-path> --workspace <slug>
+# Clone: Recreate spaces as local vaults
+mujarrad clone <target-path> --space <slug>
 
 # Sync: Flow data bidirectionally
 mujarrad sync <vault-path> [--watch]
@@ -284,7 +284,7 @@ mujarrad sync <vault-path> [--watch]
 mujarrad template list                    # Discover frameworks
 mujarrad template clone <target-path>     # Activate template
   --template <id>                         # Framework identifier
-  --name <workspace-name>                 # Your workspace name
+  --name <space-name>                 # Your space name
 ```
 
 ### Version History
@@ -310,7 +310,7 @@ Mujarrad **adapts** to your environment. Configuration stored in `~/.mujarrad/co
 ```json
 {
   "apiBaseUrl": "https://mujarrad.onrender.com",
-  "defaultWorkspace": "my-workspace",
+  "defaultSpace": "my-space",
   "autoSync": false,
   "logLevel": "info"
 }
@@ -354,7 +354,7 @@ Mujarrad **adapts** to your environment. Configuration stored in `~/.mujarrad/co
 
 ```bash
 # Upload complete business model vault
-mujarrad upload ./business-models --workspace startup-canvas
+mujarrad upload ./business-models --space startup-canvas
 
 # Visual properties preserved:
 # • Node positions, sizes, colors
@@ -562,7 +562,7 @@ npm run format            # Format code (Prettier)
 - [x] Markdown parsing (wikilinks, frontmatter)
 - [x] Canvas processing (JSON Canvas spec)
 - [x] Metadata management (UUID embedding)
-- [x] Local caching (workspace structure)
+- [x] Local caching (space structure)
 
 ### Phase 4: Upload Workflow ✅
 - [x] UploadService (batch upload)
@@ -571,7 +571,7 @@ npm run format            # Format code (Prettier)
 - [x] Progress tracking
 
 ### Phase 5: Clone Workflow ✅
-- [x] CloneService (workspace export)
+- [x] CloneService (space export)
 - [x] clone CLI command
 - [x] Git initialization (simple-git)
 - [x] ZIP extraction (unzipper)
@@ -595,7 +595,7 @@ npm run format            # Format code (Prettier)
 - [x] Template configuration management
 
 ### Phase 9: Additional Features 📋
-- [ ] Workspace management commands
+- [ ] Space management commands
 - [ ] Version history commands
 - [ ] Sharing commands
 - [ ] Status command

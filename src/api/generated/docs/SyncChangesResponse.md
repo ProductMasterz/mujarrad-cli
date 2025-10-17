@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **localChanges** | [**Array&lt;SyncChangesResponseLocalChangesInner&gt;**](SyncChangesResponseLocalChangesInner.md) | Changes detected in local vault | [default to undefined]
-**remoteChanges** | [**Array&lt;SyncChangesResponseRemoteChangesInner&gt;**](SyncChangesResponseRemoteChangesInner.md) | Changes detected in remote workspace | [default to undefined]
+**remoteChanges** | [**Array&lt;SyncChangesResponseRemoteChangesInner&gt;**](SyncChangesResponseRemoteChangesInner.md) | Changes detected in remote space | [default to undefined]
 **conflicts** | [**Array&lt;SyncChangesResponseConflictsInner&gt;**](SyncChangesResponseConflictsInner.md) | Files with conflicting changes | [default to undefined]
 
 ## Example

@@ -37,7 +37,7 @@
 
 #### ✅ Task 1.1: Generate TypeScript API Client from OpenAPI
 - Generated using openapi-generator-cli v2.24.0
-- 8 API categories: Authentication, Workspaces, Upload, Clone, Sync, Templates, VersionHistory, Sharing
+- 8 API categories: Authentication, Spaces, Upload, Clone, Sync, Templates, VersionHistory, Sharing
 - 50+ TypeScript models with full type safety
 - 163KB of generated code (api.ts, base.ts, configuration.ts)
 - Tests passing: 9/9 ✓
@@ -177,15 +177,15 @@
 - **Status**: Complete ✓
 
 #### ✅ Task 3.5: Implement CacheManager (Local Cache)
-- Local caching in ~/.mujarrad/cache/{workspace-slug}/
-- Workspace structure caching (workspace.json)
+- Local caching in ~/.mujarrad/cache/{space-slug}/
+- Space structure caching (space.json)
 - Sync metadata storage (sync.json with lastSync timestamp)
 - Node UUID → file path mappings (mapping.json)
 - Reverse mapping: file path → node UUID
-- Cache invalidation methods (clearWorkspaceCache)
+- Cache invalidation methods (clearSpaceCache)
 - Cache directory management (ensureCacheDir, getCacheDir)
 - Cache statistics (getCacheStats)
-- List all cached workspaces (getAllCachedWorkspaces)
+- List all cached spaces (getAllCachedSpaces)
 - Tests passing: 24/24 ✓
 - **Status**: Complete ✓
 
@@ -198,9 +198,9 @@
 **Status**: Complete ✓
 
 **Solution Implemented**: Refactored UploadService to use actual generated API
-- Used `uploadBatch(workspaceId, files, batchNumber?, sessionId?, commitMessage?)`
-- Used `getUploadStatus(workspaceId, sessionId)` for status polling
-- Used `getUploadLog(workspaceId, sessionId)` for log retrieval
+- Used `uploadBatch(spaceId, files, batchNumber?, sessionId?, commitMessage?)`
+- Used `getUploadStatus(spaceId, sessionId)` for status polling
+- Used `getUploadLog(spaceId, sessionId)` for log retrieval
 - Implemented stateless session management (first batch creates session, subsequent batches include sessionId)
 - Node.js compatible file handling using Buffer instead of Blob
 
@@ -236,8 +236,8 @@
 **Test File**: `tests/integration/commands/upload.test.ts` (8 tests)
 
 **Features Implemented**:
-- ✅ `mujarrad upload <vault-path> --workspace <slug>` command
-- ✅ Short option: `-w` for workspace
+- ✅ `mujarrad upload <vault-path> --space <slug>` command
+- ✅ Short option: `-w` for space
 - ✅ Custom batch size: `--batch-size <size>` (default: 50)
 - ✅ Authentication validation before upload
 - ✅ Vault path validation (directory exists check)
@@ -246,14 +246,14 @@
 - ✅ Upload session logging via Logger
 - ✅ Comprehensive error handling:
   - 401: Authentication expired
-  - 404: Workspace not found
+  - 404: Space not found
   - 403: Access denied
   - 413: Payload too large (suggests reducing batch size)
   - 5xx: Server errors
   - Network errors (ECONNREFUSED, ENOTFOUND)
 
 **Acceptance Criteria**: All met ✓
-- ✅ Interactive command with required workspace option
+- ✅ Interactive command with required space option
 - ✅ Progress bar during upload
 - ✅ Session tracking and logging
 - ✅ User-friendly error messages
@@ -263,7 +263,7 @@
 
 ### Phase 5: Clone Workflow (COMPLETE - 3/3 tasks)
 
-#### ✅ Task 5.1: Implement CloneService (Workspace Export)
+#### ✅ Task 5.1: Implement CloneService (Space Export)
 **Priority**: P1
 **Status**: Complete ✓
 
@@ -271,12 +271,12 @@
 **Test File**: `tests/unit/services/CloneService.test.ts` (14 tests passing ✓)
 
 **Core Methods**:
-- `initiateExport()`: Start workspace export job via CloneApi
+- `initiateExport()`: Start space export job via CloneApi
 - `pollExportStatus()`: Poll export status until complete (configurable interval/max attempts)
 - `downloadExport()`: Download exported ZIP file
 - `extractZip()`: Extract ZIP and read .mujarrad/mappings.json
 - `recreateVault()`: Recreate vault structure (folders, markdown with UUIDs, canvas files)
-- `cloneWorkspace()`: Orchestrate complete clone workflow (export → poll → download → extract → recreate)
+- `cloneSpace()`: Orchestrate complete clone workflow (export → poll → download → extract → recreate)
 
 **Data Structures**:
 - ExportStatus: Job ID, status, progress, total nodes, error
@@ -289,7 +289,7 @@
 - @types/unzipper: ^0.10.11
 
 **Acceptance Criteria**: All met ✓
-- ✅ Exports workspace via API
+- ✅ Exports space via API
 - ✅ Creates folder hierarchy
 - ✅ Generates markdown files with UUIDs
 - ✅ Reconstructs canvas files
@@ -306,12 +306,12 @@
 
 **Command Signature**:
 ```bash
-mujarrad clone <target-path> --workspace <slug> [--no-git] [--include-history]
+mujarrad clone <target-path> --space <slug> [--no-git] [--include-history]
 ```
 
 **Features Implemented**:
 - ✅ Required target-path argument
-- ✅ Required --workspace/-w option
+- ✅ Required --space/-w option
 - ✅ Optional --no-git flag (skip Git init)
 - ✅ Optional --include-history flag (include version history)
 - ✅ Authentication validation
@@ -320,7 +320,7 @@ mujarrad clone <target-path> --workspace <slug> [--no-git] [--include-history]
 - ✅ Git repository initialization with simple-git
   - git init
   - git add ./*
-  - git commit with workspace reference
+  - git commit with space reference
 - ✅ Comprehensive error handling (401, 404, 403, 5xx, network errors)
 - ✅ Git initialization failures handled gracefully (warns but doesn't fail)
 
@@ -328,7 +328,7 @@ mujarrad clone <target-path> --workspace <slug> [--no-git] [--include-history]
 - simple-git: ^3.28.0
 
 **Acceptance Criteria**: All met ✓
-- ✅ Clone command with required workspace option
+- ✅ Clone command with required space option
 - ✅ Progress feedback during clone
 - ✅ Git initialization (optional)
 - ✅ User-friendly error messages
@@ -416,11 +416,11 @@ mujarrad clone <target-path> --workspace <slug> [--no-git] [--include-history]
 
 **Command Signature**:
 ```bash
-mujarrad sync [--workspace <slug>]
+mujarrad sync [--space <slug>]
 ```
 
 **Features Implemented**:
-- ✅ Optional --workspace/-w flag (uses default if not provided)
+- ✅ Optional --space/-w flag (uses default if not provided)
 - ✅ Authentication validation
 - ✅ Detects local changes via Git diff
 - ✅ Pushes changes to backend
@@ -435,7 +435,7 @@ mujarrad sync [--workspace <slug>]
 - Updates sync timestamp via CacheManager
 
 **Acceptance Criteria**: All met ✓
-- ✅ Sync command with optional workspace option
+- ✅ Sync command with optional space option
 - ✅ Progress feedback during sync
 - ✅ Conflict resolution support
 - ✅ User-friendly error messages
@@ -516,13 +516,13 @@ NFR-003: Sync changes
 
 **FR Coverage** (FR-054 to FR-071):
 - ✅ FR-055: Template listing
-- ✅ FR-056: Template cloning to workspace
+- ✅ FR-056: Template cloning to space
 - ✅ FR-057: CONTEXT node copying
 - ✅ FR-058: Placeholder node creation with guidance content
 - ✅ FR-059: Relationship preservation
 - ✅ FR-060: Visual configuration preservation (canvas colors, positions)
 - ✅ FR-061: Template config file generation
-- ✅ FR-062: Template reference metadata in Workspace entity
+- ✅ FR-062: Template reference metadata in Space entity
 - ✅ FR-063: Config file included in cloned vault
 - ✅ FR-064: AI contextual mapping (template structure parsing)
 - ✅ FR-065: Template reference persistence during sync
@@ -534,7 +534,7 @@ NFR-003: Sync changes
 1. **Full Template-to-Vault Workflow**:
    - List templates (Business Model Canvas, Value Proposition Canvas)
    - Clone BMC template (9 components)
-   - Export workspace structure
+   - Export space structure
    - Create template.config.json
    - Generate placeholder markdown files
    - Create canvas file with visual layout
@@ -719,7 +719,7 @@ Tests:       44 passed, 44 total
 - ✅ Client-side name search
 - ✅ Sort by usage count (popularity)
 - ✅ Handles nested API response structure (response.data.data.templates)
-- ✅ Type-safe filtering with WorkspaceTemplateResponse
+- ✅ Type-safe filtering with SpaceTemplateResponse
 
 **Tests passing**: 12/12 ✓
 - ✅ Lists available templates
@@ -759,23 +759,23 @@ Tests:       44 passed, 44 total
 
 **Workflow Steps**:
 1. Get template details from API
-2. Create new workspace
-3. Instantiate template structure in workspace via API
-4. Clone workspace to local vault (using CloneService)
+2. Create new space
+3. Instantiate template structure in space via API
+4. Clone space to local vault (using CloneService)
 5. Write template.config.json with metadata
 
 **Features Implemented**:
-- ✅ Creates new workspace from template
+- ✅ Creates new space from template
 - ✅ Instantiates template with placeholder values
-- ✅ Clones instantiated workspace to local path
+- ✅ Clones instantiated space to local path
 - ✅ Writes template.config.json to .mujarrad/ directory
-- ✅ Config includes: templateId, templateName, workspaceId, placeholders, clonedAt
+- ✅ Config includes: templateId, templateName, spaceId, placeholders, clonedAt
 - ✅ Placeholder extraction using regex: /\{(\w+)\}/g
 - ✅ Handles templates with/without placeholders
 - ✅ Error handling for instantiation and clone failures
 
 **Tests passing**: 8/8 ✓
-- ✅ Instantiates workspace from template
+- ✅ Instantiates space from template
 - ✅ Includes template config file in cloned vault
 - ✅ Handles template with placeholders
 - ✅ Handles instantiation failure
@@ -785,10 +785,10 @@ Tests:       44 passed, 44 total
 - ✅ Handles duplicate placeholders
 
 **FR Coverage**:
-- ✅ FR-056: Clone workspace from template
+- ✅ FR-056: Clone space from template
 - ✅ FR-057: Apply clone requirements to template instantiation
 - ✅ FR-058: Include template placeholder content
-- ✅ FR-059: Copy template structure to new workspace
+- ✅ FR-059: Copy template structure to new space
 - ✅ FR-060: Preserve canvas visual configuration
 - ✅ FR-061: Template config file generation
 
@@ -823,12 +823,12 @@ mujarrad template clone <target-path> -t <id> -n <name> [-d <description>]
 **2. `mujarrad template clone` command**:
 - ✅ Required: target-path argument
 - ✅ Required: --template/-t option (template ID)
-- ✅ Required: --name/-n option (workspace name)
-- ✅ Optional: --description/-d option (workspace description)
+- ✅ Required: --name/-n option (space name)
+- ✅ Optional: --description/-d option (space description)
 - ✅ Authentication validation
 - ✅ Target path validation (creates if needed, warns if not empty)
 - ✅ Progress feedback with ora spinner
-- ✅ Success summary (workspace ID, nodes cloned, duration, vault location)
+- ✅ Success summary (space ID, nodes cloned, duration, vault location)
 - ✅ Comprehensive error handling (401, 404, 403, 5xx, network errors)
 
 **Tests passing**: 4/4 ✓
@@ -841,7 +841,7 @@ mujarrad template clone <target-path> -t <id> -n <name> [-d <description>]
 - ✅ Added to main CLI in `src/index.ts`
 - ✅ Uses TemplateService for listing
 - ✅ Uses TemplateCloneWorkflow for cloning
-- ✅ Uses CloneService for workspace export
+- ✅ Uses CloneService for space export
 - ✅ Integrates with ConfigManager and CredentialManager
 
 **Status**: Complete ✓
@@ -851,7 +851,7 @@ mujarrad template clone <target-path> -t <id> -n <name> [-d <description>]
 ## 📋 Remaining Phases
 
 ### Phase 9: Additional Workflows & Features (Not Started - 0/4 tasks)
-- Task 9.1: Implement workspace CLI Commands
+- Task 9.1: Implement space CLI Commands
 - Task 9.2: Implement version history CLI Commands
 - Task 9.3: Implement sharing CLI Commands
 - Task 9.4: Implement status CLI Command
@@ -1030,10 +1030,10 @@ Latest Commits:
 ### Immediate Priority (Phase 9: Additional Features):
 **NEXT UP**: Additional CLI commands (P1 priority)
 
-1. **Task 9.1: Implement workspace CLI Commands** (~4 hours)
-   - `mujarrad workspace create` - Create new workspace
-   - `mujarrad workspace list` - List all workspaces
-   - `mujarrad workspace delete` - Delete workspace
+1. **Task 9.1: Implement space CLI Commands** (~4 hours)
+   - `mujarrad space create` - Create new space
+   - `mujarrad space list` - List all spaces
+   - `mujarrad space delete` - Delete space
    - Progress tracking and error handling
 
 2. **Task 9.2: Implement version history CLI Commands** (~4 hours)
@@ -1042,14 +1042,14 @@ Latest Commits:
    - Formatted diff output
 
 3. **Task 9.3: Implement sharing CLI Commands** (~3 hours)
-   - `mujarrad share workspace` - Share workspace with users
-   - `mujarrad share list` - List workspace permissions
+   - `mujarrad share space` - Share space with users
+   - `mujarrad share list` - List space permissions
    - Permission management
 
 4. **Task 9.4: Implement status CLI Command** (~2 hours)
-   - `mujarrad status` - Show current workspace status
+   - `mujarrad status` - Show current space status
    - Display sync status, pending changes, conflicts
-   - Summary of workspace health
+   - Summary of space health
 
 ### Alternative Priority (Phase 10: Distribution):
 If ready for packaging:
@@ -1101,13 +1101,13 @@ All completed tasks followed strict TDD:
 #### Layer 2: Services (Orchestration)
 - AuthService: JWT authentication with refresh
 - UploadService: Batch upload orchestration (in progress)
-- CloneService: Workspace download (pending)
+- CloneService: Space download (pending)
 - SyncService: Bidirectional sync (pending)
 
 #### Layer 3: API Client
 - Generated TypeScript client from OpenAPI spec
 - Axios-based with type safety
-- 8 API categories (Auth, Workspaces, Upload, Clone, Sync, Templates, Version, Sharing)
+- 8 API categories (Auth, Spaces, Upload, Clone, Sync, Templates, Version, Sharing)
 
 #### Layer 4: Filesystem Utilities
 - VaultScanner: File discovery with SHA-256 hashing
@@ -1120,7 +1120,7 @@ All completed tasks followed strict TDD:
 - CredentialManager: OS keychain integration
 - Logger: winston with file rotation
 - ProgressBar/Spinner: ora + cli-progress
-- CacheManager: Local workspace cache
+- CacheManager: Local space cache
 - RetryHandler: Exponential backoff
 - ErrorHandler: User-friendly error messages
 - ResponseValidator: Type-safe API validation

@@ -4,9 +4,9 @@ All URIs are relative to *https://api.example.com*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**getUploadLog**](#getuploadlog) | **GET** /api/workspaces/{workspaceId}/upload/log | Download upload log|
-|[**getUploadStatus**](#getuploadstatus) | **GET** /api/workspaces/{workspaceId}/upload/status | Check upload progress|
-|[**uploadBatch**](#uploadbatch) | **POST** /api/workspaces/{workspaceId}/upload/batch | Batch upload files to workspace|
+|[**getUploadLog**](#getuploadlog) | **GET** /api/spaces/{spaceId}/upload/log | Download upload log|
+|[**getUploadStatus**](#getuploadstatus) | **GET** /api/spaces/{spaceId}/upload/status | Check upload progress|
+|[**uploadBatch**](#uploadbatch) | **POST** /api/spaces/{spaceId}/upload/batch | Batch upload files to space|
 
 # **getUploadLog**
 > File getUploadLog()
@@ -24,11 +24,11 @@ import {
 const configuration = new Configuration();
 const apiInstance = new UploadApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 let sessionId: string; // (default to undefined)
 
 const { status, data } = await apiInstance.getUploadLog(
-    workspaceId,
+    spaceId,
     sessionId
 );
 ```
@@ -37,7 +37,7 @@ const { status, data } = await apiInstance.getUploadLog(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 | **sessionId** | [**string**] |  | defaults to undefined|
 
 
@@ -81,11 +81,11 @@ import {
 const configuration = new Configuration();
 const apiInstance = new UploadApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 let sessionId: string; //Upload session ID (default to undefined)
 
 const { status, data } = await apiInstance.getUploadStatus(
-    workspaceId,
+    spaceId,
     sessionId
 );
 ```
@@ -94,7 +94,7 @@ const { status, data } = await apiInstance.getUploadStatus(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 | **sessionId** | [**string**] | Upload session ID | defaults to undefined|
 
 
@@ -125,7 +125,7 @@ const { status, data } = await apiInstance.getUploadStatus(
 # **uploadBatch**
 > UploadBatch202Response uploadBatch()
 
-Upload multiple Obsidian files (notes, canvases) to workspace in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
+Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
 
 ### Example
 
@@ -138,14 +138,14 @@ import {
 const configuration = new Configuration();
 const apiInstance = new UploadApi(configuration);
 
-let workspaceId: string; //Workspace UUID (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 let files: Array<File>; //Array of Obsidian files (.md, .canvas) (default to undefined)
 let batchNumber: number; //Batch sequence number (for resume capability) (optional) (default to undefined)
 let sessionId: string; //Upload session ID (for continuing previous upload) (optional) (default to undefined)
 let commitMessage: string; //Git commit message for this batch (optional) (default to undefined)
 
 const { status, data } = await apiInstance.uploadBatch(
-    workspaceId,
+    spaceId,
     files,
     batchNumber,
     sessionId,
@@ -157,7 +157,7 @@ const { status, data } = await apiInstance.uploadBatch(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **workspaceId** | [**string**] | Workspace UUID | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 | **files** | **Array&lt;File&gt;** | Array of Obsidian files (.md, .canvas) | defaults to undefined|
 | **batchNumber** | [**number**] | Batch sequence number (for resume capability) | (optional) defaults to undefined|
 | **sessionId** | [**string**] | Upload session ID (for continuing previous upload) | (optional) defaults to undefined|

@@ -1,6 +1,6 @@
 import {
   AuthenticationApi,
-  WorkspacesApi,
+  SpacesApi,
   UploadApi,
   CloneApi,
   SyncApi,
@@ -17,14 +17,14 @@ describe('API Client Generation', () => {
     expect(typeof authApi.registerUser).toBe('function');
   });
 
-  it('should have WorkspacesApi with workspace management methods', () => {
-    const workspacesApi = new WorkspacesApi();
-    expect(workspacesApi).toBeDefined();
-    expect(typeof workspacesApi.listWorkspaces).toBe('function');
-    expect(typeof workspacesApi.createWorkspace).toBe('function');
-    expect(typeof workspacesApi.getWorkspace).toBe('function');
-    expect(typeof workspacesApi.updateWorkspace).toBe('function');
-    expect(typeof workspacesApi.deleteWorkspace).toBe('function');
+  it('should have SpacesApi with space management methods', () => {
+    const spacesApi = new SpacesApi();
+    expect(spacesApi).toBeDefined();
+    expect(typeof spacesApi.listSpaces).toBe('function');
+    expect(typeof spacesApi.createSpace).toBe('function');
+    expect(typeof spacesApi.getSpace).toBe('function');
+    expect(typeof spacesApi.updateSpace).toBe('function');
+    expect(typeof spacesApi.deleteSpace).toBe('function');
   });
 
   it('should have UploadApi with upload session methods', () => {
@@ -38,7 +38,7 @@ describe('API Client Generation', () => {
   it('should have CloneApi with export methods', () => {
     const cloneApi = new CloneApi();
     expect(cloneApi).toBeDefined();
-    expect(typeof cloneApi.exportWorkspace).toBe('function');
+    expect(typeof cloneApi.exportSpace).toBe('function');
     expect(typeof cloneApi.getExportStatus).toBe('function');
     expect(typeof cloneApi.downloadExport).toBe('function');
   });
@@ -70,12 +70,12 @@ describe('API Client Generation', () => {
   it('should have SharingApi with sharing methods', () => {
     const sharingApi = new SharingApi();
     expect(sharingApi).toBeDefined();
-    expect(typeof sharingApi.shareWorkspace).toBe('function');
+    expect(typeof sharingApi.shareSpace).toBe('function');
   });
 
   it('should export all 8 API categories', () => {
     expect(AuthenticationApi).toBeDefined();
-    expect(WorkspacesApi).toBeDefined();
+    expect(SpacesApi).toBeDefined();
     expect(UploadApi).toBeDefined();
     expect(CloneApi).toBeDefined();
     expect(SyncApi).toBeDefined();

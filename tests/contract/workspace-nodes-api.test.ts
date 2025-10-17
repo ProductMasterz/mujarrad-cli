@@ -1,19 +1,19 @@
 /**
- * Contract tests for GET /api/workspaces/{slug}/nodes pagination
+ * Contract tests for GET /api/spaces/{slug}/nodes pagination
  * Feature: 009-init-command-enhancement
- * Task: T018 - Contract test for workspace nodes pagination
+ * Task: T018 - Contract test for space nodes pagination
  *
- * Purpose: Verify API client integration with backend workspace nodes endpoint
+ * Purpose: Verify API client integration with backend space nodes endpoint
  * Tests FR-007 (remote content pull), FR-019 (metadata caching), NFR-004 (10,000+ nodes)
  *
  * TDD approach: This test is written BEFORE implementation and should FAIL initially
  */
 
 import nock from 'nock';
-import { SyncWorkspacesApi, Configuration } from '../../src/api/generated/index.js';
+import { SyncSpacesApi, Configuration } from '../../src/api/generated/index.js';
 
-describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
-    let workspaceApi: SyncWorkspacesApi;
+describe('Contract: GET /api/spaces/{slug}/nodes - Pagination', () => {
+    let spaceApi: SyncSpacesApi;
     const baseURL = 'https://mujarrad.onrender.com';
     const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token';
 
@@ -22,7 +22,7 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
             basePath: baseURL,
             accessToken: mockToken
         });
-        workspaceApi = new SyncWorkspacesApi(config);
+        spaceApi = new SyncSpacesApi(config);
     });
 
     afterEach(() => {
@@ -69,11 +69,11 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
             };
 
             nock(baseURL)
-                .get('/api/workspaces/my-workspace/nodes')
+                .get('/api/spaces/my-space/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, mockResponse);
 
-            const response = await workspaceApi.listWorkspaceNodes('my-workspace');
+            const response = await spaceApi.listSpaceNodes('my-space');
 
             expect(response.data.data).toHaveLength(2);
             expect(response.data.data[0].uuid).toBe('a1b2c3d4-e5f6-7890-abcd-ef1234567890');
@@ -104,12 +104,12 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
             };
 
             nock(baseURL)
-                .get('/api/workspaces/my-workspace/nodes')
+                .get('/api/spaces/my-space/nodes')
                 .query({ cursor: 'eyJsYXN0SWQiOjEwMH0=' })
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, mockResponse);
 
-            const response = await workspaceApi.listWorkspaceNodes('my-workspace', 'eyJsYXN0SWQiOjEwMH0=');
+            const response = await spaceApi.listSpaceNodes('my-space', 'eyJsYXN0SWQiOjEwMH0=');
 
             expect(response.data.data).toHaveLength(1);
             expect(response.data.pagination.nextCursor).toBeNull();
@@ -138,19 +138,19 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
             };
 
             nock(baseURL)
-                .get('/api/workspaces/my-workspace/nodes')
+                .get('/api/spaces/my-space/nodes')
                 .query({ cursor: 'eyJsYXN0SWQiOjIwMH0=' })
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, mockResponse);
 
-            const response = await workspaceApi.listWorkspaceNodes('my-workspace', 'eyJsYXN0SWQiOjIwMH0=');
+            const response = await spaceApi.listSpaceNodes('my-space', 'eyJsYXN0SWQiOjIwMH0=');
 
             // Last page should have nextCursor = null and hasMore = false
             expect(response.data.pagination.nextCursor).toBeNull();
             expect(response.data.pagination.hasMore).toBe(false);
         });
 
-        it('should handle empty workspace (0 nodes)', async () => {
+        it('should handle empty space (0 nodes)', async () => {
             const mockResponse = {
                 data: [],
                 pagination: {
@@ -160,11 +160,11 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
             };
 
             nock(baseURL)
-                .get('/api/workspaces/empty-workspace/nodes')
+                .get('/api/spaces/empty-space/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, mockResponse);
 
-            const response = await workspaceApi.listWorkspaceNodes('empty-workspace');
+            const response = await spaceApi.listSpaceNodes('empty-space');
 
             expect(response.data.data).toHaveLength(0);
             expect(response.data.pagination.nextCursor).toBeNull();
@@ -193,12 +193,12 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
             };
 
             nock(baseURL)
-                .get('/api/workspaces/my-workspace/nodes')
+                .get('/api/spaces/my-space/nodes')
                 .query({ limit: 50 })
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, mockResponse);
 
-            const response = await workspaceApi.listWorkspaceNodes('my-workspace', undefined, 50);
+            const response = await spaceApi.listSpaceNodes('my-space', undefined, 50);
 
             expect(response.data.data).toHaveLength(1);
             expect(response.data.pagination.nextCursor).toBe('eyJsYXN0SWQiOjUwfQ==');
@@ -206,35 +206,35 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
     });
 
     describe('Error Responses', () => {
-        it('should handle 404 workspace not found', async () => {
+        it('should handle 404 space not found', async () => {
             nock(baseURL)
-                .get('/api/workspaces/nonexistent/nodes')
+                .get('/api/spaces/nonexistent/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(404, {
-                    error: "Workspace 'nonexistent' not found",
-                    code: 'WORKSPACE_NOT_FOUND',
+                    error: "Space 'nonexistent' not found",
+                    code: 'SPACE_NOT_FOUND',
                     timestamp: '2025-10-12T15:30:00Z'
                 });
 
-            await expect(workspaceApi.listWorkspaceNodes('nonexistent')).rejects.toThrow();
+            await expect(spaceApi.listSpaceNodes('nonexistent')).rejects.toThrow();
         });
 
-        it('should handle 403 forbidden (no access to workspace)', async () => {
+        it('should handle 403 forbidden (no access to space)', async () => {
             nock(baseURL)
-                .get('/api/workspaces/restricted/nodes')
+                .get('/api/spaces/restricted/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(403, {
-                    error: 'You do not have read access to this workspace',
+                    error: 'You do not have read access to this space',
                     code: 'FORBIDDEN',
                     timestamp: '2025-10-12T15:30:00Z'
                 });
 
-            await expect(workspaceApi.listWorkspaceNodes('restricted')).rejects.toThrow();
+            await expect(spaceApi.listSpaceNodes('restricted')).rejects.toThrow();
         });
 
         it('should handle 401 unauthorized (invalid/expired token)', async () => {
             nock(baseURL)
-                .get('/api/workspaces/my-workspace/nodes')
+                .get('/api/spaces/my-space/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(401, {
                     error: "Authentication required. Please log in with 'mujarrad auth login'",
@@ -242,12 +242,12 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
                     timestamp: '2025-10-12T15:30:00Z'
                 });
 
-            await expect(workspaceApi.listWorkspaceNodes('my-workspace')).rejects.toThrow();
+            await expect(spaceApi.listSpaceNodes('my-space')).rejects.toThrow();
         });
 
         it('should handle 500 internal server error', async () => {
             nock(baseURL)
-                .get('/api/workspaces/my-workspace/nodes')
+                .get('/api/spaces/my-space/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(500, {
                     error: 'An unexpected error occurred. Please try again later.',
@@ -255,7 +255,7 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
                     timestamp: '2025-10-12T15:30:00Z'
                 });
 
-            await expect(workspaceApi.listWorkspaceNodes('my-workspace')).rejects.toThrow();
+            await expect(spaceApi.listSpaceNodes('my-space')).rejects.toThrow();
         });
     });
 
@@ -285,11 +285,11 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
             };
 
             nock(baseURL)
-                .get('/api/workspaces/my-workspace/nodes')
+                .get('/api/spaces/my-space/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, mockResponse);
 
-            const response = await workspaceApi.listWorkspaceNodes('my-workspace');
+            const response = await spaceApi.listSpaceNodes('my-space');
 
             // Validate response structure matches PaginatedNodesResponse schema
             expect(response.data).toHaveProperty('data');
@@ -345,11 +345,11 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
             };
 
             nock(baseURL)
-                .get('/api/workspaces/my-workspace/nodes')
+                .get('/api/spaces/my-space/nodes')
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, mockResponse);
 
-            const response = await workspaceApi.listWorkspaceNodes('my-workspace');
+            const response = await spaceApi.listSpaceNodes('my-space');
 
             const node = response.data.data[0];
             expect(node.ancestorHash).toBeNull();
@@ -357,8 +357,8 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
     });
 
     describe('Performance & Memory Efficiency (NFR-004)', () => {
-        it('should handle large workspace with 500 nodes per page', async () => {
-            // Generate 500 mock nodes to simulate large workspace
+        it('should handle large space with 500 nodes per page', async () => {
+            // Generate 500 mock nodes to simulate large space
             const mockNodes = Array.from({ length: 500 }, (_, i) => ({
                 uuid: `${i.toString().padStart(8, '0')}-0000-0000-0000-000000000000`,
                 title: `Node ${i}`,
@@ -380,12 +380,12 @@ describe('Contract: GET /api/workspaces/{slug}/nodes - Pagination', () => {
             };
 
             nock(baseURL)
-                .get('/api/workspaces/large-workspace/nodes')
+                .get('/api/spaces/large-space/nodes')
                 .query({ limit: 500 })
                 .matchHeader('Authorization', `Bearer ${mockToken}`)
                 .reply(200, mockResponse);
 
-            const response = await workspaceApi.listWorkspaceNodes('large-workspace', undefined, 500);
+            const response = await spaceApi.listSpaceNodes('large-space', undefined, 500);
 
             expect(response.data.data).toHaveLength(500);
             expect(response.data.pagination.hasMore).toBe(true);

@@ -4,7 +4,7 @@
  * Tests clone functionality:
  * - Authentication validation
  * - Target path creation
- * - Workspace cloning
+ * - Space cloning
  * - Git initialization (optional)
  * - Progress tracking
  * - Error handling
@@ -73,7 +73,7 @@ describe('Clone Command', () => {
 
     // Mock CloneService
     mockCloneService = {
-      cloneWorkspace: jest.fn(),
+      cloneSpace: jest.fn(),
     } as any;
 
     // Setup clone command with mocked service
@@ -89,7 +89,7 @@ describe('Clone Command', () => {
     it('should register clone command', () => {
       const cmd = program.commands.find(c => c.name() === 'clone');
       expect(cmd).toBeDefined();
-      expect(cmd!.description()).toContain('Clone Mujarrad workspace');
+      expect(cmd!.description()).toContain('Clone Mujarrad space');
     });
 
     it('should have target-path argument', () => {
@@ -98,12 +98,12 @@ describe('Clone Command', () => {
       expect(helpText).toContain('target-path');
     });
 
-    it('should require --workspace option', () => {
+    it('should require --space option', () => {
       const cmd = program.commands.find(c => c.name() === 'clone');
       const options = cmd!.options;
-      const workspaceOpt = options.find(opt => opt.long === '--workspace');
-      expect(workspaceOpt).toBeDefined();
-      expect(workspaceOpt!.required).toBe(true);
+      const spaceOpt = options.find(opt => opt.long === '--space');
+      expect(spaceOpt).toBeDefined();
+      expect(spaceOpt!.required).toBe(true);
     });
 
     it('should have optional --no-git flag', () => {
@@ -177,9 +177,9 @@ describe('Clone Command', () => {
   });
 
   describe('Cloning workflow', () => {
-    it('should call cloneWorkspace with correct parameters', async () => {
+    it('should call cloneSpace with correct parameters', async () => {
       // Mock successful clone
-      mockCloneService.cloneWorkspace.mockResolvedValue({
+      mockCloneService.cloneSpace.mockResolvedValue({
         success: true,
         totalNodes: 100,
         totalErrors: 0,
@@ -188,7 +188,7 @@ describe('Clone Command', () => {
 
       // This test would require more complex mocking
       // For now, verify the service structure
-      expect(mockCloneService.cloneWorkspace).toBeDefined();
+      expect(mockCloneService.cloneSpace).toBeDefined();
     });
 
     it('should display progress during clone', () => {
@@ -216,8 +216,8 @@ describe('Clone Command', () => {
       expect(true).toBe(true);
     });
 
-    it('should create initial commit with workspace reference', () => {
-      // Commit message should mention workspace slug
+    it('should create initial commit with space reference', () => {
+      // Commit message should mention space slug
       expect(true).toBe(true);
     });
 
@@ -245,8 +245,8 @@ describe('Clone Command', () => {
       expect(true).toBe(true);
     });
 
-    it('should handle 404 workspace not found', () => {
-      // Should suggest checking workspace slug
+    it('should handle 404 space not found', () => {
+      // Should suggest checking space slug
       expect(true).toBe(true);
     });
 
@@ -273,7 +273,7 @@ describe('Clone Command', () => {
 
   describe('Logging', () => {
     it('should log clone initiation', () => {
-      // Log: workspace slug, target path
+      // Log: space slug, target path
       expect(true).toBe(true);
     });
 
@@ -294,17 +294,17 @@ describe('Clone Command', () => {
   });
 
   describe('Edge cases', () => {
-    it('should handle empty workspace', () => {
+    it('should handle empty space', () => {
       // Should complete with 0 nodes cloned
       expect(true).toBe(true);
     });
 
-    it('should handle very large workspaces', () => {
+    it('should handle very large spaces', () => {
       // Should handle thousands of nodes
       expect(true).toBe(true);
     });
 
-    it('should handle special characters in workspace slug', () => {
+    it('should handle special characters in space slug', () => {
       // Should properly encode/handle special chars
       expect(true).toBe(true);
     });

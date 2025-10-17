@@ -63,10 +63,10 @@ The Mujarrad CLI implementation has successfully completed **Phase 6 (Sync Workf
 
 #### Task 6.3: sync CLI Command ✅
 - **File**: `src/commands/sync.ts` (150 lines)
-- **Command**: `mujarrad sync [--workspace <slug>]`
+- **Command**: `mujarrad sync [--space <slug>]`
 
 **Features**:
-- Optional workspace flag (uses default if not provided)
+- Optional space flag (uses default if not provided)
 - Authentication validation
 - Progress feedback with ora spinner
 - Conflict handling with interactive prompts
@@ -212,7 +212,7 @@ Tests:       44 passed, 44 total
 
 **FR Coverage** (FR-054 to FR-071 - Template System):
 - ✅ FR-055: Template listing
-- ✅ FR-056: Template cloning to workspace
+- ✅ FR-056: Template cloning to space
 - ✅ FR-057: CONTEXT node copying
 - ✅ FR-058: Placeholder node creation with guidance
 - ✅ FR-059: Relationship preservation

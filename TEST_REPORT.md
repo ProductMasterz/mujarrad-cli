@@ -34,7 +34,7 @@ All Mujarrad CLI commands have been thoroughly tested with comprehensive unit an
 - 500 error retry logic (up to 3 attempts)
 - Authentication errors (401, missing token)
 - Network errors (connection refused, DNS)
-- Workspace errors (404, 413 payload too large)
+- Space errors (404, 413 payload too large)
 - Template command integration
 - Auth status with retry
 
@@ -64,7 +64,7 @@ All Mujarrad CLI commands have been thoroughly tested with comprehensive unit an
 - Version history (--include-history)
 - Error handling (401, 403, 404, 500, network)
 - Logging
-- Edge cases (empty workspace, large workspace, special chars)
+- Edge cases (empty space, large space, special chars)
 
 **Integration Tests:** Created (skipped without API token)
 - Full clone workflow
@@ -79,7 +79,7 @@ All Mujarrad CLI commands have been thoroughly tested with comprehensive unit an
 - `tests/integration/commands/clone.test.ts`
 
 **Key Features Tested:**
-- ✅ Workspace export and download
+- ✅ Space export and download
 - ✅ Local vault creation with .obsidian folder
 - ✅ Git init with initial commit
 - ✅ Version history inclusion (optional)
@@ -94,7 +94,7 @@ All Mujarrad CLI commands have been thoroughly tested with comprehensive unit an
 - Command structure
 - Help documentation
 - Authentication validation
-- Workspace resolution (flag vs config)
+- Space resolution (flag vs config)
 - Change detection via Git diff
 - Push changes to backend
 - Conflict resolution (KEEP_LOCAL, KEEP_REMOTE, MERGE)
@@ -108,7 +108,7 @@ All Mujarrad CLI commands have been thoroughly tested with comprehensive unit an
 - Push local changes to remote
 - Conflict detection and resolution
 - Sync timestamp updates
-- Error handling (non-existent workspace, non-git directory)
+- Error handling (non-existent space, non-git directory)
 - Git integration validation
 - Performance testing (100 file changes)
 
@@ -152,7 +152,7 @@ All Mujarrad CLI commands have been thoroughly tested with comprehensive unit an
 
 **Key Features Tested:**
 - ✅ List templates with filtering
-- ✅ Clone workspace from template
+- ✅ Clone space from template
 - ✅ Placeholder substitution
 - ✅ Progress tracking
 - ✅ Comprehensive error handling
