@@ -19,7 +19,7 @@ Retrieve content snapshot of node at specific version.
 import {
     VersionHistoryApi,
     Configuration
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new VersionHistoryApi(configuration);
@@ -76,7 +76,7 @@ Retrieve Git commit history for a specific node.
 import {
     VersionHistoryApi,
     Configuration
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new VersionHistoryApi(configuration);
@@ -137,7 +137,7 @@ import {
     VersionHistoryApi,
     Configuration,
     RollbackNodeRequest
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new VersionHistoryApi(configuration);

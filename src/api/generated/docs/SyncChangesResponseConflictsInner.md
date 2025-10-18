@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { SyncChangesResponseConflictsInner } from 'mujarrad-api-client';
+import { SyncChangesResponseConflictsInner } from './api';
 
 const instance: SyncChangesResponseConflictsInner = {
     filePath,

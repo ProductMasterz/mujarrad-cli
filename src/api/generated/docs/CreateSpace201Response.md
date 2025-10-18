@@ -1,4 +1,4 @@
-# ListNodeVersions200Response
+# CreateSpace201Response
 
 
 ## Properties
@@ -6,15 +6,15 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **success** | **boolean** |  | [default to undefined]
-**data** | [**ListNodeVersions200ResponseAllOfData**](ListNodeVersions200ResponseAllOfData.md) |  | [default to undefined]
+**data** | [**SpaceResponse**](SpaceResponse.md) |  | [default to undefined]
 **timestamp** | **string** |  | [default to undefined]
 
 ## Example
 
 ```typescript
-import { ListNodeVersions200Response } from './api';
+import { CreateSpace201Response } from './api';
 
-const instance: ListNodeVersions200Response = {
+const instance: CreateSpace201Response = {
     success,
     data,
     timestamp,

@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { UploadBatch202Response } from 'mujarrad-api-client';
+import { UploadBatch202Response } from './api';
 
 const instance: UploadBatch202Response = {
     success,

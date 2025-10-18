@@ -551,13 +551,9 @@ paths:
               required: [files]
               properties:
                 files:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
-                  minItems: 1
-                  maxItems: 100
-                  description: Array of Obsidian files (.md, .canvas)
+                  type: string
+                  format: binary
+                  description: JSON blob containing array of FileUploadData objects (max 100 files)
                 batchNumber:
                   type: integer
                   description: Batch sequence number (for resume capability)

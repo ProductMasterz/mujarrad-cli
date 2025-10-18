@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { RollbackNodeRequest } from 'mujarrad-api-client';
+import { RollbackNodeRequest } from './api';
 
 const instance: RollbackNodeRequest = {
     versionId,

@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { RollbackNode200Response } from 'mujarrad-api-client';
+import { RollbackNode200Response } from './api';
 
 const instance: RollbackNode200Response = {
     success,

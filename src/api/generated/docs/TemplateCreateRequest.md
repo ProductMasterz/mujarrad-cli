@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { TemplateCreateRequest } from 'mujarrad-api-client';
+import { TemplateCreateRequest } from './api';
 
 const instance: TemplateCreateRequest = {
     spaceId,

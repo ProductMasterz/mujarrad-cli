@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { CreateTemplate201Response } from 'mujarrad-api-client';
+import { CreateTemplate201Response } from './api';
 
 const instance: CreateTemplate201Response = {
     success,

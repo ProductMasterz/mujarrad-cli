@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ErrorResponse } from 'mujarrad-api-client';
+import { ErrorResponse } from './api';
 
 const instance: ErrorResponse = {
     success,

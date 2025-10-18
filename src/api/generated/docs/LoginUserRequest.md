@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { LoginUserRequest } from 'mujarrad-api-client';
+import { LoginUserRequest } from './api';
 
 const instance: LoginUserRequest = {
     email,

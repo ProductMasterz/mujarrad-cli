@@ -1,23 +1,21 @@
-# RegisterUserRequest
+# ExportSpace202ResponseAllOfData
 
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**email** | **string** |  | [default to undefined]
-**password** | **string** |  | [default to undefined]
-**username** | **string** |  | [default to undefined]
+**exportJobId** | **string** |  | [optional] [default to undefined]
+**status** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { RegisterUserRequest } from './api';
+import { ExportSpace202ResponseAllOfData } from './api';
 
-const instance: RegisterUserRequest = {
-    email,
-    password,
-    username,
+const instance: ExportSpace202ResponseAllOfData = {
+    exportJobId,
+    status,
 };
 ```
 

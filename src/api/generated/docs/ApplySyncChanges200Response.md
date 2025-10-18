@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ApplySyncChanges200Response } from 'mujarrad-api-client';
+import { ApplySyncChanges200Response } from './api';
 
 const instance: ApplySyncChanges200Response = {
     success,

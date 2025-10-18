@@ -162,9 +162,13 @@ export class UploadService {
     });
 
     try {
+      // Create JSON blob for the files array
+      const filesJson = JSON.stringify(files);
+      const filesBlob = new Blob([filesJson], { type: 'application/json' }) as any as File;
+
       const response = await this.uploadApi.uploadBatch(
         spaceId,
-        files,
+        filesBlob,
         batchNumber,
         sessionId,
         commitMessage

@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ListTemplates200ResponseAllOfData } from 'mujarrad-api-client';
+import { ListTemplates200ResponseAllOfData } from './api';
 
 const instance: ListTemplates200ResponseAllOfData = {
     templates,

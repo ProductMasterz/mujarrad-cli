@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { TemplateInstantiateRequest } from 'mujarrad-api-client';
+import { TemplateInstantiateRequest } from './api';
 
 const instance: TemplateInstantiateRequest = {
     templateId,

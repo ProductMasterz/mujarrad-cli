@@ -1,7 +1,5 @@
 .gitignore
 .npmignore
-.openapi-generator-ignore
-README.md
 api.ts
 base.ts
 common.ts
@@ -11,8 +9,8 @@ docs/ApplySyncChangesRequest.md
 docs/ApplySyncChangesRequestChangesInner.md
 docs/AuthenticationApi.md
 docs/CloneApi.md
-docs/CreateTemplate201Response.md
 docs/CreateSpace201Response.md
+docs/CreateTemplate201Response.md
 docs/DetectSyncChanges200Response.md
 docs/DetectSyncChangesRequest.md
 docs/DetectSyncChangesRequestLocalFilesInner.md
@@ -28,10 +26,10 @@ docs/InstantiateTemplate200Response.md
 docs/InstantiateTemplate200ResponseAllOfData.md
 docs/ListNodeVersions200Response.md
 docs/ListNodeVersions200ResponseAllOfData.md
-docs/ListTemplates200Response.md
-docs/ListTemplates200ResponseAllOfData.md
 docs/ListSpaces200Response.md
 docs/ListSpaces200ResponseAllOfData.md
+docs/ListTemplates200Response.md
+docs/ListTemplates200ResponseAllOfData.md
 docs/LoginUserRequest.md
 docs/NodeVersionResponse.md
 docs/NodeVersionResponseGitMetadata.md
@@ -41,6 +39,11 @@ docs/RollbackNode200ResponseAllOfData.md
 docs/RollbackNodeRequest.md
 docs/ShareSpaceRequest.md
 docs/SharingApi.md
+docs/SpaceCreateRequest.md
+docs/SpaceResponse.md
+docs/SpaceTemplateResponse.md
+docs/SpaceUpdateRequest.md
+docs/SpacesApi.md
 docs/SuccessResponse.md
 docs/SyncApi.md
 docs/SyncChangesResponse.md
@@ -56,13 +59,5 @@ docs/UploadApi.md
 docs/UploadBatch202Response.md
 docs/UploadSessionResponse.md
 docs/VersionHistoryApi.md
-docs/SpaceCreateRequest.md
-docs/SpaceResponse.md
-docs/SpaceTemplateResponse.md
-docs/SpaceUpdateRequest.md
-docs/SpacesApi.md
 git_push.sh
 index.ts
-package.json
-tsconfig.esm.json
-tsconfig.json

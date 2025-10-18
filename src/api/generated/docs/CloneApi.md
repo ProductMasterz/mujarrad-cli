@@ -19,7 +19,7 @@ Download space exported as ZIP archive.
 import {
     CloneApi,
     Configuration
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new CloneApi(configuration);
@@ -78,7 +78,7 @@ import {
     CloneApi,
     Configuration,
     ExportSpaceRequest
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new CloneApi(configuration);
@@ -135,7 +135,7 @@ Retrieve status of ongoing export job.
 import {
     CloneApi,
     Configuration
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new CloneApi(configuration);

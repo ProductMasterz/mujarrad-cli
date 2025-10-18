@@ -1,22 +1,24 @@
-# ListNodeVersions200ResponseAllOfData
+# ListSpaces200ResponseAllOfData
 
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**versions** | [**Array&lt;NodeVersionResponse&gt;**](NodeVersionResponse.md) |  | [optional] [default to undefined]
+**spaces** | [**Array&lt;SpaceResponse&gt;**](SpaceResponse.md) |  | [optional] [default to undefined]
 **totalElements** | **number** |  | [optional] [default to undefined]
+**totalPages** | **number** |  | [optional] [default to undefined]
 **currentPage** | **number** |  | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { ListNodeVersions200ResponseAllOfData } from './api';
+import { ListSpaces200ResponseAllOfData } from './api';
 
-const instance: ListNodeVersions200ResponseAllOfData = {
-    versions,
+const instance: ListSpaces200ResponseAllOfData = {
+    spaces,
     totalElements,
+    totalPages,
     currentPage,
 };
 ```

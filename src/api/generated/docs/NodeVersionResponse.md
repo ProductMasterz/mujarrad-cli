@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { NodeVersionResponse } from 'mujarrad-api-client';
+import { NodeVersionResponse } from './api';
 
 const instance: NodeVersionResponse = {
     id,

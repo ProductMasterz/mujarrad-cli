@@ -20,7 +20,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { UploadSessionResponse } from 'mujarrad-api-client';
+import { UploadSessionResponse } from './api';
 
 const instance: UploadSessionResponse = {
     id,

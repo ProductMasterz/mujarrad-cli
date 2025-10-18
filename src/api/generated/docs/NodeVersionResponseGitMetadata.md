@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { NodeVersionResponseGitMetadata } from 'mujarrad-api-client';
+import { NodeVersionResponseGitMetadata } from './api';
 
 const instance: NodeVersionResponseGitMetadata = {
     commitHash,

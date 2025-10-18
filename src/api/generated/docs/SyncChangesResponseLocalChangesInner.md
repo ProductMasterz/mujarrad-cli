@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { SyncChangesResponseLocalChangesInner } from 'mujarrad-api-client';
+import { SyncChangesResponseLocalChangesInner } from './api';
 
 const instance: SyncChangesResponseLocalChangesInner = {
     filePath,

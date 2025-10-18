@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { InstantiateTemplate200ResponseAllOfData } from 'mujarrad-api-client';
+import { InstantiateTemplate200ResponseAllOfData } from './api';
 
 const instance: InstantiateTemplate200ResponseAllOfData = {
     nodesCreated,

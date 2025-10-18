@@ -19,7 +19,7 @@ Retrieve authenticated user\'s profile information.
 import {
     AuthenticationApi,
     Configuration
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new AuthenticationApi(configuration);
@@ -65,7 +65,7 @@ import {
     AuthenticationApi,
     Configuration,
     LoginUserRequest
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new AuthenticationApi(configuration);
@@ -118,7 +118,7 @@ import {
     AuthenticationApi,
     Configuration,
     RegisterUserRequest
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new AuthenticationApi(configuration);

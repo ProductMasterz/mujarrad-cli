@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { GetExportStatus200ResponseAllOfData } from 'mujarrad-api-client';
+import { GetExportStatus200ResponseAllOfData } from './api';
 
 const instance: GetExportStatus200ResponseAllOfData = {
     exportJobId,

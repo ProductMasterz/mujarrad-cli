@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ApplySyncChangesRequestChangesInner } from 'mujarrad-api-client';
+import { ApplySyncChangesRequestChangesInner } from './api';
 
 const instance: ApplySyncChangesRequestChangesInner = {
     filePath,

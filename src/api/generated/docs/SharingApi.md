@@ -18,7 +18,7 @@ import {
     SharingApi,
     Configuration,
     ShareSpaceRequest
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new SharingApi(configuration);

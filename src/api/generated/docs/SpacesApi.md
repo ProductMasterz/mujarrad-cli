@@ -1,36 +1,37 @@
-# TemplatesApi
+# SpacesApi
 
 All URIs are relative to *https://api.example.com*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**createTemplate**](#createtemplate) | **POST** /api/templates | Create template from space|
-|[**deleteTemplate**](#deletetemplate) | **DELETE** /api/templates/{templateId} | Delete template|
-|[**getTemplate**](#gettemplate) | **GET** /api/templates/{templateId} | Get template details|
+|[**createSpace**](#createspace) | **POST** /api/spaces | Create new space|
+|[**deleteSpace**](#deletespace) | **DELETE** /api/spaces/{spaceId} | Delete space|
+|[**getSpace**](#getspace) | **GET** /api/spaces/{spaceId} | Get space by ID|
 |[**instantiateTemplate**](#instantiatetemplate) | **POST** /api/spaces/{spaceId}/instantiate | Instantiate space from template|
-|[**listTemplates**](#listtemplates) | **GET** /api/templates | List space templates|
+|[**listSpaces**](#listspaces) | **GET** /api/spaces | List all spaces|
+|[**updateSpace**](#updatespace) | **PATCH** /api/spaces/{spaceId} | Update space|
 
-# **createTemplate**
-> CreateTemplate201Response createTemplate(templateCreateRequest)
+# **createSpace**
+> CreateSpace201Response createSpace(spaceCreateRequest)
 
-Convert existing space into reusable template with placeholders.
+Create empty space or from template.
 
 ### Example
 
 ```typescript
 import {
-    TemplatesApi,
+    SpacesApi,
     Configuration,
-    TemplateCreateRequest
+    SpaceCreateRequest
 } from './api';
 
 const configuration = new Configuration();
-const apiInstance = new TemplatesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
-let templateCreateRequest: TemplateCreateRequest; //
+let spaceCreateRequest: SpaceCreateRequest; //
 
-const { status, data } = await apiInstance.createTemplate(
-    templateCreateRequest
+const { status, data } = await apiInstance.createSpace(
+    spaceCreateRequest
 );
 ```
 
@@ -38,12 +39,12 @@ const { status, data } = await apiInstance.createTemplate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **templateCreateRequest** | **TemplateCreateRequest**|  | |
+| **spaceCreateRequest** | **SpaceCreateRequest**|  | |
 
 
 ### Return type
 
-**CreateTemplate201Response**
+**CreateSpace201Response**
 
 ### Authorization
 
@@ -58,33 +59,32 @@ const { status, data } = await apiInstance.createTemplate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**201** | Template created successfully |  -  |
+|**201** | Space created successfully |  -  |
 |**400** | Invalid request parameters or payload |  -  |
 |**401** | Authentication required or token invalid |  -  |
-|**404** | Resource not found |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **deleteTemplate**
-> deleteTemplate()
+# **deleteSpace**
+> deleteSpace()
 
-Delete space template (does not affect spaces created from it).
+Soft delete space and all contained nodes, attributes, mappings.
 
 ### Example
 
 ```typescript
 import {
-    TemplatesApi,
+    SpacesApi,
     Configuration
 } from './api';
 
 const configuration = new Configuration();
-const apiInstance = new TemplatesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
-let templateId: string; // (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 
-const { status, data } = await apiInstance.deleteTemplate(
-    templateId
+const { status, data } = await apiInstance.deleteSpace(
+    spaceId
 );
 ```
 
@@ -92,7 +92,7 @@ const { status, data } = await apiInstance.deleteTemplate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **templateId** | [**string**] |  | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type
@@ -112,33 +112,33 @@ void (empty response body)
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**204** | Template deleted successfully |  -  |
+|**204** | Space deleted successfully |  -  |
 |**401** | Authentication required or token invalid |  -  |
 |**403** | User does not have permission to access resource |  -  |
 |**404** | Resource not found |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getTemplate**
-> CreateTemplate201Response getTemplate()
+# **getSpace**
+> CreateSpace201Response getSpace()
 
-Retrieve template structure including context templates.
+Retrieve space details including node count and Git status.
 
 ### Example
 
 ```typescript
 import {
-    TemplatesApi,
+    SpacesApi,
     Configuration
 } from './api';
 
 const configuration = new Configuration();
-const apiInstance = new TemplatesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
-let templateId: string; // (default to undefined)
+let spaceId: string; //Space UUID (default to undefined)
 
-const { status, data } = await apiInstance.getTemplate(
-    templateId
+const { status, data } = await apiInstance.getSpace(
+    spaceId
 );
 ```
 
@@ -146,12 +146,12 @@ const { status, data } = await apiInstance.getTemplate(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **templateId** | [**string**] |  | defaults to undefined|
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
 
 
 ### Return type
 
-**CreateTemplate201Response**
+**CreateSpace201Response**
 
 ### Authorization
 
@@ -166,8 +166,9 @@ const { status, data } = await apiInstance.getTemplate(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | Template retrieved successfully |  -  |
+|**200** | Space retrieved successfully |  -  |
 |**401** | Authentication required or token invalid |  -  |
+|**403** | User does not have permission to access resource |  -  |
 |**404** | Resource not found |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -181,13 +182,13 @@ Clone template into existing space, replacing placeholders with values.
 
 ```typescript
 import {
-    TemplatesApi,
+    SpacesApi,
     Configuration,
     TemplateInstantiateRequest
 } from './api';
 
 const configuration = new Configuration();
-const apiInstance = new TemplatesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
 let spaceId: string; //Space UUID (default to undefined)
 let templateInstantiateRequest: TemplateInstantiateRequest; //
@@ -231,32 +232,30 @@ const { status, data } = await apiInstance.instantiateTemplate(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **listTemplates**
-> ListTemplates200Response listTemplates()
+# **listSpaces**
+> ListSpaces200Response listSpaces()
 
-Retrieve public templates and user\'s private templates.
+Retrieve all spaces owned by authenticated user (excludes soft-deleted).
 
 ### Example
 
 ```typescript
 import {
-    TemplatesApi,
+    SpacesApi,
     Configuration
 } from './api';
 
 const configuration = new Configuration();
-const apiInstance = new TemplatesApi(configuration);
+const apiInstance = new SpacesApi(configuration);
 
-let scope: 'all' | 'public' | 'private'; //Filter by visibility (optional) (default to 'all')
-let tags: string; //Filter by tags (comma-separated) (optional) (default to undefined)
-let page: number; // (optional) (default to 0)
-let size: number; // (optional) (default to 20)
+let page: number; //Page number (0-indexed) (optional) (default to 0)
+let size: number; //Page size (optional) (default to 20)
+let sort: 'createdAt' | 'asc' | 'createdAt' | 'desc' | 'updatedAt' | 'asc' | 'updatedAt' | 'desc' | 'title' | 'asc' | 'title' | 'desc'; //Sort field and direction (optional) (default to 'createdAt,desc')
 
-const { status, data } = await apiInstance.listTemplates(
-    scope,
-    tags,
+const { status, data } = await apiInstance.listSpaces(
     page,
-    size
+    size,
+    sort
 );
 ```
 
@@ -264,15 +263,14 @@ const { status, data } = await apiInstance.listTemplates(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **scope** | [**&#39;all&#39; | &#39;public&#39; | &#39;private&#39;**]**Array<&#39;all&#39; &#124; &#39;public&#39; &#124; &#39;private&#39;>** | Filter by visibility | (optional) defaults to 'all'|
-| **tags** | [**string**] | Filter by tags (comma-separated) | (optional) defaults to undefined|
-| **page** | [**number**] |  | (optional) defaults to 0|
-| **size** | [**number**] |  | (optional) defaults to 20|
+| **page** | [**number**] | Page number (0-indexed) | (optional) defaults to 0|
+| **size** | [**number**] | Page size | (optional) defaults to 20|
+| **sort** | [**&#39;createdAt&#39; | &#39;asc&#39; | &#39;createdAt&#39; | &#39;desc&#39; | &#39;updatedAt&#39; | &#39;asc&#39; | &#39;updatedAt&#39; | &#39;desc&#39; | &#39;title&#39; | &#39;asc&#39; | &#39;title&#39; | &#39;desc&#39;**]**Array<&#39;createdAt&#39; &#124; &#39;asc&#39; &#124; &#39;createdAt&#39; &#124; &#39;desc&#39; &#124; &#39;updatedAt&#39; &#124; &#39;asc&#39; &#124; &#39;updatedAt&#39; &#124; &#39;desc&#39; &#124; &#39;title&#39; &#124; &#39;asc&#39; &#124; &#39;title&#39; &#124; &#39;desc&#39;>** | Sort field and direction | (optional) defaults to 'createdAt,desc'|
 
 
 ### Return type
 
-**ListTemplates200Response**
+**ListSpaces200Response**
 
 ### Authorization
 
@@ -287,8 +285,67 @@ const { status, data } = await apiInstance.listTemplates(
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | Templates retrieved successfully |  -  |
+|**200** | Spaces retrieved successfully |  -  |
 |**401** | Authentication required or token invalid |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updateSpace**
+> CreateSpace201Response updateSpace(spaceUpdateRequest)
+
+Update space title, description, or Git configuration.
+
+### Example
+
+```typescript
+import {
+    SpacesApi,
+    Configuration,
+    SpaceUpdateRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SpacesApi(configuration);
+
+let spaceId: string; //Space UUID (default to undefined)
+let spaceUpdateRequest: SpaceUpdateRequest; //
+
+const { status, data } = await apiInstance.updateSpace(
+    spaceId,
+    spaceUpdateRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **spaceUpdateRequest** | **SpaceUpdateRequest**|  | |
+| **spaceId** | [**string**] | Space UUID | defaults to undefined|
+
+
+### Return type
+
+**CreateSpace201Response**
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Space updated successfully |  -  |
+|**400** | Invalid request parameters or payload |  -  |
+|**401** | Authentication required or token invalid |  -  |
+|**403** | User does not have permission to access resource |  -  |
+|**404** | Resource not found |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

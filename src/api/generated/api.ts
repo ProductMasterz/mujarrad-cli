@@ -110,31 +110,6 @@ export type ApplySyncChangesRequestChangesInnerActionEnum = typeof ApplySyncChan
 /**
  * 
  * @export
- * @interface CreateTemplate201Response
- */
-export interface CreateTemplate201Response {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof CreateTemplate201Response
-     */
-    'success': boolean;
-    /**
-     * 
-     * @type {SpaceTemplateResponse}
-     * @memberof CreateTemplate201Response
-     */
-    'data': SpaceTemplateResponse;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateTemplate201Response
-     */
-    'timestamp': string;
-}
-/**
- * 
- * @export
  * @interface CreateSpace201Response
  */
 export interface CreateSpace201Response {
@@ -154,6 +129,31 @@ export interface CreateSpace201Response {
      * 
      * @type {string}
      * @memberof CreateSpace201Response
+     */
+    'timestamp': string;
+}
+/**
+ * 
+ * @export
+ * @interface CreateTemplate201Response
+ */
+export interface CreateTemplate201Response {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateTemplate201Response
+     */
+    'success': boolean;
+    /**
+     * 
+     * @type {SpaceTemplateResponse}
+     * @memberof CreateTemplate201Response
+     */
+    'data': SpaceTemplateResponse;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateTemplate201Response
      */
     'timestamp': string;
 }
@@ -568,62 +568,6 @@ export interface ListNodeVersions200ResponseAllOfData {
 /**
  * 
  * @export
- * @interface ListTemplates200Response
- */
-export interface ListTemplates200Response {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ListTemplates200Response
-     */
-    'success': boolean;
-    /**
-     * 
-     * @type {ListTemplates200ResponseAllOfData}
-     * @memberof ListTemplates200Response
-     */
-    'data': ListTemplates200ResponseAllOfData;
-    /**
-     * 
-     * @type {string}
-     * @memberof ListTemplates200Response
-     */
-    'timestamp': string;
-}
-/**
- * 
- * @export
- * @interface ListTemplates200ResponseAllOfData
- */
-export interface ListTemplates200ResponseAllOfData {
-    /**
-     * 
-     * @type {Array<SpaceTemplateResponse>}
-     * @memberof ListTemplates200ResponseAllOfData
-     */
-    'templates'?: Array<SpaceTemplateResponse>;
-    /**
-     * 
-     * @type {number}
-     * @memberof ListTemplates200ResponseAllOfData
-     */
-    'totalElements'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ListTemplates200ResponseAllOfData
-     */
-    'totalPages'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ListTemplates200ResponseAllOfData
-     */
-    'currentPage'?: number;
-}
-/**
- * 
- * @export
  * @interface ListSpaces200Response
  */
 export interface ListSpaces200Response {
@@ -674,6 +618,62 @@ export interface ListSpaces200ResponseAllOfData {
      * 
      * @type {number}
      * @memberof ListSpaces200ResponseAllOfData
+     */
+    'currentPage'?: number;
+}
+/**
+ * 
+ * @export
+ * @interface ListTemplates200Response
+ */
+export interface ListTemplates200Response {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ListTemplates200Response
+     */
+    'success': boolean;
+    /**
+     * 
+     * @type {ListTemplates200ResponseAllOfData}
+     * @memberof ListTemplates200Response
+     */
+    'data': ListTemplates200ResponseAllOfData;
+    /**
+     * 
+     * @type {string}
+     * @memberof ListTemplates200Response
+     */
+    'timestamp': string;
+}
+/**
+ * 
+ * @export
+ * @interface ListTemplates200ResponseAllOfData
+ */
+export interface ListTemplates200ResponseAllOfData {
+    /**
+     * 
+     * @type {Array<SpaceTemplateResponse>}
+     * @memberof ListTemplates200ResponseAllOfData
+     */
+    'templates'?: Array<SpaceTemplateResponse>;
+    /**
+     * 
+     * @type {number}
+     * @memberof ListTemplates200ResponseAllOfData
+     */
+    'totalElements'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ListTemplates200ResponseAllOfData
+     */
+    'totalPages'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ListTemplates200ResponseAllOfData
      */
     'currentPage'?: number;
 }
@@ -910,6 +910,196 @@ export const ShareSpaceRequestPermissionEnum = {
 
 export type ShareSpaceRequestPermissionEnum = typeof ShareSpaceRequestPermissionEnum[keyof typeof ShareSpaceRequestPermissionEnum];
 
+/**
+ * 
+ * @export
+ * @interface SpaceCreateRequest
+ */
+export interface SpaceCreateRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceCreateRequest
+     */
+    'title': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceCreateRequest
+     */
+    'description'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceCreateRequest
+     */
+    'gitRepositoryUrl'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceCreateRequest
+     */
+    'gitBranch'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface SpaceResponse
+ */
+export interface SpaceResponse {
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceResponse
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceResponse
+     */
+    'ownerId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceResponse
+     */
+    'title': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceResponse
+     */
+    'description'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceResponse
+     */
+    'gitRepositoryUrl'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceResponse
+     */
+    'gitBranch'?: string;
+    /**
+     * Total number of nodes in space
+     * @type {number}
+     * @memberof SpaceResponse
+     */
+    'nodeCount'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceResponse
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceResponse
+     */
+    'updatedAt': string;
+}
+/**
+ * 
+ * @export
+ * @interface SpaceTemplateResponse
+ */
+export interface SpaceTemplateResponse {
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceTemplateResponse
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceTemplateResponse
+     */
+    'creatorId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceTemplateResponse
+     */
+    'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceTemplateResponse
+     */
+    'description'?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SpaceTemplateResponse
+     */
+    'tags'?: Array<string>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SpaceTemplateResponse
+     */
+    'isPublic': boolean;
+    /**
+     * Number of times template has been instantiated
+     * @type {number}
+     * @memberof SpaceTemplateResponse
+     */
+    'usageCount': number;
+    /**
+     * Number of nodes in template
+     * @type {number}
+     * @memberof SpaceTemplateResponse
+     */
+    'contextTemplatesCount'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceTemplateResponse
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceTemplateResponse
+     */
+    'updatedAt'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface SpaceUpdateRequest
+ */
+export interface SpaceUpdateRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceUpdateRequest
+     */
+    'title'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceUpdateRequest
+     */
+    'description'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceUpdateRequest
+     */
+    'gitRepositoryUrl'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SpaceUpdateRequest
+     */
+    'gitBranch'?: string;
+}
 /**
  * 
  * @export
@@ -1380,196 +1570,6 @@ export const UploadSessionResponseStatusEnum = {
 
 export type UploadSessionResponseStatusEnum = typeof UploadSessionResponseStatusEnum[keyof typeof UploadSessionResponseStatusEnum];
 
-/**
- * 
- * @export
- * @interface SpaceCreateRequest
- */
-export interface SpaceCreateRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceCreateRequest
-     */
-    'title': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceCreateRequest
-     */
-    'description'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceCreateRequest
-     */
-    'gitRepositoryUrl'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceCreateRequest
-     */
-    'gitBranch'?: string;
-}
-/**
- * 
- * @export
- * @interface SpaceResponse
- */
-export interface SpaceResponse {
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceResponse
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceResponse
-     */
-    'ownerId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceResponse
-     */
-    'title': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceResponse
-     */
-    'description'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceResponse
-     */
-    'gitRepositoryUrl'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceResponse
-     */
-    'gitBranch'?: string;
-    /**
-     * Total number of nodes in space
-     * @type {number}
-     * @memberof SpaceResponse
-     */
-    'nodeCount'?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceResponse
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceResponse
-     */
-    'updatedAt': string;
-}
-/**
- * 
- * @export
- * @interface SpaceTemplateResponse
- */
-export interface SpaceTemplateResponse {
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceTemplateResponse
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceTemplateResponse
-     */
-    'creatorId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceTemplateResponse
-     */
-    'name': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceTemplateResponse
-     */
-    'description'?: string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SpaceTemplateResponse
-     */
-    'tags'?: Array<string>;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SpaceTemplateResponse
-     */
-    'isPublic': boolean;
-    /**
-     * Number of times template has been instantiated
-     * @type {number}
-     * @memberof SpaceTemplateResponse
-     */
-    'usageCount': number;
-    /**
-     * Number of nodes in template
-     * @type {number}
-     * @memberof SpaceTemplateResponse
-     */
-    'contextTemplatesCount'?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceTemplateResponse
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceTemplateResponse
-     */
-    'updatedAt'?: string;
-}
-/**
- * 
- * @export
- * @interface SpaceUpdateRequest
- */
-export interface SpaceUpdateRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceUpdateRequest
-     */
-    'title'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceUpdateRequest
-     */
-    'description'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceUpdateRequest
-     */
-    'gitRepositoryUrl'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SpaceUpdateRequest
-     */
-    'gitBranch'?: string;
-}
 
 /**
  * AuthenticationApi - axios parameter creator
@@ -2222,6 +2222,538 @@ export class SharingApi extends BaseAPI {
     }
 }
 
+
+
+/**
+ * SpacesApi - axios parameter creator
+ * @export
+ */
+export const SpacesApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * Create empty space or from template.
+         * @summary Create new space
+         * @param {SpaceCreateRequest} spaceCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createSpace: async (spaceCreateRequest: SpaceCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceCreateRequest' is not null or undefined
+            assertParamExists('createSpace', 'spaceCreateRequest', spaceCreateRequest)
+            const localVarPath = `/api/spaces`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(spaceCreateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Soft delete space and all contained nodes, attributes, mappings.
+         * @summary Delete space
+         * @param {string} spaceId Space UUID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteSpace: async (spaceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('deleteSpace', 'spaceId', spaceId)
+            const localVarPath = `/api/spaces/{spaceId}`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Retrieve space details including node count and Git status.
+         * @summary Get space by ID
+         * @param {string} spaceId Space UUID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSpace: async (spaceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('getSpace', 'spaceId', spaceId)
+            const localVarPath = `/api/spaces/{spaceId}`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Clone template into existing space, replacing placeholders with values.
+         * @summary Instantiate space from template
+         * @param {string} spaceId Space UUID
+         * @param {TemplateInstantiateRequest} templateInstantiateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        instantiateTemplate: async (spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('instantiateTemplate', 'spaceId', spaceId)
+            // verify required parameter 'templateInstantiateRequest' is not null or undefined
+            assertParamExists('instantiateTemplate', 'templateInstantiateRequest', templateInstantiateRequest)
+            const localVarPath = `/api/spaces/{spaceId}/instantiate`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(templateInstantiateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
+         * @summary List all spaces
+         * @param {number} [page] Page number (0-indexed)
+         * @param {number} [size] Page size
+         * @param {ListSpacesSortEnum} [sort] Sort field and direction
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listSpaces: async (page?: number, size?: number, sort?: ListSpacesSortEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/spaces`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Update space title, description, or Git configuration.
+         * @summary Update space
+         * @param {string} spaceId Space UUID
+         * @param {SpaceUpdateRequest} spaceUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateSpace: async (spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'spaceId' is not null or undefined
+            assertParamExists('updateSpace', 'spaceId', spaceId)
+            // verify required parameter 'spaceUpdateRequest' is not null or undefined
+            assertParamExists('updateSpace', 'spaceUpdateRequest', spaceUpdateRequest)
+            const localVarPath = `/api/spaces/{spaceId}`
+                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(spaceUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * SpacesApi - functional programming interface
+ * @export
+ */
+export const SpacesApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = SpacesApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * Create empty space or from template.
+         * @summary Create new space
+         * @param {SpaceCreateRequest} spaceCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createSpace(spaceCreateRequest: SpaceCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateSpace201Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createSpace(spaceCreateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.createSpace']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Soft delete space and all contained nodes, attributes, mappings.
+         * @summary Delete space
+         * @param {string} spaceId Space UUID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteSpace(spaceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteSpace(spaceId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.deleteSpace']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Retrieve space details including node count and Git status.
+         * @summary Get space by ID
+         * @param {string} spaceId Space UUID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getSpace(spaceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateSpace201Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSpace(spaceId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.getSpace']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Clone template into existing space, replacing placeholders with values.
+         * @summary Instantiate space from template
+         * @param {string} spaceId Space UUID
+         * @param {TemplateInstantiateRequest} templateInstantiateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InstantiateTemplate200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.instantiateTemplate(spaceId, templateInstantiateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.instantiateTemplate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
+         * @summary List all spaces
+         * @param {number} [page] Page number (0-indexed)
+         * @param {number} [size] Page size
+         * @param {ListSpacesSortEnum} [sort] Sort field and direction
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listSpaces(page?: number, size?: number, sort?: ListSpacesSortEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListSpaces200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listSpaces(page, size, sort, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.listSpaces']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Update space title, description, or Git configuration.
+         * @summary Update space
+         * @param {string} spaceId Space UUID
+         * @param {SpaceUpdateRequest} spaceUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateSpace(spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateSpace201Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateSpace(spaceId, spaceUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SpacesApi.updateSpace']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * SpacesApi - factory interface
+ * @export
+ */
+export const SpacesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = SpacesApiFp(configuration)
+    return {
+        /**
+         * Create empty space or from template.
+         * @summary Create new space
+         * @param {SpaceCreateRequest} spaceCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createSpace(spaceCreateRequest: SpaceCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CreateSpace201Response> {
+            return localVarFp.createSpace(spaceCreateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Soft delete space and all contained nodes, attributes, mappings.
+         * @summary Delete space
+         * @param {string} spaceId Space UUID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteSpace(spaceId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteSpace(spaceId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Retrieve space details including node count and Git status.
+         * @summary Get space by ID
+         * @param {string} spaceId Space UUID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSpace(spaceId: string, options?: RawAxiosRequestConfig): AxiosPromise<CreateSpace201Response> {
+            return localVarFp.getSpace(spaceId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Clone template into existing space, replacing placeholders with values.
+         * @summary Instantiate space from template
+         * @param {string} spaceId Space UUID
+         * @param {TemplateInstantiateRequest} templateInstantiateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): AxiosPromise<InstantiateTemplate200Response> {
+            return localVarFp.instantiateTemplate(spaceId, templateInstantiateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
+         * @summary List all spaces
+         * @param {number} [page] Page number (0-indexed)
+         * @param {number} [size] Page size
+         * @param {ListSpacesSortEnum} [sort] Sort field and direction
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listSpaces(page?: number, size?: number, sort?: ListSpacesSortEnum, options?: RawAxiosRequestConfig): AxiosPromise<ListSpaces200Response> {
+            return localVarFp.listSpaces(page, size, sort, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Update space title, description, or Git configuration.
+         * @summary Update space
+         * @param {string} spaceId Space UUID
+         * @param {SpaceUpdateRequest} spaceUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateSpace(spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CreateSpace201Response> {
+            return localVarFp.updateSpace(spaceId, spaceUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * SpacesApi - object-oriented interface
+ * @export
+ * @class SpacesApi
+ * @extends {BaseAPI}
+ */
+export class SpacesApi extends BaseAPI {
+    /**
+     * Create empty space or from template.
+     * @summary Create new space
+     * @param {SpaceCreateRequest} spaceCreateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SpacesApi
+     */
+    public createSpace(spaceCreateRequest: SpaceCreateRequest, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).createSpace(spaceCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Soft delete space and all contained nodes, attributes, mappings.
+     * @summary Delete space
+     * @param {string} spaceId Space UUID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SpacesApi
+     */
+    public deleteSpace(spaceId: string, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).deleteSpace(spaceId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Retrieve space details including node count and Git status.
+     * @summary Get space by ID
+     * @param {string} spaceId Space UUID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SpacesApi
+     */
+    public getSpace(spaceId: string, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).getSpace(spaceId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Clone template into existing space, replacing placeholders with values.
+     * @summary Instantiate space from template
+     * @param {string} spaceId Space UUID
+     * @param {TemplateInstantiateRequest} templateInstantiateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SpacesApi
+     */
+    public instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).instantiateTemplate(spaceId, templateInstantiateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
+     * @summary List all spaces
+     * @param {number} [page] Page number (0-indexed)
+     * @param {number} [size] Page size
+     * @param {ListSpacesSortEnum} [sort] Sort field and direction
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SpacesApi
+     */
+    public listSpaces(page?: number, size?: number, sort?: ListSpacesSortEnum, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).listSpaces(page, size, sort, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Update space title, description, or Git configuration.
+     * @summary Update space
+     * @param {string} spaceId Space UUID
+     * @param {SpaceUpdateRequest} spaceUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SpacesApi
+     */
+    public updateSpace(spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options?: RawAxiosRequestConfig) {
+        return SpacesApiFp(this.configuration).updateSpace(spaceId, spaceUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+/**
+ * @export
+ */
+export const ListSpacesSortEnum = {
+    CreatedAt: 'createdAt',
+    Asc: 'asc',
+    CreatedAt2: 'createdAt',
+    Desc: 'desc',
+    UpdatedAt: 'updatedAt',
+    Asc2: 'asc',
+    UpdatedAt2: 'updatedAt',
+    Desc2: 'desc',
+    Title: 'title',
+    Asc3: 'asc',
+    Title2: 'title',
+    Desc3: 'desc'
+} as const;
+export type ListSpacesSortEnum = typeof ListSpacesSortEnum[keyof typeof ListSpacesSortEnum];
 
 
 /**
@@ -2976,14 +3508,14 @@ export const UploadApiAxiosParamCreator = function (configuration?: Configuratio
          * Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
          * @summary Batch upload files to space
          * @param {string} spaceId Space UUID
-         * @param {Array<File>} files Array of Obsidian files (.md, .canvas)
+         * @param {File} files JSON blob containing array of FileUploadData objects (max 100 files)
          * @param {number} [batchNumber] Batch sequence number (for resume capability)
          * @param {string} [sessionId] Upload session ID (for continuing previous upload)
          * @param {string} [commitMessage] Git commit message for this batch
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadBatch: async (spaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadBatch: async (spaceId: string, files: File, batchNumber?: number, sessionId?: string, commitMessage?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'spaceId' is not null or undefined
             assertParamExists('uploadBatch', 'spaceId', spaceId)
             // verify required parameter 'files' is not null or undefined
@@ -3006,10 +3538,10 @@ export const UploadApiAxiosParamCreator = function (configuration?: Configuratio
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (files) {
-                localVarFormParams.append('files', new Blob([JSON.stringify(files)], { type: "text/markdown, application/json", }));
-            }
 
+            if (files !== undefined) { 
+                localVarFormParams.append('files', files as any);
+            }
     
             if (batchNumber !== undefined) { 
                 localVarFormParams.append('batchNumber', batchNumber as any);
@@ -3078,14 +3610,14 @@ export const UploadApiFp = function(configuration?: Configuration) {
          * Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
          * @summary Batch upload files to space
          * @param {string} spaceId Space UUID
-         * @param {Array<File>} files Array of Obsidian files (.md, .canvas)
+         * @param {File} files JSON blob containing array of FileUploadData objects (max 100 files)
          * @param {number} [batchNumber] Batch sequence number (for resume capability)
          * @param {string} [sessionId] Upload session ID (for continuing previous upload)
          * @param {string} [commitMessage] Git commit message for this batch
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadBatch(spaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadBatch202Response>> {
+        async uploadBatch(spaceId: string, files: File, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadBatch202Response>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.uploadBatch(spaceId, files, batchNumber, sessionId, commitMessage, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['UploadApi.uploadBatch']?.[localVarOperationServerIndex]?.url;
@@ -3127,14 +3659,14 @@ export const UploadApiFactory = function (configuration?: Configuration, basePat
          * Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
          * @summary Batch upload files to space
          * @param {string} spaceId Space UUID
-         * @param {Array<File>} files Array of Obsidian files (.md, .canvas)
+         * @param {File} files JSON blob containing array of FileUploadData objects (max 100 files)
          * @param {number} [batchNumber] Batch sequence number (for resume capability)
          * @param {string} [sessionId] Upload session ID (for continuing previous upload)
          * @param {string} [commitMessage] Git commit message for this batch
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadBatch(spaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadBatch202Response> {
+        uploadBatch(spaceId: string, files: File, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig): AxiosPromise<UploadBatch202Response> {
             return localVarFp.uploadBatch(spaceId, files, batchNumber, sessionId, commitMessage, options).then((request) => request(axios, basePath));
         },
     };
@@ -3177,7 +3709,7 @@ export class UploadApi extends BaseAPI {
      * Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process**: 1. Client sends batch of files (max 100 files per request) 2. Backend creates UploadSession to track progress 3. Backend processes files, creates Nodes/Attributes/Mappings 4. Backend commits batch to Git (one commit per batch) 5. Client polls `/upload/status` for progress 6. On failure, client resumes from last successful batch using log  **Performance Target**: 1000 files in <5 minutes (NFR-001) 
      * @summary Batch upload files to space
      * @param {string} spaceId Space UUID
-     * @param {Array<File>} files Array of Obsidian files (.md, .canvas)
+     * @param {File} files JSON blob containing array of FileUploadData objects (max 100 files)
      * @param {number} [batchNumber] Batch sequence number (for resume capability)
      * @param {string} [sessionId] Upload session ID (for continuing previous upload)
      * @param {string} [commitMessage] Git commit message for this batch
@@ -3185,7 +3717,7 @@ export class UploadApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof UploadApi
      */
-    public uploadBatch(spaceId: string, files: Array<File>, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig) {
+    public uploadBatch(spaceId: string, files: File, batchNumber?: number, sessionId?: string, commitMessage?: string, options?: RawAxiosRequestConfig) {
         return UploadApiFp(this.configuration).uploadBatch(spaceId, files, batchNumber, sessionId, commitMessage, options).then((request) => request(this.axios, this.basePath));
     }
 }
@@ -3480,537 +4012,5 @@ export class VersionHistoryApi extends BaseAPI {
     }
 }
 
-
-
-/**
- * SpacesApi - axios parameter creator
- * @export
- */
-export const SpacesApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * Create empty space or from template.
-         * @summary Create new space
-         * @param {SpaceCreateRequest} spaceCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createSpace: async (spaceCreateRequest: SpaceCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'spaceCreateRequest' is not null or undefined
-            assertParamExists('createSpace', 'spaceCreateRequest', spaceCreateRequest)
-            const localVarPath = `/api/spaces`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(spaceCreateRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Soft delete space and all contained nodes, attributes, mappings.
-         * @summary Delete space
-         * @param {string} spaceId Space UUID
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteSpace: async (spaceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'spaceId' is not null or undefined
-            assertParamExists('deleteSpace', 'spaceId', spaceId)
-            const localVarPath = `/api/spaces/{spaceId}`
-                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retrieve space details including node count and Git status.
-         * @summary Get space by ID
-         * @param {string} spaceId Space UUID
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getSpace: async (spaceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'spaceId' is not null or undefined
-            assertParamExists('getSpace', 'spaceId', spaceId)
-            const localVarPath = `/api/spaces/{spaceId}`
-                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Clone template into existing space, replacing placeholders with values.
-         * @summary Instantiate space from template
-         * @param {string} spaceId Space UUID
-         * @param {TemplateInstantiateRequest} templateInstantiateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        instantiateTemplate: async (spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'spaceId' is not null or undefined
-            assertParamExists('instantiateTemplate', 'spaceId', spaceId)
-            // verify required parameter 'templateInstantiateRequest' is not null or undefined
-            assertParamExists('instantiateTemplate', 'templateInstantiateRequest', templateInstantiateRequest)
-            const localVarPath = `/api/spaces/{spaceId}/instantiate`
-                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(templateInstantiateRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
-         * @summary List all spaces
-         * @param {number} [page] Page number (0-indexed)
-         * @param {number} [size] Page size
-         * @param {ListSpacesSortEnum} [sort] Sort field and direction
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listSpaces: async (page?: number, size?: number, sort?: ListSpacesSortEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/spaces`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (page !== undefined) {
-                localVarQueryParameter['page'] = page;
-            }
-
-            if (size !== undefined) {
-                localVarQueryParameter['size'] = size;
-            }
-
-            if (sort !== undefined) {
-                localVarQueryParameter['sort'] = sort;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Update space title, description, or Git configuration.
-         * @summary Update space
-         * @param {string} spaceId Space UUID
-         * @param {SpaceUpdateRequest} spaceUpdateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateSpace: async (spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'spaceId' is not null or undefined
-            assertParamExists('updateSpace', 'spaceId', spaceId)
-            // verify required parameter 'spaceUpdateRequest' is not null or undefined
-            assertParamExists('updateSpace', 'spaceUpdateRequest', spaceUpdateRequest)
-            const localVarPath = `/api/spaces/{spaceId}`
-                .replace(`{${"spaceId"}}`, encodeURIComponent(String(spaceId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(spaceUpdateRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * SpacesApi - functional programming interface
- * @export
- */
-export const SpacesApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = SpacesApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * Create empty space or from template.
-         * @summary Create new space
-         * @param {SpaceCreateRequest} spaceCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async createSpace(spaceCreateRequest: SpaceCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateSpace201Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createSpace(spaceCreateRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SpacesApi.createSpace']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Soft delete space and all contained nodes, attributes, mappings.
-         * @summary Delete space
-         * @param {string} spaceId Space UUID
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async deleteSpace(spaceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteSpace(spaceId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SpacesApi.deleteSpace']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retrieve space details including node count and Git status.
-         * @summary Get space by ID
-         * @param {string} spaceId Space UUID
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getSpace(spaceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateSpace201Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getSpace(spaceId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SpacesApi.getSpace']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Clone template into existing space, replacing placeholders with values.
-         * @summary Instantiate space from template
-         * @param {string} spaceId Space UUID
-         * @param {TemplateInstantiateRequest} templateInstantiateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InstantiateTemplate200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.instantiateTemplate(spaceId, templateInstantiateRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SpacesApi.instantiateTemplate']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
-         * @summary List all spaces
-         * @param {number} [page] Page number (0-indexed)
-         * @param {number} [size] Page size
-         * @param {ListSpacesSortEnum} [sort] Sort field and direction
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async listSpaces(page?: number, size?: number, sort?: ListSpacesSortEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListSpaces200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listSpaces(page, size, sort, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SpacesApi.listSpaces']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Update space title, description, or Git configuration.
-         * @summary Update space
-         * @param {string} spaceId Space UUID
-         * @param {SpaceUpdateRequest} spaceUpdateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async updateSpace(spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CreateSpace201Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateSpace(spaceId, spaceUpdateRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SpacesApi.updateSpace']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
-};
-
-/**
- * SpacesApi - factory interface
- * @export
- */
-export const SpacesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = SpacesApiFp(configuration)
-    return {
-        /**
-         * Create empty space or from template.
-         * @summary Create new space
-         * @param {SpaceCreateRequest} spaceCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createSpace(spaceCreateRequest: SpaceCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CreateSpace201Response> {
-            return localVarFp.createSpace(spaceCreateRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Soft delete space and all contained nodes, attributes, mappings.
-         * @summary Delete space
-         * @param {string} spaceId Space UUID
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteSpace(spaceId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteSpace(spaceId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retrieve space details including node count and Git status.
-         * @summary Get space by ID
-         * @param {string} spaceId Space UUID
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getSpace(spaceId: string, options?: RawAxiosRequestConfig): AxiosPromise<CreateSpace201Response> {
-            return localVarFp.getSpace(spaceId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Clone template into existing space, replacing placeholders with values.
-         * @summary Instantiate space from template
-         * @param {string} spaceId Space UUID
-         * @param {TemplateInstantiateRequest} templateInstantiateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig): AxiosPromise<InstantiateTemplate200Response> {
-            return localVarFp.instantiateTemplate(spaceId, templateInstantiateRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
-         * @summary List all spaces
-         * @param {number} [page] Page number (0-indexed)
-         * @param {number} [size] Page size
-         * @param {ListSpacesSortEnum} [sort] Sort field and direction
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listSpaces(page?: number, size?: number, sort?: ListSpacesSortEnum, options?: RawAxiosRequestConfig): AxiosPromise<ListSpaces200Response> {
-            return localVarFp.listSpaces(page, size, sort, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Update space title, description, or Git configuration.
-         * @summary Update space
-         * @param {string} spaceId Space UUID
-         * @param {SpaceUpdateRequest} spaceUpdateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateSpace(spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CreateSpace201Response> {
-            return localVarFp.updateSpace(spaceId, spaceUpdateRequest, options).then((request) => request(axios, basePath));
-        },
-    };
-};
-
-/**
- * SpacesApi - object-oriented interface
- * @export
- * @class SpacesApi
- * @extends {BaseAPI}
- */
-export class SpacesApi extends BaseAPI {
-    /**
-     * Create empty space or from template.
-     * @summary Create new space
-     * @param {SpaceCreateRequest} spaceCreateRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SpacesApi
-     */
-    public createSpace(spaceCreateRequest: SpaceCreateRequest, options?: RawAxiosRequestConfig) {
-        return SpacesApiFp(this.configuration).createSpace(spaceCreateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Soft delete space and all contained nodes, attributes, mappings.
-     * @summary Delete space
-     * @param {string} spaceId Space UUID
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SpacesApi
-     */
-    public deleteSpace(spaceId: string, options?: RawAxiosRequestConfig) {
-        return SpacesApiFp(this.configuration).deleteSpace(spaceId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retrieve space details including node count and Git status.
-     * @summary Get space by ID
-     * @param {string} spaceId Space UUID
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SpacesApi
-     */
-    public getSpace(spaceId: string, options?: RawAxiosRequestConfig) {
-        return SpacesApiFp(this.configuration).getSpace(spaceId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Clone template into existing space, replacing placeholders with values.
-     * @summary Instantiate space from template
-     * @param {string} spaceId Space UUID
-     * @param {TemplateInstantiateRequest} templateInstantiateRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SpacesApi
-     */
-    public instantiateTemplate(spaceId: string, templateInstantiateRequest: TemplateInstantiateRequest, options?: RawAxiosRequestConfig) {
-        return SpacesApiFp(this.configuration).instantiateTemplate(spaceId, templateInstantiateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retrieve all spaces owned by authenticated user (excludes soft-deleted).
-     * @summary List all spaces
-     * @param {number} [page] Page number (0-indexed)
-     * @param {number} [size] Page size
-     * @param {ListSpacesSortEnum} [sort] Sort field and direction
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SpacesApi
-     */
-    public listSpaces(page?: number, size?: number, sort?: ListSpacesSortEnum, options?: RawAxiosRequestConfig) {
-        return SpacesApiFp(this.configuration).listSpaces(page, size, sort, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Update space title, description, or Git configuration.
-     * @summary Update space
-     * @param {string} spaceId Space UUID
-     * @param {SpaceUpdateRequest} spaceUpdateRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SpacesApi
-     */
-    public updateSpace(spaceId: string, spaceUpdateRequest: SpaceUpdateRequest, options?: RawAxiosRequestConfig) {
-        return SpacesApiFp(this.configuration).updateSpace(spaceId, spaceUpdateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
-/**
- * @export
- */
-export const ListSpacesSortEnum = {
-    CreatedAt: 'createdAt',
-    Asc: 'asc',
-    CreatedAt2: 'createdAt',
-    Desc: 'desc',
-    UpdatedAt: 'updatedAt',
-    Asc2: 'asc',
-    UpdatedAt2: 'updatedAt',
-    Desc2: 'desc',
-    Title: 'title',
-    Asc3: 'asc',
-    Title2: 'title',
-    Desc3: 'desc'
-} as const;
-export type ListSpacesSortEnum = typeof ListSpacesSortEnum[keyof typeof ListSpacesSortEnum];
 
 

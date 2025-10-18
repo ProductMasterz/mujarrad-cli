@@ -1,23 +1,21 @@
-# RegisterUserRequest
+# ShareSpaceRequest
 
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**email** | **string** |  | [default to undefined]
-**password** | **string** |  | [default to undefined]
-**username** | **string** |  | [default to undefined]
+**email** | **string** |  | [optional] [default to undefined]
+**permission** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { RegisterUserRequest } from './api';
+import { ShareSpaceRequest } from './api';
 
-const instance: RegisterUserRequest = {
+const instance: ShareSpaceRequest = {
     email,
-    password,
-    username,
+    permission,
 };
 ```
 

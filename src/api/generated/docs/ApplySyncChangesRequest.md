@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { ApplySyncChangesRequest } from 'mujarrad-api-client';
+import { ApplySyncChangesRequest } from './api';
 
 const instance: ApplySyncChangesRequest = {
     changes,

@@ -19,7 +19,7 @@ import {
     SyncApi,
     Configuration,
     ApplySyncChangesRequest
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new SyncApi(configuration);
@@ -79,7 +79,7 @@ import {
     SyncApi,
     Configuration,
     DetectSyncChangesRequest
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new SyncApi(configuration);

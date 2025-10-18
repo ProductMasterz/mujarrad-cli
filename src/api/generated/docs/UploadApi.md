@@ -19,7 +19,7 @@ Retrieve detailed log file for upload session (JSON Lines format).
 import {
     UploadApi,
     Configuration
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new UploadApi(configuration);
@@ -76,7 +76,7 @@ Retrieve status of ongoing or completed upload session.
 import {
     UploadApi,
     Configuration
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new UploadApi(configuration);
@@ -133,13 +133,13 @@ Upload multiple Obsidian files (notes, canvases) to space in batches.  **Process
 import {
     UploadApi,
     Configuration
-} from 'mujarrad-api-client';
+} from './api';
 
 const configuration = new Configuration();
 const apiInstance = new UploadApi(configuration);
 
 let spaceId: string; //Space UUID (default to undefined)
-let files: Array<File>; //Array of Obsidian files (.md, .canvas) (default to undefined)
+let files: File; //JSON blob containing array of FileUploadData objects (max 100 files) (default to undefined)
 let batchNumber: number; //Batch sequence number (for resume capability) (optional) (default to undefined)
 let sessionId: string; //Upload session ID (for continuing previous upload) (optional) (default to undefined)
 let commitMessage: string; //Git commit message for this batch (optional) (default to undefined)
@@ -158,7 +158,7 @@ const { status, data } = await apiInstance.uploadBatch(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **spaceId** | [**string**] | Space UUID | defaults to undefined|
-| **files** | **Array&lt;File&gt;** | Array of Obsidian files (.md, .canvas) | defaults to undefined|
+| **files** | [**File**] | JSON blob containing array of FileUploadData objects (max 100 files) | defaults to undefined|
 | **batchNumber** | [**number**] | Batch sequence number (for resume capability) | (optional) defaults to undefined|
 | **sessionId** | [**string**] | Upload session ID (for continuing previous upload) | (optional) defaults to undefined|
 | **commitMessage** | [**string**] | Git commit message for this batch | (optional) defaults to undefined|
