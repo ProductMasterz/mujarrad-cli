@@ -90,7 +90,13 @@
       "Read(//private/tmp/**)",
       "Read(//tmp/**)",
       "Bash(MUJARRAD_LOG_LEVEL=debug node:*)",
-      "Bash(/tmp/test-upload-api.sh)"
+      "Bash(/tmp/test-upload-api.sh)",
+      "Bash(node -e:*)",
+      "Bash(MUJARRAD_LOG_LEVEL=info node:*)",
+      "Bash(MUJARRAD_ACCEPT_DISCLAIMER=true MUJARRAD_LOG_LEVEL=info node:*)",
+      "Bash(MUJARRAD_ACCEPT_DISCLAIMER=true node dist/index.js:*)",
+      "Bash(/tmp/test-login.sh)",
+      "Bash(MUJARRAD_ACCEPT_DISCLAIMER=true mujarrad:*)"
     ],
     "deny": [],
     "ask": []

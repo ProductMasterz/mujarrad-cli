@@ -44,7 +44,7 @@ Cross-cutting concerns and final integration.
 
 **Tasks**:
 
-### T001: [Setup] Verify Development Environment
+### [X] T001: [Setup] Verify Development Environment
 **Description**: Ensure all development tools and dependencies are installed.
 **File**: N/A (environment check)
 **Actions**:
@@ -58,7 +58,7 @@ Cross-cutting concerns and final integration.
 
 ---
 
-### T002: [Setup] Review Existing Codebase Structure
+### [X] T002: [Setup] Review Existing Codebase Structure
 **Description**: Familiarize with existing init command and space validation logic from spec 009.
 **Files to Review**:
 - `src/commands/init.ts` (existing init command)
@@ -75,7 +75,7 @@ Cross-cutting concerns and final integration.
 
 ---
 
-### T003: [Setup] Create Feature Branch Test Suite Structure
+### [X] T003: [Setup] Create Feature Branch Test Suite Structure
 **Description**: Set up test directory structure for new components.
 **Actions**:
 - Create `tests/unit/utils/SlugValidator.test.ts` (empty placeholder)
@@ -87,7 +87,7 @@ Cross-cutting concerns and final integration.
 
 ---
 
-### T004: [Setup] Configure Jest for New Test Files
+### [X] T004: [Setup] Configure Jest for New Test Files
 **Description**: Ensure Jest configuration recognizes new test files.
 **File**: `jest.config.js` or `package.json`
 **Actions**:
@@ -99,7 +99,7 @@ Cross-cutting concerns and final integration.
 
 ---
 
-### T005: [Setup] Review Backend API Contract
+### [X] T005: [Setup] Review Backend API Contract
 **Description**: Read and understand the OpenAPI contract for space creation.
 **File to Review**: `specs/010-alter-the-init/contracts/space-creation-api.yaml`
 **Actions**:
@@ -120,7 +120,7 @@ Cross-cutting concerns and final integration.
 
 **Tasks**:
 
-### T006: [Foundational] [TDD] Write Tests for SlugValidator
+### [X] T006: [Foundational] [TDD] Write Tests for SlugValidator
 **Description**: Write comprehensive tests for slug validation logic BEFORE implementation.
 **File**: `tests/unit/utils/SlugValidator.test.ts`
 **Test Cases**:
@@ -151,7 +151,7 @@ interface SlugValidationResult {
 
 ---
 
-### T007: [Foundational] Implement SlugValidator
+### [X] T007: [Foundational] Implement SlugValidator
 **Description**: Implement slug validation logic to make tests pass.
 **File**: `src/utils/SlugValidator.ts` (NEW)
 **Requirements** (from FR-003, FR-004):
@@ -169,7 +169,7 @@ interface SlugValidationResult {
 
 ---
 
-### T008: [Foundational] [TDD] Write Tests for SpaceCreationService - Core Logic
+### [X] T008: [Foundational] [TDD] Write Tests for SpaceCreationService - Core Logic
 **Description**: Write tests for space creation service BEFORE implementation.
 **File**: `tests/unit/services/SpaceCreationService.test.ts`
 **Test Cases**:
@@ -215,7 +215,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T009: [Foundational] [TDD] Write Tests for SpaceCreationService - Retry Logic
+### [X] T009: [Foundational] [TDD] Write Tests for SpaceCreationService - Retry Logic
 **Description**: Write tests for retry behavior with exponential backoff BEFORE implementation.
 **File**: `tests/unit/services/SpaceCreationService.test.ts` (extend)
 **Test Cases** (from FR-006):
@@ -233,7 +233,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T010: [Foundational] Implement SpaceCreationService - Core Logic
+### [X] T010: [Foundational] Implement SpaceCreationService - Core Logic
 **Description**: Implement basic space creation to pass T008 tests.
 **File**: `src/services/SpaceCreationService.ts` (NEW)
 **Requirements**:
@@ -254,7 +254,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T011: [Foundational] Implement SpaceCreationService - Retry Logic
+### [X] T011: [Foundational] Implement SpaceCreationService - Retry Logic
 **Description**: Add retry logic with exponential backoff to pass T009 tests.
 **File**: `src/services/SpaceCreationService.ts` (extend)
 **Requirements** (from FR-006):
@@ -273,7 +273,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T012: [Foundational] [TDD] Write Contract Tests for Space Creation API
+### [X] T012: [Foundational] [TDD] Write Contract Tests for Space Creation API
 **Description**: Write tests validating CLI behavior against backend OpenAPI contract.
 **File**: `tests/contract/space-creation-api.test.ts` (NEW)
 **Test Cases**:
@@ -301,7 +301,7 @@ interface SpaceCreationResponse {
 
 **Tasks**:
 
-### T013: [US1] [TDD] Write Tests for Init Command - Space Creation Path
+### [X] T013: [US1] [TDD] Write Tests for Init Command - Space Creation Path
 **Description**: Write tests for init command with auto-creation logic BEFORE implementation.
 **File**: `tests/unit/commands/init.test.ts` (extend existing)
 **Test Cases**:
@@ -324,7 +324,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T014: [US1] Add New Flags to Init Command
+### [X] T014: [US1] Add New Flags to Init Command
 **Description**: Add command-line flags for auto-creation feature.
 **File**: `src/commands/init.ts` (modify)
 **Requirements** (from FR-008, FR-009, FR-013):
@@ -341,7 +341,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T015: [US1] Integrate SlugValidator into Init Command
+### [X] T015: [US1] Integrate SlugValidator into Init Command
 **Description**: Add client-side slug validation before any API calls.
 **File**: `src/commands/init.ts` (modify)
 **Requirements** (from FR-003, FR-004):
@@ -359,7 +359,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T016: [US1] Integrate SpaceCreationService into Init Command
+### [X] T016: [US1] Integrate SpaceCreationService into Init Command
 **Description**: Add auto-creation logic when space doesn't exist.
 **File**: `src/commands/init.ts` (modify)
 **Requirements** (from FR-001, FR-002, FR-005):
@@ -382,7 +382,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T017: [US1] Add Error Handling for Creation Failures
+### [X] T017: [US1] Add Error Handling for Creation Failures
 **Description**: Handle all space creation error scenarios with actionable messages.
 **File**: `src/commands/init.ts` (modify)
 **Requirements** (from FR-007, NFR-003, Edge Cases):
@@ -403,7 +403,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T018: [US1] Preserve Backward Compatibility for Existing Spaces
+### [X] T018: [US1] Preserve Backward Compatibility for Existing Spaces
 **Description**: Ensure existing space validation works unchanged.
 **File**: `src/commands/init.ts` (verify)
 **Requirements** (from FR-016):
@@ -537,7 +537,7 @@ interface SpaceCreationResponse {
 
 ---
 
-### T025: [US1] Write User Documentation for Auto-Creation
+### [X] T025: [US1] Write User Documentation for Auto-Creation
 **Description**: Document new auto-creation behavior for users.
 **File**: `README.md` (update)
 **Actions**:

@@ -50,11 +50,12 @@ This CLI is in **active alpha development**. While core functionality is stable 
 
 **What's Stable**:
 - ✅ Authentication (login, logout, registration)
-- ✅ Upload workflow (vault to space)
+- ✅ Init workflow (auto-create spaces, upload vault)
 - ✅ Clone workflow (space to vault)
 - ✅ Sync workflow (bidirectional synchronization)
 - ✅ Template system (list and clone)
 - ✅ Canvas support (visual preservation)
+- ✅ Space auto-creation (automatic, with metadata, --no-auto-create flag)
 
 **What's Being Refined**:
 - ⚠️ Error messages and user feedback
@@ -186,13 +187,13 @@ mujarrad auth login
 
 **Unlock** your space with secure credentials.
 
-### 2. Upload & Transform
+### 2. Initialize & Transform
 
 ```bash
-mujarrad upload ./my-vault --space my-space
+mujarrad init ./my-vault --space my-space
 ```
 
-**Distill** your Obsidian vault into **structured**, **intelligent** data.
+**Distill** your Obsidian vault into **structured**, **intelligent** data. Space is **automatically created** if it doesn't exist.
 
 ### 3. Clone & Recreate
 
@@ -268,8 +269,19 @@ mujarrad space delete    # Remove space
 ### Data Operations
 
 ```bash
-# Upload: Transform local vaults into structured spaces
-mujarrad upload <vault-path> --space <slug>
+# Init: Initialize vault upload (automatically creates space if needed)
+mujarrad init <vault-path> --space <slug>
+
+# Init with metadata: Create new space with custom name and description
+mujarrad init <vault-path> --space <slug> \
+  --space-name "Display Name" \
+  --space-description "Description"
+
+# Init without auto-create: Fail if space doesn't exist (power users)
+mujarrad init <vault-path> --space <slug> --no-auto-create
+
+# Init with sync: Pull remote content before upload
+mujarrad init <vault-path> --space <slug> --sync
 
 # Clone: Recreate spaces as local vaults
 mujarrad clone <target-path> --space <slug>
@@ -350,11 +362,16 @@ Mujarrad **adapts** to your environment. Configuration stored in `~/.mujarrad/co
 
 ## Examples
 
-### Example 1: Business Model Canvas
+### Example 1: Quick Start with Auto-Creation
 
 ```bash
-# Upload complete business model vault
-mujarrad upload ./business-models --space startup-canvas
+# Initialize new space (automatically created if doesn't exist)
+mujarrad init ./my-vault --space my-new-space
+
+# Initialize with custom metadata
+mujarrad init ./my-vault --space startup-kb \
+  --space-name "Startup Knowledge Base" \
+  --space-description "Ideas and research for my startup"
 
 # Visual properties preserved:
 # • Node positions, sizes, colors

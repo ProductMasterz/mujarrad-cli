@@ -2,7 +2,6 @@
  * TypeScript interfaces for Init Command Enhancement (009-init-command-enhancement)
  *
  * This file defines all entities used in bidirectional sync operations:
- * - Space Metadata (FR-001, FR-004, FR-005)
  * - Remote Node (FR-007, FR-014, FR-019)
  * - Local File (FR-021, FR-022)
  * - Comparison Result (FR-021, FR-022, FR-023, FR-024)
@@ -11,19 +10,66 @@
  * These interfaces provide type safety for the sync feature implementation.
  */
 
-import type { SpaceMetadata as ApiSpaceMetadata, RemoteNode as ApiRemoteNode } from '../api/generated/index.js';
-
 /**
- * Space metadata for pre-flight verification
- * Re-export from API client with additional CLI-specific methods
+ * Remote node representation from backend
+ * This interface matches the structure returned by /api/spaces/{spaceId}/nodes
  */
-export type SpaceMetadata = ApiSpaceMetadata;
+export interface RemoteNode {
+    /**
+     * Node UUID (primary identifier)
+     */
+    nodeId: string;
 
-/**
- * Remote node representation
- * Re-export from API client with additional CLI-specific methods
- */
-export type RemoteNode = ApiRemoteNode;
+    /**
+     * Node UUID (alias for nodeId - for backward compatibility)
+     */
+    uuid?: string;
+
+    /**
+     * File path relative to vault root
+     */
+    filePath: string;
+
+    /**
+     * Node content (markdown or canvas JSON)
+     */
+    content: string;
+
+    /**
+     * SHA-256 hash of content
+     */
+    hash: string;
+
+    /**
+     * Node title
+     */
+    title: string;
+
+    /**
+     * Node type
+     */
+    nodeType: 'REGULAR' | 'CANVAS' | 'CONTEXT';
+
+    /**
+     * File type (markdown or canvas)
+     */
+    fileType?: 'markdown' | 'canvas';
+
+    /**
+     * Creation timestamp
+     */
+    createdAt: string;
+
+    /**
+     * Last modification timestamp
+     */
+    lastModified: string;
+
+    /**
+     * Hash of common ancestor (for three-way merge)
+     */
+    ancestorHash?: string | null;
+}
 
 /**
  * Local file representation in Obsidian vault

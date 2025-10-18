@@ -18,7 +18,7 @@ module.exports = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles)/)',
+    'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles|uuid)/)',
   ],
 
   // Multi-project configuration for contract, unit, integration, and performance tests
@@ -44,7 +44,7 @@ module.exports = {
         '^(\\.{1,2}/.*)\\.js$': '$1',
       },
       transformIgnorePatterns: [
-        'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles)/)',
+        'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles|uuid)/)',
       ],
       collectCoverageFrom: [
         'src/api/generated/**/*.ts',
@@ -73,7 +73,7 @@ module.exports = {
         '^(\\.{1,2}/.*)\\.js$': '$1',
       },
       transformIgnorePatterns: [
-        'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles)/)',
+        'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles|uuid)/)',
       ],
       collectCoverageFrom: [
         'src/**/*.ts',
@@ -111,7 +111,7 @@ module.exports = {
         '^(\\.{1,2}/.*)\\.js$': '$1',
       },
       transformIgnorePatterns: [
-        'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles)/)',
+        'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles|uuid)/)',
       ],
       coverageDirectory: 'coverage/integration',
       // Integration tests use real API, no coverage requirements
@@ -136,7 +136,7 @@ module.exports = {
         '^(\\.{1,2}/.*)\\.js$': '$1',
       },
       transformIgnorePatterns: [
-        'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles)/)',
+        'node_modules/(?!(ora|chalk|cli-spinners|cli-cursor|log-symbols|is-interactive|is-unicode-supported|string-width|strip-ansi|ansi-regex|ansi-styles|#ansi-styles|uuid)/)',
       ],
       coverageDirectory: 'coverage/performance',
       // Performance tests don't need coverage

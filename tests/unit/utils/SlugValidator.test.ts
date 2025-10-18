@@ -55,31 +55,31 @@ describe('SlugValidator', () => {
         it('should reject slug with uppercase letters', () => {
             const result = validator.validate('My-Space');
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('lowercase'));
+            expect(result.errors.some(e => e.includes('lowercase'))).toBe(true);
         });
 
         it('should reject slug with spaces', () => {
             const result = validator.validate('my space');
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('alphanumeric'));
+            expect(result.errors.some(e => e.includes('alphanumeric'))).toBe(true);
         });
 
         it('should reject slug with underscores', () => {
             const result = validator.validate('my_space');
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('alphanumeric'));
+            expect(result.errors.some(e => e.includes('alphanumeric'))).toBe(true);
         });
 
         it('should reject slug with dots', () => {
             const result = validator.validate('my.space');
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('alphanumeric'));
+            expect(result.errors.some(e => e.includes('alphanumeric'))).toBe(true);
         });
 
         it('should reject slug with special characters', () => {
             const result = validator.validate('my@space');
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('alphanumeric'));
+            expect(result.errors.some(e => e.includes('alphanumeric'))).toBe(true);
         });
     });
 
@@ -87,14 +87,14 @@ describe('SlugValidator', () => {
         it('should reject empty string', () => {
             const result = validator.validate('');
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('required'));
+            expect(result.errors.some(e => e.includes('required'))).toBe(true);
         });
 
         it('should reject slug longer than 50 characters', () => {
             const slug = 'a'.repeat(51);
             const result = validator.validate(slug);
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('50 characters'));
+            expect(result.errors.some(e => e.includes('50 characters'))).toBe(true);
         });
     });
 
@@ -105,7 +105,7 @@ describe('SlugValidator', () => {
             it(`should reject reserved slug: "${slug}"`, () => {
                 const result = validator.validate(slug);
                 expect(result.valid).toBe(false);
-                expect(result.errors).toContain(expect.stringContaining('reserved'));
+                expect(result.errors.some(e => e.includes('reserved'))).toBe(true);
             });
         });
 
@@ -132,19 +132,19 @@ describe('SlugValidator', () => {
         it('should reject slug starting with hyphen', () => {
             const result = validator.validate('-abc');
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('start with'));
+            expect(result.errors.some(e => e.includes('start with'))).toBe(true);
         });
 
         it('should reject slug ending with hyphen', () => {
             const result = validator.validate('abc-');
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('end with'));
+            expect(result.errors.some(e => e.includes('end with'))).toBe(true);
         });
 
         it('should reject slug with consecutive hyphens', () => {
             const result = validator.validate('my--space');
             expect(result.valid).toBe(false);
-            expect(result.errors).toContain(expect.stringContaining('consecutive'));
+            expect(result.errors.some(e => e.includes('consecutive'))).toBe(true);
         });
     });
 

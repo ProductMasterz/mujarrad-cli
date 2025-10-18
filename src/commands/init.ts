@@ -5,13 +5,16 @@ import cliProgress from 'cli-progress';
 import * as path from 'path';
 import { UploadService } from '../services/UploadService.js';
 import { UploadApi } from '../api/generated/api.js';
-import { SyncSpacesApi } from '../api/generated/index.js';
+import { SpacesApi } from '../api/generated/index.js';
 import { Configuration } from '../api/generated/configuration.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { CredentialManager } from '../config/CredentialManager.js';
 import { Logger } from '../utils/Logger.js';
 import { VaultValidator } from '../utils/VaultValidator.js';
+import { SlugValidator } from '../utils/SlugValidator.js';
 import { SpaceValidator } from '../services/SpaceValidator.js';
+import { SpaceResolver } from '../services/SpaceResolver.js';
+import { ConfigManager as SpaceConfigManager } from '../services/ConfigManager.js';
 import { RemoteNodeFetcher } from '../services/RemoteNodeFetcher.js';
 import { TransactionalDownloader } from '../services/TransactionalDownloader.js';
 import { VersionComparator } from '../services/VersionComparator.js';
@@ -19,7 +22,6 @@ import { LocalFileHasher } from '../utils/LocalFileHasher.js';
 import { VaultScanner } from '../filesystem/VaultScanner.js';
 import { ConflictResolver } from '../services/ConflictResolver.js';
 import { ConflictStrategy } from '../types/sync.js';
-import { SpaceNotFoundError, AccessDeniedError, SpaceValidationError } from '../errors/SpaceErrors.js';
 
 /**
  * Setup init command with Commander.js
@@ -113,10 +115,20 @@ export function initCommand(program: Command, uploadService?: UploadService): vo
     .option('-b, --batch-size <size>', 'Number of files per batch', '50')
     .option('-s, --sync', 'Enable bidirectional sync (pull remote content before upload)', false)
     .option('--strategy <strategy>', 'Conflict resolution strategy: KEEP_LOCAL, KEEP_REMOTE, SKIP (only with --sync)', 'SKIP')
+    .option('--space-name <name>', 'Display name for new space (only used if space is auto-created)')
+    .option('--space-description <text>', 'Description for new space (only used if space is auto-created)')
+    .option('--no-auto-create', 'Disable automatic space creation (fail if space does not exist)')
     .addHelpText('after', `
 Examples:
   $ mujarrad init ./my-vault --space my-space
     One-way upload (default): Upload local vault to space
+    If space doesn't exist, it will be created automatically
+
+  $ mujarrad init ./my-vault -w kb --space-name "Knowledge Base" --space-description "Work notes"
+    Create new space with custom name and description
+
+  $ mujarrad init ./my-vault -w my-space --no-auto-create
+    Fail immediately if space doesn't exist (disable auto-creation)
 
   $ mujarrad init ./my-vault -w my-space --sync
     Bidirectional sync: Pull remote content, then upload local changes
@@ -148,8 +160,10 @@ Process (with --sync):
   6. Uploads local changes in batches to the space
 
 Notes:
-  • Space must exist before uploading (create at https://www.mujarrad.com)
-  • Space slug must be 3-50 characters, lowercase alphanumeric with hyphens
+  • If space doesn't exist, it will be created automatically (unless --no-auto-create is used)
+  • Space slug must be 1-50 characters, lowercase alphanumeric with hyphens
+  • Use --space-name and --space-description to customize new space metadata
+  • Use --no-auto-create to disable automatic space creation (fail if space missing)
   • Default batch size is 50 files
   • Progress is tracked and can be resumed if interrupted
   • Automatically retries on network timeouts and server errors
@@ -182,8 +196,41 @@ Exit Codes:
         }
         spinner.succeed('Authenticated');
 
-        // Validate space BEFORE scanning vault (FR-001, US1)
-        // This provides fast feedback if space doesn't exist (FR-003)
+        // T015: Client-side slug validation (FR-003, FR-004)
+        // Validate slug format BEFORE any API calls
+        spinner.start('Validating space slug...');
+        const slugValidator = new SlugValidator();
+        const slugValidation = slugValidator.validate(options.space);
+
+        if (!slugValidation.valid) {
+          spinner.fail(chalk.red('Invalid space slug'));
+          console.error(chalk.red('\n✗ Space slug validation failed:\n'));
+
+          // Display all validation errors
+          slugValidation.errors.forEach(error => {
+            console.error(chalk.red(`  • ${error}`));
+          });
+
+          // Display format requirements and examples (NFR-003)
+          console.log(chalk.gray('\nSlug format requirements:'));
+          console.log(chalk.gray(`  • ${slugValidation.format}`));
+          console.log(chalk.gray(`  • Length: ${slugValidation.minLength}-${slugValidation.maxLength} characters`));
+          console.log(chalk.gray('\nValid examples:'));
+          console.log(chalk.gray('  • my-space'));
+          console.log(chalk.gray('  • kb-2025'));
+          console.log(chalk.gray('  • project-notes\n'));
+
+          logger.error('Slug validation failed', {
+            slug: options.space,
+            errors: slugValidation.errors
+          });
+
+          process.exit(1);
+        }
+
+        spinner.succeed('Slug validated');
+
+        // Validate and resolve slug to UUID (FR-001, FR-002)
         spinner.start(chalk.blue('Verifying space...'));
 
         const config = await new ConfigManager().load();
@@ -192,57 +239,39 @@ Exit Codes:
           accessToken: token || undefined
         });
 
-        const spaceApi = new SyncSpacesApi(apiConfig);
-        const spaceValidator = new SpaceValidator(spaceApi, logger);
+        const spaceApi = new SpacesApi(apiConfig);
+        const spaceConfigManager = new SpaceConfigManager();
+        const spaceResolver = new SpaceResolver(spaceApi, spaceConfigManager, logger);
+        const spaceValidator = new SpaceValidator(spaceResolver, logger);
+
+        let spaceUuid: string;
 
         try {
-          const spaceMetadata = await spaceValidator.validateSpace(options.space);
+          // Validate and resolve slug to UUID
+          spaceUuid = await spaceValidator.validateSpace(options.space);
 
-          // Display space verification success (FR-005)
-          spinner.succeed(chalk.green(
-            `Space verified: ${chalk.white(spaceMetadata.name)} ` +
-            chalk.gray(`(${spaceMetadata.nodeCount} existing nodes)`)
-          ));
+          spinner.succeed(chalk.green(`Space verified: ${chalk.white(options.space)}`));
 
           logger.info('Space validation successful', {
             spaceSlug: options.space,
-            spaceName: spaceMetadata.name,
-            nodeCount: spaceMetadata.nodeCount,
-            owner: spaceMetadata.owner
+            spaceUuid
           });
+
         } catch (error: any) {
-          spinner.fail(chalk.red('Space verification failed'));
+          // Handle space validation failures
+          spinner.fail(chalk.red('Space validation failed'));
 
-          // Handle specific space validation errors (FR-003, FR-004)
-          if (error instanceof SpaceNotFoundError) {
-            console.error(chalk.red(`\n✗ Space '${options.space}' not found`));
-            console.log(chalk.gray('\nTip: Check the space slug or create a new space at https://www.mujarrad.com\n'));
-            process.exit(4); // Exit code 4 for space not found (FR-003)
-          } else if (error instanceof AccessDeniedError) {
-            console.error(chalk.red('\n✗ Access denied to space'));
-            console.log(chalk.yellow(`\nYou do not have write access to space '${options.space}'.`));
-            console.log(chalk.gray('Contact the space owner for permissions.\n'));
-            process.exit(4); // Exit code 4 for access denied
-          } else if (error instanceof SpaceValidationError) {
-            console.error(chalk.red(`\n✗ Space validation failed: ${error.message}`));
+          const errorMessage = error.message || 'Unknown error';
 
-            if (error.message.includes('Authentication required')) {
-              console.log(chalk.gray('\nRun "mujarrad auth login" to authenticate\n'));
-              process.exit(1);
-            } else if (error.message.includes('Invalid space slug')) {
-              console.log(chalk.gray('\nSpace slug must be 3-50 characters, lowercase alphanumeric with hyphens\n'));
-              process.exit(1);
-            } else if (error.message.includes('timeout')) {
-              console.log(chalk.gray('\nNetwork timeout occurred. Check your internet connection and try again.\n'));
-              process.exit(1);
-            }
+          console.error(chalk.red(`\n✗ ${errorMessage}\n`));
 
-            console.log(); // Empty line
-            process.exit(1);
-          } else {
-            // Unknown error
-            throw error;
-          }
+          logger.error('Space validation failed', {
+            spaceSlug: options.space,
+            error: errorMessage,
+            stack: error.stack
+          });
+
+          process.exit(1);
         }
 
         // Pull remote content if --sync flag is enabled (FR-007, T025)
@@ -258,7 +287,7 @@ Exit Codes:
             const remoteNodes = [];
             let nodeCount = 0;
 
-            for await (const node of fetcher.fetchAllNodes(options.space)) {
+            for await (const node of fetcher.fetchAllNodes(spaceUuid)) {
               remoteNodes.push(node);
               nodeCount++;
 
@@ -400,7 +429,7 @@ Exit Codes:
 
             // Fetch remote nodes
             const remoteNodes: any[] = [];
-            for await (const node of fetcher.fetchAllNodes(options.space)) {
+            for await (const node of fetcher.fetchAllNodes(spaceUuid)) {
               remoteNodes.push(node);
             }
 
@@ -550,11 +579,11 @@ Exit Codes:
         // Track progress (we'll update this as we scan)
         spinner.start('Scanning vault...');
 
-        // Perform upload with retry logic
+        // Perform upload with retry logic (use spaceUuid, not slug)
         const startTime = Date.now();
         const summary = await retryOn500(async () => {
           return await service.uploadVault(
-            options.space,
+            spaceUuid,  // Use UUID from space validation/resolution
             absoluteVaultPath,
             batchSize
           );

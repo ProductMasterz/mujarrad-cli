@@ -194,7 +194,7 @@ export class TransactionalDownloader {
                 stagingPath: stagingFilePath,
                 finalPath,
                 relativePath: node.filePath,
-                nodeUuid: node.uuid,
+                nodeUuid: node.uuid || node.nodeId,
                 sizeBytes: Buffer.byteLength(content, 'utf8')
             });
         }

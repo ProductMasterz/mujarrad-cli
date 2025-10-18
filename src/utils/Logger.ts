@@ -376,6 +376,43 @@ export class Logger {
   }
 
   /**
+   * Log space creation attempt (FR-002)
+   * Feature: 010-alter-the-init
+   */
+  logSpaceCreationAttempt(slug: string, attempt: number): void {
+    this.info('Space creation attempt', {
+      event: 'space_creation_attempt',
+      slug,
+      attempt,
+    });
+  }
+
+  /**
+   * Log space creation success (FR-005)
+   * Feature: 010-alter-the-init
+   */
+  logSpaceCreationSuccess(slug: string, spaceId: string): void {
+    this.info('Space created successfully', {
+      event: 'space_creation_success',
+      slug,
+      spaceId,
+    });
+  }
+
+  /**
+   * Log space creation failure (FR-007)
+   * Feature: 010-alter-the-init
+   */
+  logSpaceCreationFailure(slug: string, statusCode: number, error: string): void {
+    this.error('Space creation failed', {
+      event: 'space_creation_failure',
+      slug,
+      statusCode,
+      error,
+    });
+  }
+
+  /**
    * Log skipped file (FR-033, FR-034)
    * Feature: 009-init-command-enhancement
    */
