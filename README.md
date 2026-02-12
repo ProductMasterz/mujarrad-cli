@@ -39,7 +39,7 @@
 
 ## Version Status
 
-**Current Version**: `1.0.5` (Alpha)
+**Current Version**: `1.2.0-alpha.2` (Alpha)
 
 This CLI is in **active alpha development**. While core functionality is stable and tested, you should expect:
 
@@ -391,7 +391,7 @@ Mujarrad **adapts** to your environment. Configuration stored in `~/.mujarrad/co
 }
 ```
 
-**Note**: v1.0.5+ automatically migrates old config files with incorrect API URLs.
+**Note**: v1.1.0+ automatically migrates old config files with incorrect API URLs.
 
 ### Credential Storage
 
@@ -533,7 +533,7 @@ mujarrad auth logout
 mujarrad auth login
 ```
 
-**Note**: If you installed v1.0.0-1.0.3 and experience 403 errors, simply upgrade to v1.0.5:
+**Note**: If you installed v1.0.0-1.1.0-alpha.3 and experience 403 errors, simply upgrade to v1.1.0-alpha.4:
 ```bash
 npm install -g mujarrad-cli@latest
 ```
@@ -684,11 +684,11 @@ npm run format            # Format code (Prettier)
 - [ ] Status command
 
 ### Phase 11: Distribution ✅
-- [x] NPM package (v1.0.5 published)
+- [x] NPM package (v1.2.0-alpha.2 published)
 - [x] User documentation (README.md)
 - [x] Developer documentation (inline comments + specs)
 
-**Current Version**: `1.0.5` - Published on npm
+**Current Version**: `1.2.0-alpha.2` - Published on npm
 
 See [tasks.md](./specs/007-obsidian-mapper-i/tasks.md) for detailed implementation plan.
 
