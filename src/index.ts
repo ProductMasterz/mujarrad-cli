@@ -14,6 +14,7 @@ import { initCommand } from './commands/init.js';
 import { cloneCommand } from './commands/clone.js';
 import { syncCommand } from './commands/sync.js';
 import { templateCommand } from './commands/template.js';
+import { sdkCommand } from './commands/sdk.js';
 
 /**
  * Mujarrad CLI - Obsidian Knowledge Graph Integration
@@ -114,6 +115,7 @@ Troubleshooting:
     cloneCommand(program);
     syncCommand(program);
     templateCommand(program);
+    sdkCommand(program);
 
     // Parse arguments
     await program.parseAsync(process.argv);

@@ -55,6 +55,7 @@ This CLI is in **active alpha development**. While core functionality is stable 
 - ✅ Sync workflow (bidirectional synchronization)
 - ✅ Template system (list and clone)
 - ✅ Canvas support (visual preservation)
+- ⚠️ Developer SDK (`@mujarrad/sdk`) — alpha
 
 **What's Being Refined**:
 - ⚠️ Error messages and user feedback
@@ -212,6 +213,72 @@ mujarrad sync ./my-vault --watch
 
 ---
 
+## SDK Quick Start (For Developers)
+
+Use Mujarrad as a **graph-based backend** for your apps — like Firebase/Supabase, but graph-native.
+
+### 1. Install the CLI and log in
+
+```bash
+npm install -g mujarrad-cli
+mujarrad auth login
+```
+
+### 2. Scaffold a project
+
+```bash
+mujarrad sdk init my-app
+cd my-app && npm install
+```
+
+### 3. Define your schema
+
+```typescript
+// src/schema.ts
+import { defineSchema } from '@mujarrad/sdk';
+
+export const schema = defineSchema()
+  .entity('Task').string('title', { required: true }).enum('status', ['todo', 'done']).done()
+  .build();
+```
+
+### 4. Use the SDK
+
+```typescript
+// src/index.ts
+import { Mujarrad } from '@mujarrad/sdk';
+import { schema } from './schema.js';
+
+const client = new Mujarrad({
+  apiKey: process.env.MUJARRAD_PUBLIC_KEY!,
+  secretKey: process.env.MUJARRAD_SECRET_KEY!,
+  space: process.env.MUJARRAD_SPACE!,
+}).withSchema(schema);
+
+const task = await client.createEntity('Task', { title: 'Ship it', status: 'todo' });
+```
+
+### 5. Run
+
+```bash
+npm start
+```
+
+See [`packages/sdk/README.md`](./packages/sdk/README.md) for full API reference, or browse the [Developer Documentation](./docs/dev/):
+
+- [Getting Started](./docs/dev/01-getting-started.md) — Install, authenticate, scaffold
+- [Core Concepts](./docs/dev/02-core-concepts.md) — Nodes, Attributes, Spaces
+- [Schema Definition](./docs/dev/03-schema-definition.md) — Fluent schema builder
+- [CRUD Operations](./docs/dev/04-crud-operations.md) — Full data operations
+- [Graph Traversal](./docs/dev/05-graph-traversal.md) — Navigate the graph
+- [Error Handling](./docs/dev/06-error-handling.md) — Retry and error classes
+- [Building a Todo App](./docs/dev/07-tutorial-todo-app.md) — End-to-end tutorial
+- [API Reference](./docs/dev/08-api-reference.md) — Complete reference
+- [CLI Commands](./docs/dev/09-cli-commands.md) — SDK CLI workflow
+- [Architecture](./docs/dev/10-architecture.md) — SDK internals
+
+---
+
 ## Architecture
 
 Mujarrad CLI is **engineered** with a **5-layer abstraction**—each **layer** **refined**, **composable**, and **intelligent**:
@@ -285,6 +352,14 @@ mujarrad template list                    # Discover frameworks
 mujarrad template clone <target-path>     # Activate template
   --template <id>                         # Framework identifier
   --name <workspace-name>                 # Your workspace name
+```
+
+### SDK (Developer Tools)
+
+```bash
+mujarrad sdk init <project-name>         # Scaffold a new SDK project
+mujarrad sdk keygen                      # Generate a new API key pair
+mujarrad sdk keygen --name "production"  # Generate a named key pair
 ```
 
 ### Version History
@@ -594,13 +669,21 @@ npm run format            # Format code (Prettier)
 - [x] template CLI commands (list, clone)
 - [x] Template configuration management
 
-### Phase 9: Additional Features 📋
+### Phase 9: Developer SDK ✅
+- [x] `@mujarrad/sdk` npm package (nodes, attributes, spaces, batch)
+- [x] Schema builder with fluent API
+- [x] Schema validation
+- [x] HTTP client with retry + error mapping
+- [x] `mujarrad sdk init` project scaffolding
+- [x] `mujarrad sdk keygen` API key generation
+
+### Phase 10: Additional Features 📋
 - [ ] Workspace management commands
 - [ ] Version history commands
 - [ ] Sharing commands
 - [ ] Status command
 
-### Phase 10: Distribution ✅
+### Phase 11: Distribution ✅
 - [x] NPM package (v1.0.5 published)
 - [x] User documentation (README.md)
 - [x] Developer documentation (inline comments + specs)
