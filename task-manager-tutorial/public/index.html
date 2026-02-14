@@ -1455,16 +1455,23 @@
 
       const taskId = draggedTask.getAttribute('data-task-id');
       const column = e.currentTarget;
-      
+
       // Determine what to update based on current view
       let updateData = {};
-      
+
       if (currentView === 'kanban-status') {
         const newStatus = column.getAttribute('data-status');
         updateData.status = newStatus;
       } else if (currentView === 'kanban-priority') {
         const newPriority = column.getAttribute('data-priority');
         updateData.priority = newPriority;
+      } else if (currentView === 'kanban-assignee') {
+        const newAssignee = column.getAttribute('data-assignee');
+        if (newAssignee === 'Unassigned') {
+          updateData.assignee = null;
+        } else {
+          updateData.assignee = newAssignee;
+        }
       } else if (currentView === 'kanban-duedate') {
         // For due date view, we just move the task visually
         // The due date is set in the edit modal

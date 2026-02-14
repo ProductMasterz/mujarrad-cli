@@ -294,8 +294,8 @@ app.get('/api/dashboard', async (req, res) => {
 app.get('/api/data', async (req, res) => {
   try {
     const client = new MujarradClient(
-      MUJARRAD_CONFIG.email!,
-      MUJARRAD_CONFIG.password!,
+      MUJARRAD_CONFIG.apiPublicKey!,
+      MUJARRAD_CONFIG.apiSecretKey!,
       MUJARRAD_CONFIG.spaceSlug
     );
 
@@ -333,8 +333,8 @@ app.get('/api/data', async (req, res) => {
 app.get('/api/users', async (req, res) => {
   try {
     const client = new MujarradClient(
-      MUJARRAD_CONFIG.email!,
-      MUJARRAD_CONFIG.password!,
+      MUJARRAD_CONFIG.apiPublicKey!,
+      MUJARRAD_CONFIG.apiSecretKey!,
       MUJARRAD_CONFIG.spaceSlug
     );
 
@@ -365,8 +365,8 @@ app.get('/api/users', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
   try {
     const client = new MujarradClient(
-      MUJARRAD_CONFIG.email!,
-      MUJARRAD_CONFIG.password!,
+      MUJARRAD_CONFIG.apiPublicKey!,
+      MUJARRAD_CONFIG.apiSecretKey!,
       MUJARRAD_CONFIG.spaceSlug
     );
 
@@ -453,8 +453,8 @@ app.post('/api/tasks', async (req, res) => {
     }
 
     const client = new MujarradClient(
-      MUJARRAD_CONFIG.email!,
-      MUJARRAD_CONFIG.password!,
+      MUJARRAD_CONFIG.apiPublicKey!,
+      MUJARRAD_CONFIG.apiSecretKey!,
       MUJARRAD_CONFIG.spaceSlug
     );
 
@@ -494,7 +494,7 @@ app.put('/api/tasks/:id', async (req, res) => {
     const { id } = req.params;
     const { status, priority, assignee } = req.body;
 
-    if (!status && !priority && !assignee) {
+    if (status === undefined && priority === undefined && assignee === undefined) {
       return res.status(400).json({
         success: false,
         error: 'At least one field (status, priority, or assignee) is required',
@@ -502,8 +502,8 @@ app.put('/api/tasks/:id', async (req, res) => {
     }
 
     const client = new MujarradClient(
-      MUJARRAD_CONFIG.email!,
-      MUJARRAD_CONFIG.password!,
+      MUJARRAD_CONFIG.apiPublicKey!,
+      MUJARRAD_CONFIG.apiSecretKey!,
       MUJARRAD_CONFIG.spaceSlug
     );
 
@@ -516,9 +516,11 @@ app.put('/api/tasks/:id', async (req, res) => {
       },
     };
 
-    if (status) updates.nodeDetails.status = status;
-    if (priority) updates.nodeDetails.priority = priority;
-    if (assignee) updates.nodeDetails.assignee = assignee;
+    if (status !== undefined) updates.nodeDetails.status = status;
+    if (priority !== undefined) updates.nodeDetails.priority = priority;
+    if (assignee !== undefined) {
+      updates.nodeDetails.assignee = assignee;
+    }
 
     const node = await client.updateNode(id, updates);
 
@@ -547,8 +549,8 @@ app.delete('/api/tasks/:id', async (req, res) => {
     const { id } = req.params;
 
     const client = new MujarradClient(
-      MUJARRAD_CONFIG.email!,
-      MUJARRAD_CONFIG.password!,
+      MUJARRAD_CONFIG.apiPublicKey!,
+      MUJARRAD_CONFIG.apiSecretKey!,
       MUJARRAD_CONFIG.spaceSlug
     );
 
@@ -586,8 +588,8 @@ app.post('/api/users', async (req, res) => {
     }
 
     const client = new MujarradClient(
-      MUJARRAD_CONFIG.email!,
-      MUJARRAD_CONFIG.password!,
+      MUJARRAD_CONFIG.apiPublicKey!,
+      MUJARRAD_CONFIG.apiSecretKey!,
       MUJARRAD_CONFIG.spaceSlug
     );
 
@@ -622,8 +624,8 @@ app.delete('/api/users/:id', async (req, res) => {
     const { id } = req.params;
 
     const client = new MujarradClient(
-      MUJARRAD_CONFIG.email!,
-      MUJARRAD_CONFIG.password!,
+      MUJARRAD_CONFIG.apiPublicKey!,
+      MUJARRAD_CONFIG.apiSecretKey!,
       MUJARRAD_CONFIG.spaceSlug
     );
 
