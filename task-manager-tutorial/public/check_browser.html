@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head><title>Browser Check</title></head>
+<body>
+<h1>Browser Capabilities Check</h1>
+<pre id="output"></pre>
+
+<script>
+const output = document.getElementById('output');
+
+function log(msg) {
+  output.textContent += msg + '\n';
+}
+
+log('Browser: ' + navigator.userAgent);
+log('Window location: ' + window.location.href);
+log('Document ready state: ' + document.readyState);
+log();
+
+// Check fetch support
+log('Fetch support: ' + (typeof fetch !== 'undefined' ? 'YES' : 'NO'));
+log('Promise support: ' + (typeof Promise !== 'undefined' ? 'YES' : 'NO'));
+log('Arrow function support: ' + (function() { try { return eval('() => {}') !== undefined; } catch { return false; } })());
+log();
+
+// Test fetch
+log('Testing fetch to /api/health...');
+fetch('http://localhost:3000/api/health')
+  .then(r => {
+    log('Fetch succeeded! Status: ' + r.status);
+    return r.json();
+  })
+  .then(d => log('Response: ' + JSON.stringify(d)))
+  .catch(e => log('Fetch failed: ' + e.message));
+
+log('Test complete');
+</script>
+</body>
+</html>

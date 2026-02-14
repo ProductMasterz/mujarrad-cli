@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head><title>Debug</title></head>
+<body>
+<h1>Debug Test</h1>
+<pre id="output"></pre>
+
+<script>
+const output = document.getElementById('output');
+output.textContent = 'Starting debug...\n\n';
+
+async function testAPI() {
+  try {
+    output.textContent += 'Testing /api/health...\n';
+    const healthRes = await fetch('http://localhost:3000/api/health');
+    output.textContent += 'Status: ' + healthRes.status + '\n';
+    const healthData = await healthRes.json();
+    output.textContent += 'Health: ' + JSON.stringify(healthData, null, 2) + '\n\n';
+
+    output.textContent += 'Testing /api/data...\n';
+    const dataRes = await fetch('http://localhost:3000/api/data');
+    output.textContent += 'Status: ' + dataRes.status + '\n';
+    const data = await dataRes.json();
+    output.textContent += 'Data keys: ' + Object.keys(data) + '\n';
+    output.textContent += 'Data.data keys: ' + Object.keys(data.data) + '\n';
+    output.textContent += 'Tasks count: ' + data.data.tasks.length + '\n';
+    output.textContent += 'Nodes count: ' + data.data.nodes.length + '\n';
+    output.textContent += 'First task: ' + JSON.stringify(data.data.tasks[0] || 'none', null, 2) + '\n\n';
+
+    output.textContent += 'Testing /api/users...\n';
+    const usersRes = await fetch('http://localhost:3000/api/users');
+    output.textContent += 'Status: ' + usersRes.status + '\n';
+    const users = await usersRes.json();
+    output.textContent += 'Users count: ' + users.data.length + '\n\n';
+
+    output.textContent += 'Testing /api/stats...\n';
+    const statsRes = await fetch('http://localhost:3000/api/stats');
+    output.textContent += 'Status: ' + statsRes.status + '\n';
+    const stats = await statsRes.json();
+    output.textContent += 'Stats: ' + JSON.stringify(stats, null, 2) + '\n\n';
+
+    output.textContent += 'All tests passed!';
+
+  } catch (error) {
+    output.textContent += '\n\nERROR: ' + error.message + '\n';
+    output.textContent += error.stack;
+  }
+}
+
+testAPI();
+</script>
+</body>
+</html>
