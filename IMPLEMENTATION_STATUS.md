@@ -1,9 +1,24 @@
 # Mujarrad CLI - Implementation Status
 
-**Last Updated**: 2025-10-11
+**Last Updated**: 2026-03-14
 **Current Phase**: Phase 8 - Template System (COMPLETE)
 **Overall Progress**: 27/48 tasks complete (56.3%) 🎉
 **Test Status**: 403/428 tests passing (94.2%)
+
+**Backend Compatibility**: Backend v0.3.0 (Space Modes & Context Types) — CLI currently targets CONSUMER spaces. BACKEND space support (Context Types, Space Modes) is planned for a future phase.
+
+---
+
+## Backend v0.3.0 Compatibility Notes (2026-03-14)
+
+The Mujarrad backend has been updated to **v0.3.0**, which introduces:
+
+- **Project Types**: `CONSUMER` (default, CLI-compatible) and `BACKEND` (schema-protected)
+- **Space Modes**: BACKEND spaces operate in `CONFIGURATION` or `PRODUCTION` mode
+- **Context Types**: Named schemas for structured nodes in BACKEND spaces
+- **New endpoints**: `POST/GET/PUT/DELETE /api/spaces/{spaceId}/context-types`
+
+**CLI Impact**: The CLI currently creates `CONSUMER` spaces (default), which remain fully compatible with all existing workflows (init, clone, sync, templates). No breaking changes. BACKEND space management features are planned for a future CLI release.
 
 ---
 
