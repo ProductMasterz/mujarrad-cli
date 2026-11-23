@@ -404,6 +404,48 @@ Every command takes `--api-url`, `--json` and (where it applies) `--org <id|slug
 `MUJARRAD_ACCEPT_DISCLAIMER=1` to skip the alpha prompt; the banner is not printed with `--json`
 or when output is piped.
 
+### Test packages: prove the logic tier end to end
+
+`mujarrad test` runs **test packages**. Each one builds an App Package (model, flows of steps and
+wires, endpoints) the way forge's Logic lens does, then validates, saves, releases and deploys it
+into a fresh BACKEND space, calls its endpoints and runs its flows, and checks every answer. The
+spaces are deleted afterwards (`--keep` leaves them for a look in forge).
+
+```bash
+mujarrad test list                         # built-in packages and the features each proves
+mujarrad test run                          # all of them that need nothing extra
+mujarrad test run records lifecycle        # just these
+mujarrad test run --with agent,slow        # plus the agent-step and schedule packages
+mujarrad test run --junit report.xml       # JUnit report for CI
+mujarrad test show hello > my.test.json    # copy one, edit it...
+mujarrad test run --file my.test.json      # ...and run your own
+```
+
+| Package | Proves |
+|---|---|
+| `hello` | forge's starter app: transform, decision, respond, `authenticated` endpoints, manual runs, run records and traces |
+| `records` | model materialization, STRICT schema, `fabric.create/get/query/update/delete`, path params, error wires, `public` / `space-viewer` / `space-editor` / `space-admin` |
+| `branching` | `validate`, `calc`, parallel branches with `join`, `decision` |
+| `subflows` | `split` and `repeat` sub-flows and their limits |
+| `links` | relationships and `fabric.link` (idempotent) |
+| `events` | `node-event` triggers fire on outside changes and never on the app's own writes |
+| `lifecycle` | draft versions, stored validation, hashed and idempotent releases, deploy, rollback, draft runs, dry runs that roll back |
+| `validator` | the graph rules (one entry, no cycles, decision wires, join inputs, known sub-flows, JEXL sandbox) and `wait` |
+| `expenses` | the Abstract-Logic sample app with a delegated `agent` step (`--with agent`; needs `LOGIC_AGENT_URL` on the backend) |
+| `schedule` | `schedule` triggers (`--with slow`, about 30 to 60 s; switches the schedule off afterwards) |
+
+A test package is JSON: `name`, `title`, `features`, optional `requires`, `app` (the App Package,
+with `__SPACE__` for the space slug) and `steps`. Each step has `it` (what it proves), `do`
+(`validate`, `push`, `release`, `deploy`, `ship`, `rollback`, `deployment`, `releases`, `versions`,
+`edit`, `call`, `run`, `runs`, `getRun`, `waitForRun`, `createRecord`, `sleep`) and usually `expect`.
+`expect` matches partially: listed keys must match, others are ignored; matchers include `$exists`,
+`$gt`/`$gte`/`$lt`/`$lte`, `$contains`, `$len`, `$minLen`, `$type`, `$match`, `$oneOf`, `$some`,
+`$every`. `save` keeps values for later steps as `{{name}}` (also `{{space}}`, `{{key}}`,
+`{{orgSlug}}`, `{{release}}`, `{{lastRunId}}`). See `examples/logic-tests/hello.test.json`.
+
+The **Logic tier tests** workflow (Actions, run manually) runs them against any backend URL with the
+`MUJARRAD_TEST_EMAIL` / `MUJARRAD_TEST_PASSWORD` secrets.
+
 > The Obsidian commands (`init`, `clone`, `sync`, `template clone`) still use the generated client
 > for the old `/api/workspaces` API, which the backend no longer serves. Porting them to
 > `/api/spaces` is tracked separately.
