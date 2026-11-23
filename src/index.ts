@@ -17,6 +17,7 @@ import { templateCommand } from './commands/template.js';
 import { sdkCommand } from './commands/sdk.js';
 import { orgsCommand, spacesCommand } from './commands/orgs.js';
 import { logicCommand } from './commands/logic.js';
+import { testCommand } from './commands/test.js';
 
 /**
  * Mujarrad CLI - Obsidian Knowledge Graph Integration
@@ -123,6 +124,7 @@ Troubleshooting:
     orgsCommand(program);
     spacesCommand(program);
     logicCommand(program);
+    testCommand(program);
 
     // Parse arguments
     await program.parseAsync(process.argv);

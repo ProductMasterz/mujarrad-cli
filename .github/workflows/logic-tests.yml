@@ -1,0 +1,43 @@
+name: Logic tier tests
+
+# Runs the CLI's logic-tier test packages against a live backend.
+# Needs repository secrets MUJARRAD_TEST_EMAIL and MUJARRAD_TEST_PASSWORD (an account that may
+# create spaces in its organization). The test spaces are deleted after each package.
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: Backend base URL
+        default: https://mujarrad.onrender.com
+      packages:
+        description: Package names (blank = all that need nothing extra)
+        default: ''
+      with:
+        description: Extra capabilities to include (agent, http, slow)
+        default: ''
+
+jobs:
+  logic-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - name: Run test packages
+        env:
+          MUJARRAD_API_BASE_URL: ${{ inputs.api_url }}
+          MUJARRAD_EMAIL: ${{ secrets.MUJARRAD_TEST_EMAIL }}
+          MUJARRAD_PASSWORD: ${{ secrets.MUJARRAD_TEST_PASSWORD }}
+          MUJARRAD_ACCEPT_DISCLAIMER: '1'
+          PACKAGES: ${{ inputs.packages }}
+          WITH: ${{ inputs.with }}
+        run: node dist/index.js test run $PACKAGES ${WITH:+--with "$WITH"} --junit logic-tests.xml
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logic-tests-report
+          path: logic-tests.xml

@@ -1,0 +1,189 @@
+{
+  "name": "my-hello",
+  "title": "Forge's starter app: transform, decision, respond, endpoint auth",
+  "features": [
+    "transform",
+    "decision",
+    "respond",
+    "endpoint trigger",
+    "auth: authenticated",
+    "manual run",
+    "run records"
+  ],
+  "app": {
+    "package": {
+      "key": "hello",
+      "name": "Hello app"
+    },
+    "scopes": {
+      "spaces": [
+        "__SPACE__"
+      ]
+    },
+    "model": {
+      "enforcement": "STRICT",
+      "types": []
+    },
+    "flows": [
+      {
+        "key": "say-hello",
+        "trigger": {
+          "kind": "endpoint"
+        },
+        "steps": [
+          {
+            "id": "greet",
+            "kind": "transform",
+            "config": {
+              "set": {
+                "message": "Hello ${input.name}"
+              }
+            }
+          },
+          {
+            "id": "check",
+            "kind": "decision",
+            "config": {
+              "expression": "input.name != null && input.name != ''"
+            }
+          },
+          {
+            "id": "ok",
+            "kind": "respond",
+            "config": {
+              "status": 200,
+              "body": {
+                "message": "${state.message}"
+              }
+            }
+          },
+          {
+            "id": "missing",
+            "kind": "respond",
+            "config": {
+              "status": 400,
+              "body": {
+                "error": "name is required"
+              }
+            }
+          }
+        ],
+        "wires": [
+          {
+            "from": "greet",
+            "to": "check",
+            "on": "success"
+          },
+          {
+            "from": "check",
+            "to": "ok",
+            "on": "tag:true"
+          },
+          {
+            "from": "check",
+            "to": "missing",
+            "on": "tag:false"
+          }
+        ]
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/hello",
+        "flow": "say-hello",
+        "auth": "authenticated"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "it": "the backend accepts the package as valid",
+      "do": "validate"
+    },
+    {
+      "it": "it is saved, released and deployed",
+      "do": "ship"
+    },
+    {
+      "it": "GET /hello?name=Ada answers 200 with the greeting (decision true)",
+      "do": "call",
+      "method": "GET",
+      "path": "/hello?name=Ada",
+      "expect": {
+        "status": 200,
+        "body": {
+          "message": "Hello Ada"
+        },
+        "runId": {
+          "$type": "string"
+        }
+      }
+    },
+    {
+      "it": "GET /hello without a name answers 400 (decision false)",
+      "do": "call",
+      "method": "GET",
+      "path": "/hello",
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "name is required"
+        }
+      }
+    },
+    {
+      "it": "an anonymous caller is refused on an authenticated endpoint (401)",
+      "do": "call",
+      "method": "GET",
+      "path": "/hello?name=Ada",
+      "anonymous": true,
+      "expect": {
+        "status": 401
+      }
+    },
+    {
+      "it": "the flow runs manually with an input",
+      "do": "run",
+      "flow": "say-hello",
+      "input": {
+        "name": "Grace"
+      },
+      "expect": {
+        "status": "SUCCEEDED",
+        "trigger": "manual",
+        "response": {
+          "status": 200,
+          "body": {
+            "message": "Hello Grace"
+          }
+        }
+      }
+    },
+    {
+      "it": "every call left a run record",
+      "do": "runs",
+      "expect": {
+        "$minLen": 3,
+        "$some": {
+          "flow": "say-hello",
+          "trigger": "endpoint",
+          "status": "SUCCEEDED"
+        }
+      }
+    },
+    {
+      "it": "the last run's trace lists the steps it took",
+      "do": "getRun",
+      "id": "{{lastRunId}}",
+      "expect": {
+        "status": "SUCCEEDED",
+        "trace": {
+          "$some": {
+            "step": "greet"
+          }
+        }
+      }
+    }
+  ]
+}
