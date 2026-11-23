@@ -1,4 +1,4 @@
-import { AuthService, credentialManager } from '../../../src/services/AuthService.js';
+import { AuthService, credentialManager, apiErrorMessage } from '../../../src/services/AuthService.js';
 import type { AuthApi } from '../../../src/services/AuthService.js';
 
 // Mock the credentialManager instance methods
@@ -48,14 +48,14 @@ describe('AuthService', () => {
       const mockError = {
         response: {
           status: 401,
-          data: { error: 'Invalid credentials' }
+          data: { status: 401, title: 'Unauthorized', detail: 'Invalid credentials' }
         }
       };
       
       mockAuthApi.login.mockRejectedValue(mockError);
 
       await expect(authService.login('user@example.com', 'wrong-password'))
-        .rejects.toThrow('Authentication failed: Invalid credentials');
+        .rejects.toThrow('Invalid credentials');
     });
 
     it('should handle network errors during login', async () => {
@@ -63,7 +63,7 @@ describe('AuthService', () => {
       mockAuthApi.login.mockRejectedValue(mockError);
 
       await expect(authService.login('user@example.com', 'password'))
-        .rejects.toThrow('Authentication failed: Network error');
+        .rejects.toThrow('Network error');
     });
 
     it('should validate email format before login', async () => {
@@ -89,30 +89,74 @@ describe('AuthService', () => {
       });
       (credentialManager.storeToken as jest.Mock).mockResolvedValue(undefined);
 
-      const result = await authService.register('newuser@example.com', 'password123', 'New User');
+      const result = await authService.register('newuser@example.com', 'password123', 'New User', 'new-user');
       
       expect(mockAuthApi.register).toHaveBeenCalledWith({
         email: 'newuser@example.com',
         password: 'password123',
-        username: 'New User',
+        username: 'new-user',
         fullName: 'New User'
       });
       expect(credentialManager.storeToken).toHaveBeenCalledWith('new-token');
       expect(result.user.email).toBe('newuser@example.com');
     });
 
-    it('should handle registration failure with existing email', async () => {
-      const mockError = {
+    it('shows the backend message, not its internal error code, without a doubled prefix', async () => {
+      // Verified 409 body from POST /api/auth/register for an existing email
+      mockAuthApi.register.mockRejectedValue({
         response: {
           status: 409,
-          data: { error: 'Email already exists' }
+          data: {
+            status: 409, title: 'Duplicate Resource',
+            detail: 'Registration failed. Please try a different email or log in.',
+            message: 'Registration failed. Please try a different email or log in.',
+            extensions: { error: 'DUPLICATE_SLUG' }, error: 'DUPLICATE_SLUG'
+          }
         }
-      };
-      
-      mockAuthApi.register.mockRejectedValue(mockError);
+      });
 
-      await expect(authService.register('existing@example.com', 'password', 'Name'))
-        .rejects.toThrow('Registration failed: Email already exists');
+      const err = await authService.register('existing@example.com', 'password123', 'Name').catch(e => e);
+      expect(err.message).toBe('Registration failed. Please try a different email or log in.');
+      expect(err.message).not.toContain('DUPLICATE_SLUG');
+    });
+
+    it('surfaces field validation errors from a 400', async () => {
+      mockAuthApi.register.mockRejectedValue({
+        body: {
+          status: 400, title: 'Validation Failed', detail: 'Request validation failed with 1 error(s)',
+          validationErrors: { password: 'Password must be at least 8 characters' }
+        }
+      });
+
+      await expect(authService.register('a@example.com', 'password123', 'Name'))
+        .rejects.toThrow(/^Password must be at least 8 characters$/);
+    });
+
+    it('rejects an invalid username before calling the backend', async () => {
+      await expect(authService.register('a@example.com', 'password123', 'T', 'bad username!!! with spaces'))
+        .rejects.toThrow(/Invalid username/);
+      await expect(authService.register('a@example.com', 'password123', 'Two Words'))
+        .rejects.toThrow(/Invalid username/);
+      await expect(authService.register('a@example.com', 'password123', 'T', 'x'))
+        .rejects.toThrow(/Invalid username/);
+      expect(mockAuthApi.register).not.toHaveBeenCalled();
+    });
+
+    it('accepts usernames with dots, dashes and underscores', async () => {
+      mockAuthApi.register.mockResolvedValue({ token: 't', user: { id: 'u', email: 'a@example.com', username: 't-1.a_b' } });
+      await authService.register('a@example.com', 'password123', 'T', '  t-1.a_b  ');
+      expect(mockAuthApi.register).toHaveBeenCalledWith(expect.objectContaining({ username: 't-1.a_b' }));
+    });
+  });
+
+  describe('apiErrorMessage', () => {
+    it('prefers message, then validationErrors, then detail, then the error message', () => {
+      expect(apiErrorMessage({ response: { data: { message: 'm', detail: 'd', error: 'CODE' } } })).toBe('m');
+      expect(apiErrorMessage({ body: { validationErrors: { a: 'x', b: 'y' }, detail: 'd' } })).toBe('x; y');
+      expect(apiErrorMessage({ body: { detail: 'd', error: 'CODE' } })).toBe('d');
+      expect(apiErrorMessage({ response: { data: { error: 'CODE' } }, message: 'Request failed with status code 409' }))
+        .toBe('Request failed with status code 409');
+      expect(apiErrorMessage(new Error('Network error'))).toBe('Network error');
     });
   });
 

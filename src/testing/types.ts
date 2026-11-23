@@ -30,6 +30,12 @@ interface BaseStep {
   it: string;
   /** Variables to save from the step's result, as dot paths (e.g. {"payment": "body.payment"}). */
   save?: Record<string, string>;
+  /**
+   * Marks a guard for a known backend bug: the step asserts the CORRECT behaviour and is expected
+   * to fail until the backend is fixed. Its failure is reported as a known bug and does not fail
+   * the package or stop later steps; when it starts passing, the report says the marker can go.
+   */
+  knownBug?: string;
 }
 
 export type TestStep = BaseStep & (
@@ -63,6 +69,8 @@ export interface StepResult {
   ms: number;
   error?: string;
   detail?: unknown;
+  /** Set on a knownBug step: 'still-failing' (expected) or 'now-passing' (bug fixed; drop the marker). */
+  knownBug?: { reason: string; state: 'still-failing' | 'now-passing' };
 }
 
 export interface PackageResult {

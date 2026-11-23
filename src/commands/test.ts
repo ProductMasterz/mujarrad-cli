@@ -36,15 +36,22 @@ function printSummary(results: PackageResult[]): void {
   for (const r of results) {
     const mark = r.status === 'passed' ? chalk.green('PASS') : r.status === 'failed' ? chalk.red('FAIL') : chalk.yellow('SKIP');
     const steps = r.steps.filter(s => s.ok).length;
-    const detail = r.status === 'skipped' ? r.skipReason : `${steps}/${r.steps.length} steps  ${(r.ms / 1000).toFixed(1)} s`;
+    const bugs = r.steps.filter(s => s.knownBug?.state === 'still-failing').length;
+    const detail = r.status === 'skipped' ? r.skipReason
+      : `${steps}/${r.steps.length} steps${bugs ? `, ${bugs} known backend bug${bugs > 1 ? 's' : ''}` : ''}  ${(r.ms / 1000).toFixed(1)} s`;
     console.log(`${mark}  ${r.name.padEnd(width)}  ${chalk.gray(detail)}`);
   }
   const passed = results.filter(r => r.status === 'passed').length;
   const failed = results.filter(r => r.status === 'failed').length;
   const skipped = results.filter(r => r.status === 'skipped').length;
   const covered = new Set(results.filter(r => r.status === 'passed').flatMap(r => r.features));
+  const known = results.flatMap(r => r.steps.filter(s => s.knownBug).map(s => ({ pkg: r.name, s })));
   console.log(`\n${failed ? chalk.red(`${failed} failed`) : chalk.green('all passed')}: ${passed} passed, ${failed} failed, ${skipped} skipped. ` +
     chalk.gray(`${covered.size} logic-tier features proven.`));
+  for (const { pkg, s } of known) {
+    const label = s.knownBug!.state === 'still-failing' ? chalk.yellow('known backend bug, still failing') : chalk.cyan('known bug now PASSES, remove the marker');
+    console.log(`  ${label}: ${pkg} > ${s.it}`);
+  }
 }
 
 /**
@@ -120,7 +127,11 @@ Credentials: as for every command (auth login, MUJARRAD_TOKEN, MUJARRAD_EMAIL/PA
           onStep: (_pkg, s) => {
             if (opts.json) return;
             if (s.skipped) console.log(chalk.gray(`  - ${s.it} (skipped)`));
-            else if (s.ok) console.log(`  ${chalk.green('✓')} ${s.it} ${chalk.gray(`${s.ms} ms`)}`);
+            else if (s.knownBug?.state === 'still-failing') {
+              console.log(`  ${chalk.yellow('!')} ${s.it} ${chalk.yellow('[KNOWN BACKEND BUG, fails as expected]')}\n      ${chalk.gray(s.knownBug.reason)}\n      ${chalk.gray(s.error || '')}`);
+            } else if (s.knownBug?.state === 'now-passing') {
+              console.log(`  ${chalk.green('✓')} ${s.it} ${chalk.cyan('[known bug now passes: the backend looks fixed; remove the knownBug marker]')}`);
+            } else if (s.ok) console.log(`  ${chalk.green('✓')} ${s.it} ${chalk.gray(`${s.ms} ms`)}`);
             else {
               console.log(`  ${chalk.red('✗')} ${s.it}\n      ${chalk.red(s.error || 'failed')}`);
               if (s.detail !== undefined) console.log(chalk.gray(`      got: ${JSON.stringify(s.detail).slice(0, 600)}`));

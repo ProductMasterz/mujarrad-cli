@@ -1,8 +1,9 @@
 import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import { AuthService } from '../services/AuthService.js';
+import { AuthService, USERNAME_PATTERN } from '../services/AuthService.js';
 import { createClient } from '../api/session.js';
+import { withLabel } from '../utils/labels.js';
 
 /**
  * Setup auth command with Commander.js
@@ -88,7 +89,7 @@ Notes:
         console.log(chalk.green('\n✓ Logged in successfully!'));
         console.log(chalk.gray(`Welcome back, ${result.user.name || result.user.email}!`));
       } catch (error: any) {
-        console.error(chalk.red('\n✗ Login failed:'), error.message);
+        console.error(chalk.red(withLabel('Login failed', error.message)));
         process.exit(1);
       }
     });
@@ -99,7 +100,7 @@ Notes:
     .description('Register a new Mujarrad account')
     .option('--email <email>', 'Email; with --name and --password skips the prompts')
     .option('--name <name>', 'Full name')
-    .option('--username <username>', 'Username (default: the name)')
+    .option('--username <username>', 'Username: letters, digits, . _ - (default: the name)')
     .option('--password <password>', 'Password')
     .action(async (opts: { email?: string; name?: string; username?: string; password?: string }) => {
       try {
@@ -124,6 +125,15 @@ Notes:
             validate: (input: string) => {
               return input.trim().length > 0 || 'Name is required';
             }
+          },
+          {
+            type: 'input',
+            name: 'username',
+            message: 'Username:',
+            when: () => !opts.username,
+            default: (a: any) => String(a.email || '').split('@')[0].replace(/[^a-z0-9._-]+/gi, '-').replace(/^[^a-z0-9]+/i, '').slice(0, 64),
+            validate: (input: string) => USERNAME_PATTERN.test(input.trim())
+              || "Use 2 to 64 letters, digits, '.', '_' or '-', starting with a letter or digit"
           },
           {
             type: 'password',
@@ -152,13 +162,13 @@ Notes:
         }
 
         const service = await getAuthService();
-        const result = await service.register(answers.email, answers.password, answers.name, opts.username);
+        const result = await service.register(answers.email, answers.password, answers.name, opts.username || answers.username);
 
         console.log(chalk.green('\n✓ Registration successful!'));
         console.log(chalk.gray(`Welcome, ${result.user.name}!`));
         console.log(chalk.gray('You are now logged in.'));
       } catch (error: any) {
-        console.error(chalk.red('\n✗ Registration failed:'), error.message);
+        console.error(chalk.red(withLabel('Registration failed', error.message)));
         process.exit(1);
       }
     });

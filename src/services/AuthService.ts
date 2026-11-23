@@ -50,6 +50,22 @@ function toUser(apiUser: any): User {
   return { id: u?.id, email: u?.email, name: u?.username || u?.name || u?.fullName };
 }
 
+/**
+ * The user-facing message of a failed API call. Prefers the backend's `message`, then field
+ * `validationErrors`, then the problem `detail`; never the internal `error` code (e.g. DUPLICATE_SLUG).
+ */
+export function apiErrorMessage(error: any): string {
+  const d = error?.response?.data ?? error?.body ?? {};
+  return (typeof d.message === 'string' && d.message)
+    || (d.validationErrors && typeof d.validationErrors === 'object' && Object.values(d.validationErrors).join('; '))
+    || (typeof d.detail === 'string' && d.detail)
+    || error?.message
+    || 'Request failed';
+}
+
+/** Usernames: letters, digits, dot, underscore and dash; 2 to 64 characters, starting with a letter or digit. */
+export const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{1,63}$/i;
+
 function tokenOf(body: any): string {
   return body?.token || body?.accessToken;
 }
@@ -103,8 +119,7 @@ export class AuthService {
       this.logger.error('Login failed', { email, error: error.message });
 
       // Extract error message from API response
-      const errorMessage = error.response?.data?.error || (typeof error.body?.error === 'string' ? error.body.error : undefined) || error.message;
-      throw new Error(`Authentication failed: ${errorMessage}`);
+      throw new Error(apiErrorMessage(error));
     }
   }
 
@@ -131,13 +146,18 @@ export class AuthService {
       throw new Error('Name is required');
     }
 
+    const finalUsername = (username || name).trim();
+    if (!USERNAME_PATTERN.test(finalUsername)) {
+      throw new Error(`Invalid username '${finalUsername}': use 2 to 64 letters, digits, '.', '_' or '-', starting with a letter or digit (pass --username when your name has spaces)`);
+    }
+
     try {
       this.logger.info('Attempting registration', { email, name });
 
       const registrationData: any = await this.authApi.register({
         email,
         password,
-        username: (username || name).trim(),
+        username: finalUsername,
         fullName: name.trim()
       });
       const accessToken = tokenOf(registrationData);
@@ -157,8 +177,7 @@ export class AuthService {
       this.logger.error('Registration failed', { email, error: error.message });
 
       // Extract error message from API response
-      const errorMessage = error.response?.data?.error || (typeof error.body?.error === 'string' ? error.body.error : undefined) || error.message;
-      throw new Error(`Registration failed: ${errorMessage}`);
+      throw new Error(apiErrorMessage(error));
     }
   }
 
