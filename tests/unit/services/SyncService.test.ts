@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { SyncService } from '../../../src/services/SyncService.js';
 import { simpleGit } from 'simple-git';
 import { CacheManager } from '../../../src/utils/CacheManager.js';
@@ -296,7 +297,7 @@ describe('SyncService', () => {
       await syncService.applyRemoteChanges('/vault', remoteChanges);
 
       expect(fs.writeFile).toHaveBeenCalledWith(
-        '/vault/local-note.md',
+        path.join('/vault', 'local-note.md'),
         '# Remote Update',
         'utf-8'
       );
@@ -317,7 +318,7 @@ describe('SyncService', () => {
 
       await syncService.applyRemoteChanges('/vault', remoteChanges);
 
-      expect(fs.unlink).toHaveBeenCalledWith('/vault/deleted-note.md');
+      expect(fs.unlink).toHaveBeenCalledWith(path.join('/vault', 'deleted-note.md'));
     });
 
     it('should create new files for CREATE operations', async () => {
@@ -336,7 +337,7 @@ describe('SyncService', () => {
       await syncService.applyRemoteChanges('/vault', remoteChanges);
 
       expect(fs.writeFile).toHaveBeenCalledWith(
-        '/vault/new-remote-note.md',
+        path.join('/vault', 'new-remote-note.md'),
         '# New Remote Note',
         'utf-8'
       );
