@@ -378,6 +378,36 @@ mujarrad <command> --help    # Command-specific guidance
 
 ---
 
+## Logic tier: App Packages from the command line
+
+The CLI speaks the current backend API (`/api/auth`, `/api/organizations`, `/api/spaces`,
+`/api/logic`, `/api/apps`). It does everything forge's Logic lens does with an App Package:
+
+```bash
+mujarrad auth login --email you@example.com --password '...'   # or interactive
+mujarrad orgs list
+mujarrad spaces create my-app-data                             # a BACKEND space for app data
+mujarrad logic catalog                                         # step kinds, triggers, auth policies
+mujarrad logic validate app.json --space my-app-data           # __SPACE__ in the file becomes the slug
+mujarrad logic ship app.json --space my-app-data               # save draft, release, deploy
+mujarrad logic call hello GET '/hello?name=Ada'                # call a deployed endpoint
+mujarrad logic run hello say-hello --input '{"name":"Ada"}' --dry-run
+mujarrad logic runs hello [runId]                              # run records and traces
+mujarrad logic rollback hello
+```
+
+Every command takes `--api-url`, `--json` and (where it applies) `--org <id|slug>`.
+
+**Credentials for scripts and CI**, in order of precedence: `MUJARRAD_TOKEN` (a JWT);
+`MUJARRAD_API_KEY` + `MUJARRAD_API_SECRET`; the token saved by `mujarrad auth login`;
+`MUJARRAD_EMAIL` + `MUJARRAD_PASSWORD` (signs in for that command only). Set
+`MUJARRAD_ACCEPT_DISCLAIMER=1` to skip the alpha prompt; the banner is not printed with `--json`
+or when output is piped.
+
+> The Obsidian commands (`init`, `clone`, `sync`, `template clone`) still use the generated client
+> for the old `/api/workspaces` API, which the backend no longer serves. Porting them to
+> `/api/spaces` is tracked separately.
+
 ## Configuration
 
 Mujarrad **adapts** to your environment. Configuration stored in `~/.mujarrad/config.json`:

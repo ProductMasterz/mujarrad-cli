@@ -12,7 +12,10 @@ jest.mock('chalk', () => ({
   },
 }));
 
-import { logo, logoSimple, version, displayBanner, displaySimple } from '../../../src/utils/logo';
+// version.ts reads package.json through import.meta, which this CommonJS test transform cannot compile
+jest.mock('../../../src/utils/version', () => ({ getVersion: () => '1.2.3' }));
+
+import { logo, logoSimple, getFormattedVersion, displayBanner, displaySimple } from '../../../src/utils/logo';
 
 describe('Logo Utils', () => {
   it('should have gradient logo defined', () => {
@@ -27,9 +30,8 @@ describe('Logo Utils', () => {
     expect(logoSimple.length).toBeGreaterThan(0);
   });
 
-  it('should have version defined', () => {
-    expect(version).toBeDefined();
-    expect(version).toContain('v1.0.0');
+  it('should format the package version', () => {
+    expect(getFormattedVersion()).toMatch(/v\d+\.\d+\.\d+/);
   });
 
   it('should display banner without errors', () => {

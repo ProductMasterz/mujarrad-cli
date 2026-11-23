@@ -1,5 +1,5 @@
 import { AuthService, credentialManager } from '../../../src/services/AuthService.js';
-import { AuthenticationApi } from '../../../src/api/generated/api.js';
+import type { AuthApi } from '../../../src/services/AuthService.js';
 
 // Mock the credentialManager instance methods
 jest.spyOn(credentialManager, 'storeToken').mockImplementation(() => Promise.resolve());
@@ -9,7 +9,7 @@ jest.spyOn(credentialManager, 'isTokenValid').mockImplementation(() => Promise.r
 
 describe('AuthService', () => {
   let authService: AuthService;
-  let mockAuthApi: jest.Mocked<AuthenticationApi>;
+  let mockAuthApi: { login: jest.Mock; register: jest.Mock; me: jest.Mock };
   
   beforeEach(() => {
     // Clear all mocks before each test
@@ -17,39 +17,31 @@ describe('AuthService', () => {
     
     // Create mock AuthenticationApi
     mockAuthApi = {
-      loginUser: jest.fn(),
-      registerUser: jest.fn(),
-      getCurrentUser: jest.fn(),
-    } as any;
+      login: jest.fn(),
+      register: jest.fn(),
+      me: jest.fn(),
+    };
     
     // Create AuthService with mocked API
-    authService = new AuthService(mockAuthApi);
+    authService = new AuthService(mockAuthApi as unknown as AuthApi);
   });
 
   describe('login', () => {
     it('should authenticate user and store token', async () => {
-      const mockResponse = {
-        data: {
-          success: true,
-          data: {
-            accessToken: 'token123',
-            user: { id: 'user-uuid', email: 'user@example.com', name: 'Test User' }
-          }
-        }
-      };
-      
-      mockAuthApi.loginUser.mockResolvedValue(mockResponse as any);
+      // Backend AuthResponse: { token, user: { id, username, email } }
+      mockAuthApi.login.mockResolvedValue({
+        token: 'token123',
+        user: { id: 'user-uuid', email: 'user@example.com', username: 'Test User' }
+      });
       (credentialManager.storeToken as jest.Mock).mockResolvedValue(undefined);
 
       const result = await authService.login('user@example.com', 'password123');
       
-      expect(mockAuthApi.loginUser).toHaveBeenCalledWith({
-        email: 'user@example.com',
-        password: 'password123'
-      });
+      expect(mockAuthApi.login).toHaveBeenCalledWith('user@example.com', 'password123');
       expect(credentialManager.storeToken).toHaveBeenCalledWith('token123');
       expect(result.accessToken).toBe('token123');
       expect(result.user.email).toBe('user@example.com');
+      expect(result.user.name).toBe('Test User');
     });
 
     it('should handle login failure with invalid credentials', async () => {
@@ -60,7 +52,7 @@ describe('AuthService', () => {
         }
       };
       
-      mockAuthApi.loginUser.mockRejectedValue(mockError);
+      mockAuthApi.login.mockRejectedValue(mockError);
 
       await expect(authService.login('user@example.com', 'wrong-password'))
         .rejects.toThrow('Authentication failed: Invalid credentials');
@@ -68,7 +60,7 @@ describe('AuthService', () => {
 
     it('should handle network errors during login', async () => {
       const mockError = new Error('Network error');
-      mockAuthApi.loginUser.mockRejectedValue(mockError);
+      mockAuthApi.login.mockRejectedValue(mockError);
 
       await expect(authService.login('user@example.com', 'password'))
         .rejects.toThrow('Authentication failed: Network error');
@@ -78,38 +70,32 @@ describe('AuthService', () => {
       await expect(authService.login('invalid-email', 'password'))
         .rejects.toThrow('Invalid email format');
       
-      expect(mockAuthApi.loginUser).not.toHaveBeenCalled();
+      expect(mockAuthApi.login).not.toHaveBeenCalled();
     });
 
     it('should validate password length before login', async () => {
       await expect(authService.login('user@example.com', '123'))
         .rejects.toThrow('Password must be at least 8 characters');
       
-      expect(mockAuthApi.loginUser).not.toHaveBeenCalled();
+      expect(mockAuthApi.login).not.toHaveBeenCalled();
     });
   });
 
   describe('register', () => {
     it('should register new user and store token', async () => {
-      const mockResponse = {
-        data: {
-          success: true,
-          data: {
-            accessToken: 'new-token',
-            user: { id: 'new-user-uuid', email: 'newuser@example.com', name: 'New User' }
-          }
-        }
-      };
-      
-      mockAuthApi.registerUser.mockResolvedValue(mockResponse as any);
+      mockAuthApi.register.mockResolvedValue({
+        token: 'new-token',
+        user: { id: 'new-user-uuid', email: 'newuser@example.com', username: 'New User' }
+      });
       (credentialManager.storeToken as jest.Mock).mockResolvedValue(undefined);
 
       const result = await authService.register('newuser@example.com', 'password123', 'New User');
       
-      expect(mockAuthApi.registerUser).toHaveBeenCalledWith({
+      expect(mockAuthApi.register).toHaveBeenCalledWith({
         email: 'newuser@example.com',
         password: 'password123',
-        username: 'New User'
+        username: 'New User',
+        fullName: 'New User'
       });
       expect(credentialManager.storeToken).toHaveBeenCalledWith('new-token');
       expect(result.user.email).toBe('newuser@example.com');
@@ -123,7 +109,7 @@ describe('AuthService', () => {
         }
       };
       
-      mockAuthApi.registerUser.mockRejectedValue(mockError);
+      mockAuthApi.register.mockRejectedValue(mockError);
 
       await expect(authService.register('existing@example.com', 'password', 'Name'))
         .rejects.toThrow('Registration failed: Email already exists');
@@ -177,19 +163,10 @@ describe('AuthService', () => {
 
   describe('getCurrentUser', () => {
     it('should fetch current user profile when authenticated', async () => {
-      const mockUser = {
-        data: {
-          success: true,
-          data: {
-            id: 'user-uuid',
-            email: 'user@example.com',
-            name: 'Test User'
-          }
-        }
-      };
-      
+ const mockUser = { id: 'user-uuid', email: 'user@example.com', username: 'Test User' };
+
       (credentialManager.getToken as jest.Mock).mockResolvedValue('valid-token');
-      mockAuthApi.getCurrentUser.mockResolvedValue(mockUser as any);
+      mockAuthApi.me.mockResolvedValue(mockUser);
 
       const result = await authService.getCurrentUser();
       
@@ -203,7 +180,7 @@ describe('AuthService', () => {
       await expect(authService.getCurrentUser())
         .rejects.toThrow('Not authenticated');
       
-      expect(mockAuthApi.getCurrentUser).not.toHaveBeenCalled();
+      expect(mockAuthApi.me).not.toHaveBeenCalled();
     });
   });
 
