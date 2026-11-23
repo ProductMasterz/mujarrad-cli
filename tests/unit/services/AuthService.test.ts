@@ -139,6 +139,9 @@ describe('AuthService', () => {
         .rejects.toThrow(/Invalid username/);
       await expect(authService.register('a@example.com', 'password123', 'T', 'x'))
         .rejects.toThrow(/Invalid username/);
+      // The backend requires at least 3 characters even though the pattern allows 2.
+      await expect(authService.register('a@example.com', 'password123', 'T', 'ab'))
+        .rejects.toThrow(/3 to 64/);
       expect(mockAuthApi.register).not.toHaveBeenCalled();
     });
 

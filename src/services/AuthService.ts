@@ -63,8 +63,14 @@ export function apiErrorMessage(error: any): string {
     || 'Request failed';
 }
 
-/** Usernames: letters, digits, dot, underscore and dash; 2 to 64 characters, starting with a letter or digit. */
+/** Usernames: letters, digits, dot, underscore and dash, starting with a letter or digit. */
 export const USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{1,63}$/i;
+
+/** The backend also requires at least 3 characters, so usernames are 3 to 64 characters. */
+export function isValidUsername(name: string): boolean {
+  const n = name.trim();
+  return n.length >= 3 && USERNAME_PATTERN.test(n);
+}
 
 function tokenOf(body: any): string {
   return body?.token || body?.accessToken;
@@ -147,8 +153,8 @@ export class AuthService {
     }
 
     const finalUsername = (username || name).trim();
-    if (!USERNAME_PATTERN.test(finalUsername)) {
-      throw new Error(`Invalid username '${finalUsername}': use 2 to 64 letters, digits, '.', '_' or '-', starting with a letter or digit (pass --username when your name has spaces)`);
+    if (!isValidUsername(finalUsername)) {
+      throw new Error(`Invalid username '${finalUsername}': use 3 to 64 letters, digits, '.', '_' or '-', starting with a letter or digit (pass --username when your name has spaces)`);
     }
 
     try {

@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import { AuthService, USERNAME_PATTERN } from '../services/AuthService.js';
+import { AuthService, isValidUsername } from '../services/AuthService.js';
 import { createClient } from '../api/session.js';
 import { withLabel } from '../utils/labels.js';
 
@@ -132,8 +132,8 @@ Notes:
             message: 'Username:',
             when: () => !opts.username,
             default: (a: any) => String(a.email || '').split('@')[0].replace(/[^a-z0-9._-]+/gi, '-').replace(/^[^a-z0-9]+/i, '').slice(0, 64),
-            validate: (input: string) => USERNAME_PATTERN.test(input.trim())
-              || "Use 2 to 64 letters, digits, '.', '_' or '-', starting with a letter or digit"
+            validate: (input: string) => isValidUsername(input)
+              || "Use 3 to 64 letters, digits, '.', '_' or '-', starting with a letter or digit"
           },
           {
             type: 'password',
