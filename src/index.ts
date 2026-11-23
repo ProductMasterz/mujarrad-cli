@@ -15,6 +15,8 @@ import { cloneCommand } from './commands/clone.js';
 import { syncCommand } from './commands/sync.js';
 import { templateCommand } from './commands/template.js';
 import { sdkCommand } from './commands/sdk.js';
+import { orgsCommand, spacesCommand } from './commands/orgs.js';
+import { logicCommand } from './commands/logic.js';
 
 /**
  * Mujarrad CLI - Obsidian Knowledge Graph Integration
@@ -73,8 +75,10 @@ async function main() {
       }
     }
 
-    // Display brand logo
-    displayBanner();
+    // Display brand logo (not for --json output, pipes, or MUJARRAD_NO_BANNER=1)
+    if (!process.argv.includes('--json') && process.stdout.isTTY && process.env.MUJARRAD_NO_BANNER !== '1') {
+      displayBanner();
+    }
 
     // Create Commander.js program
     const program = new Command();
@@ -116,6 +120,9 @@ Troubleshooting:
     syncCommand(program);
     templateCommand(program);
     sdkCommand(program);
+    orgsCommand(program);
+    spacesCommand(program);
+    logicCommand(program);
 
     // Parse arguments
     await program.parseAsync(process.argv);

@@ -1,4 +1,4 @@
-import { AuthenticationApi } from '../api/generated/api.js';
+import type { AuthResult, ApiUser } from '../api/client.js';
 import { CredentialManager } from '../config/CredentialManager.js';
 import { Logger } from '../utils/Logger.js';
 
@@ -35,11 +35,30 @@ export interface LoginResponse {
  * Follows Constitution Principle III: TDD approach with comprehensive tests
  * Follows Constitution Principle V: Security by Default (secure token storage)
  */
+/**
+ * The auth calls AuthService needs. MujarradClient implements it.
+ */
+export interface AuthApi {
+  login(email: string, password: string): Promise<AuthResult>;
+  register(input: { username: string; email: string; password: string; fullName?: string }): Promise<AuthResult>;
+  me(): Promise<ApiUser>;
+}
+
+/** Maps the backend's user (username) to the CLI's User (name). Accepts envelope-wrapped bodies too. */
+function toUser(apiUser: any): User {
+  const u = apiUser?.user ?? apiUser;
+  return { id: u?.id, email: u?.email, name: u?.username || u?.name || u?.fullName };
+}
+
+function tokenOf(body: any): string {
+  return body?.token || body?.accessToken;
+}
+
 export class AuthService {
-  private authApi: AuthenticationApi;
+  private authApi: AuthApi;
   private logger: Logger;
 
-  constructor(authApi: AuthenticationApi, logger?: Logger) {
+  constructor(authApi: AuthApi, logger?: Logger) {
     this.authApi = authApi;
     this.logger = logger || new Logger({ logLevel: 'info' });
   }
@@ -66,22 +85,10 @@ export class AuthService {
     try {
       this.logger.info('Attempting login', { email });
 
-      const response = await this.authApi.loginUser({
-        email,
-        password
-      });
-
-      // Extract data from API response
-      const loginData = response.data as any;
-      const accessToken = loginData.token; // API returns 'token' not 'accessToken'
-      const apiUser = loginData.user;
-
-      // Map API user to our User interface (username -> name)
-      const user: User = {
-        id: apiUser.id,
-        email: apiUser.email,
-        name: apiUser.username // API uses 'username' field
-      };
+      const loginData: any = await this.authApi.login(email, password);
+      const accessToken = tokenOf(loginData);
+      if (!accessToken) throw new Error('the server returned no token');
+      const user = toUser(loginData.user);
 
       // Store token securely
       await credentialManager.storeToken(accessToken);
@@ -96,7 +103,7 @@ export class AuthService {
       this.logger.error('Login failed', { email, error: error.message });
 
       // Extract error message from API response
-      const errorMessage = error.response?.data?.error || error.message;
+      const errorMessage = error.response?.data?.error || (typeof error.body?.error === 'string' ? error.body.error : undefined) || error.message;
       throw new Error(`Authentication failed: ${errorMessage}`);
     }
   }
@@ -110,7 +117,7 @@ export class AuthService {
    * @returns Login response with access token and user info
    * @throws Error if registration fails or validation errors
    */
-  async register(email: string, password: string, name: string): Promise<LoginResponse> {
+  async register(email: string, password: string, name: string, username?: string): Promise<LoginResponse> {
     // Validate inputs
     if (!this.isValidEmail(email)) {
       throw new Error('Invalid email format');
@@ -127,23 +134,15 @@ export class AuthService {
     try {
       this.logger.info('Attempting registration', { email, name });
 
-      const response = await this.authApi.registerUser({
+      const registrationData: any = await this.authApi.register({
         email,
         password,
-        username: name
+        username: (username || name).trim(),
+        fullName: name.trim()
       });
-
-      // Extract data from API response
-      const registrationData = response.data as any;
-      const accessToken = registrationData.token; // API returns 'token' not 'accessToken'
-      const apiUser = registrationData.user;
-
-      // Map API user to our User interface (username -> name)
-      const user: User = {
-        id: apiUser.id,
-        email: apiUser.email,
-        name: apiUser.username // API uses 'username' field
-      };
+      const accessToken = tokenOf(registrationData);
+      if (!accessToken) throw new Error('the server returned no token');
+      const user = toUser(registrationData.user);
 
       // Store token securely
       await credentialManager.storeToken(accessToken);
@@ -158,7 +157,7 @@ export class AuthService {
       this.logger.error('Registration failed', { email, error: error.message });
 
       // Extract error message from API response
-      const errorMessage = error.response?.data?.error || error.message;
+      const errorMessage = error.response?.data?.error || (typeof error.body?.error === 'string' ? error.body.error : undefined) || error.message;
       throw new Error(`Registration failed: ${errorMessage}`);
     }
   }
@@ -215,17 +214,7 @@ export class AuthService {
     try {
       this.logger.debug('Fetching current user profile');
 
-      const response = await this.authApi.getCurrentUser();
-      const apiUser = response.data as any;
-
-      // Map API user to our User interface (username -> name)
-      const user: User = {
-        id: apiUser.id,
-        email: apiUser.email,
-        name: apiUser.username || apiUser.name // API uses 'username' field
-      };
-
-      return user;
+      return toUser(await this.authApi.me());
     } catch (error: any) {
       this.logger.error('Failed to get current user', { error: error.message });
       throw new Error(`Failed to get user profile: ${error.message}`);

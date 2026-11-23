@@ -126,11 +126,15 @@ describe('SessionManager', () => {
 
     it('should detect development environment when NODE_ENV=development', () => {
       const originalNodeEnv = process.env.NODE_ENV;
-      delete process.env.CI;
+      // Hide every CI marker (GitHub Actions sets GITHUB_ACTIONS too, not only CI)
+      const ciVars = ['CI', 'CONTINUOUS_INTEGRATION', 'GITHUB_ACTIONS', 'TRAVIS', 'CIRCLECI', 'JENKINS_URL', 'GITLAB_CI'];
+      const saved = Object.fromEntries(ciVars.map(v => [v, process.env[v]]));
+      ciVars.forEach(v => delete process.env[v]);
       process.env.NODE_ENV = 'development';
 
       const metadata = SessionManager.createSessionMetadata('test');
 
+      ciVars.forEach(v => { if (saved[v] !== undefined) process.env[v] = saved[v]; });
       expect(metadata.environment).toBe('development');
 
       // Restore original env

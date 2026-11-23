@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { SyncService } from '../../../src/services/SyncService.js';
 import { simpleGit } from 'simple-git';
 import { CacheManager } from '../../../src/utils/CacheManager.js';
@@ -19,7 +20,7 @@ describe('SyncService', () => {
 
     // Mock Git
     mockGit = {
-      log: jest.fn(),
+      log: jest.fn().mockResolvedValue({ latest: null, all: [] }),
       diff: jest.fn(),
       show: jest.fn(),
       status: jest.fn()
@@ -29,8 +30,7 @@ describe('SyncService', () => {
     // Mock API
     mockSyncApi = {
       initSync: jest.fn(),
-      pushChanges: jest.fn(),
-      pullChanges: jest.fn(),
+      applySyncChanges: jest.fn(),
       completeSync: jest.fn()
     };
 
@@ -176,7 +176,7 @@ describe('SyncService', () => {
         }
       ];
 
-      mockSyncApi.pushChanges.mockResolvedValue({
+      mockSyncApi.applySyncChanges.mockResolvedValue({
         data: {
           versionsCreated: 1,
           conflicts: []
@@ -187,7 +187,7 @@ describe('SyncService', () => {
 
       expect(result.versionsCreated).toBe(1);
       expect(result.conflicts).toEqual([]);
-      expect(mockSyncApi.pushChanges).toHaveBeenCalledWith('workspace-123', {
+      expect(mockSyncApi.applySyncChanges).toHaveBeenCalledWith('workspace-123', {
         changes: expect.arrayContaining([
           expect.objectContaining({
             nodeId: 'uuid-123',
@@ -218,7 +218,7 @@ describe('SyncService', () => {
         }
       ];
 
-      mockSyncApi.pushChanges.mockRejectedValue(new Error('Network error'));
+      mockSyncApi.applySyncChanges.mockRejectedValue(new Error('Network error'));
 
       await expect(
         syncService.pushChanges('workspace-123', changes)
@@ -241,7 +241,7 @@ describe('SyncService', () => {
         }
       ];
 
-      mockSyncApi.pushChanges.mockResolvedValue({
+      mockSyncApi.applySyncChanges.mockResolvedValue({
         data: {
           versionsCreated: 0,
           conflicts: [
@@ -266,39 +266,13 @@ describe('SyncService', () => {
   });
 
   describe('pullChanges', () => {
-    it('should retrieve remote changes', async () => {
-      (CacheManager.getLastSyncTime as jest.Mock).mockResolvedValue('2025-10-10T10:00:00Z');
-
-      mockSyncApi.pullChanges.mockResolvedValue({
-        data: {
-          changes: [
-            {
-              nodeId: 'uuid-456',
-              operation: 'UPDATE',
-              content: '# Remote Update',
-              filePath: 'remote-note.md',
-              updatedAt: '2025-10-11T15:00:00Z'
-            }
-          ]
-        }
-      });
-
+    it('returns no remote changes (remote changes arrive with applySyncChanges)', async () => {
       const result = await syncService.pullChanges('workspace-123');
-
-      expect(result.changes).toHaveLength(1);
-      expect(result.changes[0].operation).toBe('UPDATE');
-      expect(result.changes[0].content).toBe('# Remote Update');
-      expect(mockSyncApi.pullChanges).toHaveBeenCalledWith(
-        'workspace-123',
-        { since: '2025-10-10T10:00:00Z' }
-      );
+      expect(result.changes).toEqual([]);
     });
 
     it('should handle no remote changes', async () => {
       (CacheManager.getLastSyncTime as jest.Mock).mockResolvedValue('2025-10-10T10:00:00Z');
-      mockSyncApi.pullChanges.mockResolvedValue({
-        data: { changes: [] }
-      });
 
       const result = await syncService.pullChanges('workspace-123');
 
@@ -323,7 +297,7 @@ describe('SyncService', () => {
       await syncService.applyRemoteChanges('/vault', remoteChanges);
 
       expect(fs.writeFile).toHaveBeenCalledWith(
-        '/vault/local-note.md',
+        path.join('/vault', 'local-note.md'),
         '# Remote Update',
         'utf-8'
       );
@@ -344,7 +318,7 @@ describe('SyncService', () => {
 
       await syncService.applyRemoteChanges('/vault', remoteChanges);
 
-      expect(fs.unlink).toHaveBeenCalledWith('/vault/deleted-note.md');
+      expect(fs.unlink).toHaveBeenCalledWith(path.join('/vault', 'deleted-note.md'));
     });
 
     it('should create new files for CREATE operations', async () => {
@@ -363,7 +337,7 @@ describe('SyncService', () => {
       await syncService.applyRemoteChanges('/vault', remoteChanges);
 
       expect(fs.writeFile).toHaveBeenCalledWith(
-        '/vault/new-remote-note.md',
+        path.join('/vault', 'new-remote-note.md'),
         '# New Remote Note',
         'utf-8'
       );

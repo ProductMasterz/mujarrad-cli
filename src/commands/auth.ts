@@ -2,10 +2,7 @@ import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { AuthService } from '../services/AuthService.js';
-import { AuthenticationApi } from '../api/generated/api.js';
-import { Configuration } from '../api/generated/configuration.js';
-import { ConfigManager } from '../config/ConfigManager.js';
-import { CredentialManager } from '../config/CredentialManager.js';
+import { createClient } from '../api/session.js';
 
 /**
  * Setup auth command with Commander.js
@@ -26,16 +23,7 @@ export function authCommand(program: Command, authService?: AuthService): void {
       return authService;
     }
 
-    const config = await new ConfigManager().load();
-    const credentialManager = new CredentialManager();
-    const token = await credentialManager.getToken();
-
-    const apiConfig = new Configuration({
-      basePath: config.apiBaseUrl,
-      accessToken: token || undefined
-    });
-    const authApi = new AuthenticationApi(apiConfig);
-    return new AuthService(authApi);
+    return new AuthService(await createClient());
   };
 
   const auth = program
@@ -65,11 +53,15 @@ Notes:
   auth
     .command('login')
     .description('Login to Mujarrad with email and password')
-    .action(async () => {
+    .option('--email <email>', 'Email (or MUJARRAD_EMAIL); skips the prompt')
+    .option('--password <password>', 'Password (or MUJARRAD_PASSWORD); skips the prompt')
+    .action(async (opts: { email?: string; password?: string }) => {
       try {
         console.log(chalk.blue('Login to Mujarrad\n'));
 
-        const answers: any = await (inquirer.prompt as any)([
+        const email = opts.email || process.env.MUJARRAD_EMAIL;
+        const password = opts.password || process.env.MUJARRAD_PASSWORD;
+        const answers: any = email && password ? { email, password } : await (inquirer.prompt as any)([
           {
             type: 'input',
             name: 'email',
@@ -105,11 +97,17 @@ Notes:
   auth
     .command('register')
     .description('Register a new Mujarrad account')
-    .action(async () => {
+    .option('--email <email>', 'Email; with --name and --password skips the prompts')
+    .option('--name <name>', 'Full name')
+    .option('--username <username>', 'Username (default: the name)')
+    .option('--password <password>', 'Password')
+    .action(async (opts: { email?: string; name?: string; username?: string; password?: string }) => {
       try {
         console.log(chalk.blue('Register for Mujarrad\n'));
 
-        const answers: any = await (inquirer.prompt as any)([
+        const answers: any = opts.email && opts.name && opts.password
+          ? { email: opts.email, name: opts.name, password: opts.password, confirmPassword: opts.password }
+          : await (inquirer.prompt as any)([
           {
             type: 'input',
             name: 'email',
@@ -154,7 +152,7 @@ Notes:
         }
 
         const service = await getAuthService();
-        const result = await service.register(answers.email, answers.password, answers.name);
+        const result = await service.register(answers.email, answers.password, answers.name, opts.username);
 
         console.log(chalk.green('\n✓ Registration successful!'));
         console.log(chalk.gray(`Welcome, ${result.user.name}!`));

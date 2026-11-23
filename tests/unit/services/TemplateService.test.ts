@@ -13,7 +13,7 @@ import { Logger } from '../../../src/utils/Logger.js';
 
 // Mock the API and Logger
 jest.mock('../../../src/api/generated/api.js');
-jest.mock('../../../src/utils/logger.js');
+jest.mock('../../../src/utils/Logger.js');
 
 describe('TemplateService', () => {
   let templateService: TemplateService;
