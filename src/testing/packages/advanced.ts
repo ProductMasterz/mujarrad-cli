@@ -63,7 +63,6 @@ export const subflows: TestPackage = {
     { it: 'a sub-flow runs on its own as a manual run', do: 'run', flow: 'square', input: { item: 7, index: 0 },
       expect: { status: 'SUCCEEDED', response: { body: { square: 49 } } } },
     { it: 'repeat driven by a query string (GET /ticks?times=3) runs 3 times', do: 'call', method: 'GET', path: '/ticks?times=3',
-      knownBug: 'query-string values arrive as strings ("3"), so repeat.times is refused; the backend should coerce them (backend bug 4)',
       expect: { status: 200, body: { ticks: [{ tick: 0, label: 'go' }, { tick: 1, label: 'go' }, { tick: 2, label: 'go' }] } } },
   ],
 };
