@@ -104,11 +104,13 @@ export async function runPackage(pkg: TestPackage, opts: RunOptions): Promise<Pa
           vars[name] = v;
         }
       }
+      if (raw.knownBug) sr.knownBug = { reason: raw.knownBug, state: 'now-passing' };
     } catch (e: any) {
       sr.ok = false;
       sr.error = e.message;
       if (e instanceof StepFailure) sr.detail = e.detail;
-      failed = true;
+      if (raw.knownBug) sr.knownBug = { reason: raw.knownBug, state: 'still-failing' };
+      else failed = true;
     }
     sr.ms = Date.now() - t0;
     result.steps.push(sr);
@@ -264,12 +266,14 @@ export function toJUnit(results: PackageResult[]): string {
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const suites = results.map(r => {
     const cases = r.steps.map(s => {
-      const inner = s.skipped ? '<skipped/>' : s.ok ? '' : `<failure message="${esc(s.error || 'failed')}"/>`;
+      const inner = s.skipped ? '<skipped/>'
+        : s.knownBug?.state === 'still-failing' ? `<skipped message="${esc(`known backend bug: ${s.knownBug.reason}`)}"/>`
+        : s.ok ? '' : `<failure message="${esc(s.error || 'failed')}"/>`;
       return `    <testcase classname="${esc(r.name)}" name="${esc(s.it)}" time="${(s.ms / 1000).toFixed(3)}">${inner}</testcase>`;
     });
     if (r.status === 'skipped') cases.push(`    <testcase classname="${esc(r.name)}" name="${esc(r.title)}"><skipped message="${esc(r.skipReason || '')}"/></testcase>`);
-    const failures = r.steps.filter(s => !s.ok && !s.skipped).length;
-    const skipped = r.steps.filter(s => s.skipped).length + (r.status === 'skipped' ? 1 : 0);
+    const failures = r.steps.filter(s => !s.ok && !s.skipped && !s.knownBug).length;
+    const skipped = r.steps.filter(s => s.skipped || s.knownBug?.state === 'still-failing').length + (r.status === 'skipped' ? 1 : 0);
     return `  <testsuite name="${esc(r.name)}" tests="${cases.length}" failures="${failures}" skipped="${skipped}" time="${(r.ms / 1000).toFixed(3)}">\n${cases.join('\n')}\n  </testsuite>`;
   });
   return `<?xml version="1.0" encoding="UTF-8"?>\n<testsuites name="mujarrad logic tests">\n${suites.join('\n')}\n</testsuites>\n`;

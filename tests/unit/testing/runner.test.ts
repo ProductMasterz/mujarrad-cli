@@ -142,6 +142,23 @@ describe('runPackage', () => {
     expect(client.createSpace).not.toHaveBeenCalled();
   });
 
+  it('reports a knownBug step without failing the package or stopping later steps', async () => {
+    const { client } = fakeClient();
+    const r = await runPackage({ ...pkg, steps: [
+      { it: 'ships', do: 'ship' },
+      { it: 'guards a backend bug', do: 'call', method: 'GET', path: '/hello', knownBug: 'numbers in query strings', expect: { status: 200 } },
+      { it: 'still runs afterwards', do: 'call', method: 'GET', path: '/hello?name=Ada', expect: { status: 200 } },
+      { it: 'a fixed bug is reported as now passing', do: 'call', method: 'GET', path: '/hello?name=Bo', knownBug: 'fixed', expect: { status: 200 } },
+    ] }, { client, org });
+    expect(r.status).toBe('passed');
+    expect(r.steps[1]).toMatchObject({ ok: false, knownBug: { state: 'still-failing', reason: 'numbers in query strings' } });
+    expect(r.steps[2].ok).toBe(true);
+    expect(r.steps[3]).toMatchObject({ ok: true, knownBug: { state: 'now-passing' } });
+    const xml = toJUnit([r]);
+    expect(xml).toContain('failures="0"');
+    expect(xml).toContain('known backend bug: numbers in query strings');
+  });
+
   it('writes JUnit XML', async () => {
     const { client } = fakeClient();
     const r = await runPackage(pkg, { client, org });
